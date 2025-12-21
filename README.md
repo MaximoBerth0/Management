@@ -4,6 +4,7 @@ Modular backend built with FastAPI for business management.
 Includes authentication, users, roles and permissions, inventory, orders,
 logistics, human resources, and reporting.
 
+This project is under active development. Additional modules will be implemented incrementally.
 ---
 
 ## Architecture
@@ -89,5 +90,12 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 
 Run the aplicacion:
 uvicorn app.main:app --reload
+<<<<<<< HEAD
 The core structure for authentication, users, and permissions is in progress.
 Additional modules will be implemented incrementally.
+=======
+
+---
+
+
+>>>>>>> 4288aa7 (README modification)
