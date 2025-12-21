@@ -1,11 +1,11 @@
 architecture:  schemas + models + repository + service + routers 
 
-step by step:
-1. shared/security.py 
-2. auth/models.py
-3. auth/schemas.py
-4. auth/repository
-5. auth/service
+right now, this is your life: 
+git status
+git add .
+git commit -m "Describe what you changed"
+git push
+
 
 📦 A. Módulo de Autenticación   (auth)
 auth/login              
