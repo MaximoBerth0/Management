@@ -89,9 +89,5 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 
 Run the aplicacion:
 uvicorn app.main:app --reload
-
----
-
-This project is under active development.
 The core structure for authentication, users, and permissions is in progress.
 Additional modules will be implemented incrementally.
