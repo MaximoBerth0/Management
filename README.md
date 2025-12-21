@@ -4,6 +4,7 @@ Modular backend built with FastAPI for business management.
 Includes authentication, users, roles and permissions, inventory, orders,
 logistics, human resources, and reporting.
 This project is under active development. Additional modules will be implemented incrementally.
+
 ---
 
 ## Architecture
