@@ -1,99 +1,97 @@
-architecture:  schemas + models + repository + service + routers 
+# Management API
 
-right now, this is your life: 
-git status
-git add .
-git commit -m "Describe what you changed"
-git push
+Modular backend built with FastAPI for business management.
+Includes authentication, users, roles and permissions, inventory, orders,
+logistics, human resources, and reporting.
 
+---
 
-📦 A. Módulo de Autenticación   (auth)
-auth/login              
-auth/logout                
-auth/refresh-token                       
-auth/change-password       
-auth/forgot-password      
-auth/reset-password      
+## Architecture
 
-Modulo de Usuarios    (users)
-users/
-users/create      
-users/list                (admin)          
-users/{user_id}           (admin)   
-users/{user_id}/update    (admin)  
-users/{user_id}/delete    (admin)  
-users/{user_id}/disable   (admin) 
-users/{user_id}/enable    (admin)
-users/profile              
-users/profile/update
+The project follows a modular, layered, and decoupled architecture:
 
-Modulo de Roles y Permisos   (permissions)
-permissions/roles                  # ver lista de roles disponibles
-permissions/roles/create           # crear un nuevo rol (solo admin)
-permissions/roles/{role_id}/update # modificar nombre o permisos del rol
-permissions/roles/{role_id}/delete # eliminar rol (solo admin)
-permissions/user/{user_id}/roles          # ver roles asignados a un usuario
-permissions/user/{user_id}/assign-role     # asignar un rol al usuario
-permissions/user/{user_id}/remove-role     # quitar un rol al usuario
-permissions/list                  # ver lista de permisos del sistema
-permissions/role/{role_id}        # ver permisos asignados a un rol
-permissions/role/{role_id}/add    # agregar permiso al rol
-permissions/role/{role_id}/remove # quitar permiso del rol
-permissions/all                   # ver roles + permisos completos (dashboard admin)
+- **Schemas**: data validation and serialization (Pydantic)
+- **Models**: ORM models (SQLAlchemy)
+- **Repository**: data access layer
+- **Service**: business logic
+- **Routers**: HTTP endpoints (FastAPI)
 
-📦 B. Módulo de Inventario Avanzado (inventory)
-inventory/items
-inventory/categories
-inventory/movements (entradas/salidas → indispensable)
-inventory/warehouse (si hay más de un depósito)
-inventory/audit (cambios de stock, quién los hizo)
+Each module is independent and designed to scale.
 
-📦 C. Gestión de Pedidos (orders)
-orders/create
-orders/assign-driver
-orders/status/ (pendiente, enviado, entregado…)
-orders/cancel
-orders/items (detalle del pedido)
-orders/logs (historial de cambios)
+---
 
-🚚 D. Deliveries (deliveries)
-deliveries/route-planner (si la app móvil usa GPS)
-deliveries/location-update (driver manda su ubicación cada X min)
-deliveries/notifications (avisos al cliente/app)
+## Main Modules
 
-🧍 E. Módulo de Recursos Humanos (employees)
-employees/
-employees/schedule (horarios)
-employees/permissions
-employees/vacations
-employees/performance 
+### Authentication & Authorization
+- Login / logout
+- Refresh token
+- Password change and recovery
+- Roles and permissions (RBAC)
 
-📊 F. Estadísticas y Reportes (stats)
-stats/sales (mensuales, semanales)
-stats/orders
-stats/products
-stats/drivers
-stats/inventory
-export/csv / pdf / excel
+### Users
+- User CRUD
+- User profile
+- Enable / disable accounts
+- Admin-only endpoints
 
-📱 G. Módulo para App Móvil (mobile)
-- funciones de la app movil (si aplica)
+### Inventory
+- Items and categories
+- Stock movements
+- Audit logs
 
+### Orders & Logistics
+- Order management
+- Status handling and assignments
+- Deliveries and tracking
 
+### Human Resources
+- Employees
+- Schedules
+- Vacations and performance
 
+### Reports
+- Sales
+- Inventory
+- Data export
 
+---
 
+## Technologies
 
-admin: maximob
-password: 54556184.Mx
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- Alembic
+- JWT (python-jose)
+- Passlib (bcrypt)
 
-dependencias: 
+---
 
-pip install fastapi
-pip install uvicorn
-pip install sqlalchemy
-pip install pydantic[email]
-pip install psycopg2-binary
-pip install alembic
-pip install passlib[bcrypt]
-pip install python-jose[cryptography]
+## Installation
+
+```bash
+git clone https://github.com/your-username/Management.git
+cd Management
+
+python -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+Create a .env file with:
+DATABASE_URL=postgresql://user:password@localhost/dbname
+SECRET_KEY=change-this
+APP_NAME=change-this
+#security:
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+Run the aplicacion:
+uvicorn app.main:app --reload
+
+---
+
+This project is under active development.
+The core structure for authentication, users, and permissions is in progress.
+Additional modules will be implemented incrementally.
