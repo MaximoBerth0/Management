@@ -1,9 +1,10 @@
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt, ExpiredSignatureError
-from app.shared.exceptions import InvalidToken, TokenExpired
-from app.config import settings
 import uuid
+from datetime import datetime, timedelta, timezone
+
+from app.config import settings
+from app.shared.exceptions import InvalidToken, TokenExpired
+from jose import ExpiredSignatureError, JWTError, jwt
+from passlib.context import CryptContext
 
 """
 - hashing and verifying passwords with bcrypt.
@@ -13,16 +14,16 @@ import uuid
 
 """
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def verify_password(password: str, hashed_password: str) -> bool:
     return pwd_context.verify(password, hashed_password)
+
 
 def create_token(
     *,
@@ -46,23 +47,22 @@ def create_token(
         algorithm=settings.JWT_ALGORITHM,
     )
 
+
 def create_access_token(user_id: int) -> str:
     return create_token(
         subject=str(user_id),
         token_type="access",
-        expires_delta=timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        ),
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
+
 
 def create_refresh_token(user_id: int) -> str:
     return create_token(
         subject=str(user_id),
         token_type="refresh",
-        expires_delta=timedelta(
-            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
-        ),
+        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
+
 
 def decode_token(token: str) -> dict:
     try:
@@ -76,6 +76,7 @@ def decode_token(token: str) -> dict:
     except JWTError:
         raise InvalidToken("invalid token")
 
+
 def verify_access_token(token: str) -> dict:
     payload = decode_token(token)
 
@@ -83,6 +84,7 @@ def verify_access_token(token: str) -> dict:
         raise InvalidToken("incorrect token")
 
     return payload
+
 
 def verify_refresh_token(token: str) -> dict:
     payload = decode_token(token)

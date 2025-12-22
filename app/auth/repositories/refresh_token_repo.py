@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
+
+from app.auth.models import RefreshToken
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from app.auth.models import RefreshToken
+
 
 class RefreshTokenRepository:
     def __init__(self, db: Session):
@@ -32,9 +34,7 @@ class RefreshTokenRepository:
 
     def revoke(self, token: str) -> None:
         stmt = (
-            update(RefreshToken)
-            .where(RefreshToken.token == token)
-            .values(revoked=True)
+            update(RefreshToken).where(RefreshToken.token == token).values(revoked=True)
         )
         self.db.execute(stmt)
 

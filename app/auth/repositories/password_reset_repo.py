@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
+
+from app.auth.models import PasswordResetToken
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from app.auth.models import PasswordResetToken
+
 
 class PasswordResetTokenRepository:
     def __init__(self, db: Session):
