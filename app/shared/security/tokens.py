@@ -4,26 +4,12 @@ from datetime import datetime, timedelta, timezone
 from app.config import settings
 from app.shared.exceptions import InvalidToken, TokenExpired
 from jose import ExpiredSignatureError, JWTError, jwt
-from passlib.context import CryptContext
 
 """
-- hashing and verifying passwords with bcrypt.
 - create access and refresh JWT tokens.
 - verify access token and refresh token types.
 - decode JWT tokens.
-
 """
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
-
 
 def create_token(
     *,

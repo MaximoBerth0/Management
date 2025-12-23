@@ -2,6 +2,9 @@ from app.auth.dependencies import get_current_user
 from app.users.models import User
 from fastapi import Depends, HTTPException, status
 
+"""
+delete this file
+"""
 
 def require_roles(allowed_roles: list[str]):
     def dependency(

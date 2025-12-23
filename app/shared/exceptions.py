@@ -1,18 +1,23 @@
-"""application errors"""
+"""base application error"""
 
 
 class AppError(Exception):
+    """Base error for the application"""
     pass
 
 
-"""tokens errors"""
+"""token errors"""
 
 
-class InvalidToken(AppError):
+class TokenError(AppError):
     pass
 
 
-class TokenExpired(AppError):
+class TokenExpired(TokenError):
+    pass
+
+
+class TokenInvalid(TokenError):
     pass
 
 
@@ -27,30 +32,22 @@ class InvalidCredentials(AuthError):
     pass
 
 
-class TokenExpired(AuthError):
-    pass
-
-
-class TokenInvalid(AuthError):
-    pass
-
-
 """user errors"""
 
 
-class UserNotFound(Exception):
+class UserError(AppError):
     pass
 
 
-class UserAlreadyExists(Exception):
+class UserNotFound(UserError):
     pass
 
 
-class UserInactive(Exception):
+class UserAlreadyExists(UserError):
     pass
 
 
-class InvalidCredentials(Exception):
+class UserInactive(UserError):
     pass
 
 
@@ -66,3 +63,4 @@ class PermissionDenied(AppError):
 
 class RepositoryError(AppError):
     pass
+
