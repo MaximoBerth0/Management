@@ -1,8 +1,9 @@
 from typing import List, Optional
 
-from app.users.models import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from app.users.models import User
 
 
 class UserRepository:

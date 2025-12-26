@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from app.config import settings
-from app.shared.exceptions import InvalidToken, TokenExpired
+from app.shared.exceptions import TokenExpired, TokenInvalid
 from jose import ExpiredSignatureError, JWTError, jwt
 
 """
@@ -60,14 +60,14 @@ def decode_token(token: str) -> dict:
     except ExpiredSignatureError:
         raise TokenExpired("expired token")
     except JWTError:
-        raise InvalidToken("invalid token")
+        raise TokenInvalid("invalid token")
 
 
 def verify_access_token(token: str) -> dict:
     payload = decode_token(token)
 
     if payload.get("type") != "access":
-        raise InvalidToken("incorrect token")
+        raise TokenInvalid("incorrect token")
 
     return payload
 
@@ -76,6 +76,6 @@ def verify_refresh_token(token: str) -> dict:
     payload = decode_token(token)
 
     if payload.get("type") != "refresh":
-        raise InvalidToken("incorrect token")
+        raise TokenInvalid("incorrect token")
 
     return payload

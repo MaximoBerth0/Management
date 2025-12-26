@@ -1,3 +1,5 @@
+from sqlalchemy.orm import Session
+
 from app.shared.exceptions import (
     UserAlreadyExists,
     UserInactive,
@@ -7,7 +9,6 @@ from app.shared.security.passwords import hash_password
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas import UserCreate, UserUpdate
-from sqlalchemy.orm import Session
 
 
 class UserService:

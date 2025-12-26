@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, status
 
 from app.auth.container import get_auth_service
@@ -6,12 +8,15 @@ from app.auth.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,
-    RefreshTokenRequest,
+    RefreshTokensRequest,
     ResetPasswordRequest,
     TokenResponse,
 )
 from app.auth.service import AuthService
 from app.users.models import User
+
+if TYPE_CHECKING:
+    from app.users.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -43,7 +48,7 @@ def login(
     response_model=None,
 )
 def logout(
-    refresh_token: RefreshTokenRequest,
+    refresh_token: RefreshTokensRequest,
     service: AuthService = Depends(get_auth_service),
 ):
     service.logout(refresh_token=refresh_token.refresh_token)
@@ -54,7 +59,7 @@ def logout(
     status_code=status.HTTP_200_OK,
 )
 def refresh_token(
-    data: RefreshTokenRequest,
+    data: RefreshTokensRequest,
     service: AuthService = Depends(get_auth_service),
 ):
     access_token, new_refresh_token = service.refresh_token(
@@ -73,7 +78,7 @@ def refresh_token(
 def change_password(
     data: ChangePasswordRequest,
     service: AuthService = Depends(get_auth_service),
-    current_user: User = Depends(get_current_user),
+    current_user: "User" = Depends(get_current_user),
 ):
     service.change_password(
         user_id=current_user.id,
