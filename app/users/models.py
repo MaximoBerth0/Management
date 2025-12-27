@@ -22,4 +22,4 @@ class User(Base):
         onupdate=func.now(),
         nullable=True,
     )
-    role = Column(String(50), default=Roles.CLIENT, nullable=False)
+    role = Column(String(50), default=Roles.CLIENT, nullable=False) #This exists until permissions are complete
