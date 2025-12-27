@@ -23,24 +23,16 @@ router = APIRouter(
     tags=["auth"],
 )
 
-@router.post(
-    "/login",
-    response_model=TokenResponse,
-    status_code=status.HTTP_200_OK,
-)
+@router.post("/login", response_model=TokenResponse)
 def login(
     data: LoginRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    access_token, refresh_token = service.login(
+    tokens = service.login(
         email=data.email,
         password=data.password,
     )
-
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-    )
+    return TokenResponse(**tokens)
 
 @router.post(
     "/logout",
@@ -53,36 +45,25 @@ def logout(
 ):
     service.logout(refresh_token=refresh_token.refresh_token)
 
-@router.post(
-    "/refresh-token",
-    response_model=TokenResponse,
-    status_code=status.HTTP_200_OK,
-)
+@router.post("/refresh-token", response_model=TokenResponse)
 def refresh_token(
     data: RefreshTokensRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    access_token, new_refresh_token = service.refresh_token(
+    tokens = service.refresh_token(
         refresh_token=data.refresh_token
     )
+    return TokenResponse(**tokens)
 
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=new_refresh_token,
-    )
-
-@router.post(
-    "/change-password",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
 def change_password(
     data: ChangePasswordRequest,
     service: AuthService = Depends(get_auth_service),
-    current_user: "User" = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     service.change_password(
         user_id=current_user.id,
-        old_password=data.old_password,
+        current_password=data.old_password,
         new_password=data.new_password,
     )
 
