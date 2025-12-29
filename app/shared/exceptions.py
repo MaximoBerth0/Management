@@ -1,6 +1,3 @@
-"""base application error"""
-
-
 class AppError(Exception):
     """Base error for the application"""
     pass
@@ -51,15 +48,44 @@ class UserInactive(UserError):
     pass
 
 
-"""authorization errors"""
+"""permissions and roles errors"""
 
 
 class PermissionDenied(AppError):
     pass
 
+class PermissionNotFound(Exception):
+    pass
+
+class PermissionAlreadyExists(Exception):
+    pass
+
+class RoleNotFound(Exception):
+    pass
+
+class RoleAlreadyExists(Exception):
+    pass
+
+class SystemRoleModificationError(Exception):
+    pass
+
+class PermissionAlreadyAssignedToRole(Exception):
+    pass
+
+class PermissionNotAssignedToRole(Exception):
+    pass
+
+class RoleAlreadyAssignedToUser(Exception):
+    pass
+
+class RoleNotAssignedToUser(Exception):
+    pass
+
+class InvalidPermissionOperation(Exception):
+    pass
+
 
 """database errors"""
-
 
 class RepositoryError(AppError):
     pass
