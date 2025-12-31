@@ -75,6 +75,9 @@ class PermissionAlreadyAssignedToRole(Exception):
 class PermissionNotAssignedToRole(Exception):
     pass
 
+class RolePermissionNotFound(Exception):
+    pass
+
 class RoleAlreadyAssignedToUser(Exception):
     pass
 
@@ -82,6 +85,9 @@ class RoleNotAssignedToUser(Exception):
     pass
 
 class InvalidPermissionOperation(Exception):
+    pass
+
+class UserRole(Exception):
     pass
 
 

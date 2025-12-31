@@ -7,6 +7,7 @@ from app.database.base import Base
 class Permission(Base):
     __tablename__ = "permissions"
     id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(250), nullable=True)
     created_at = Column(
