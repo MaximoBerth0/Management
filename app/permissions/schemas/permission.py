@@ -6,4 +6,8 @@ class PermissionRead(BaseModel):
     name: str
 
 class PermissionCreate(BaseModel):
-    name: str  
+    name: str
+
+class PermissionAssign(BaseModel):
+    permission_id: int
+  

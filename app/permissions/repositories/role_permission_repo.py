@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.permissions.models import RolePermission
+from app.permissions.models import Permission, Role, RolePermission
 
 
 class RolePermissionRepository:
@@ -26,6 +26,16 @@ class RolePermissionRepository:
         )
         self.db.add(rp)
         return rp
+    
+    def assign(self, role: Role, permission: Permission) -> RolePermission:
+        rp = self.get(role.id, permission.id)
+        if rp:
+            return rp
+
+        return self.add(
+            role_id=role.id,
+            permission_id=permission.id,
+        )
 
     def delete(self, role_permission: RolePermission) -> None:
         self.db.delete(role_permission)

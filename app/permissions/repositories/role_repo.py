@@ -20,6 +20,16 @@ class RoleRepository:
         self.db.add(role)
         return role
     
+    def get_or_create(self, name: str) -> Role:
+        role = self.get_by_name(name)
+        if role:
+            return role
+
+        role = Role(name=name)
+        self.db.add(role)
+        return role
+
+    
     def update(self, role: Role) -> Role:
         self.db.add(role)
         return role

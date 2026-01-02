@@ -1,4 +1,5 @@
 from app.permissions.repositories.permission_repo import PermissionRepository
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 """
@@ -9,6 +10,11 @@ class PermissionAuthService:
     def __init__(self, db: Session):
         self.permission_repo = PermissionRepository(db)
 
-    def user_has_permission(self, user_id: int, permission_code: str) -> bool:
+    def require_permission(self, user_id: int, permission_code: str) -> None:
         permissions = self.permission_repo.get_permission_codes_by_user(user_id)
-        return permission_code in permissions
+
+        if permission_code not in permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )

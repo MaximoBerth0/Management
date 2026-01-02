@@ -1,0 +1,16 @@
+from fastapi import Depends
+
+from app.auth.dependencies import get_current_user
+from app.permissions.services.permission_service import PermissionService
+from app.users.models import User
+
+
+def require_permission(permission_name: str):
+    def dependency(
+        current_user: User = Depends(get_current_user),
+        service: PermissionService = Depends(),
+    ) -> User:
+        service.require_permission(current_user.id, permission_name)
+        return current_user
+
+    return dependency
