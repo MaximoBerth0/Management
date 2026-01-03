@@ -7,7 +7,7 @@ from app.permissions.repositories.user_role_repo import UserRoleRepository
 from app.shared.exceptions import (
     PermissionAlreadyAssignedToRole,
     PermissionNotFound,
-    RoleAlreadyAssigned,
+    RoleAlreadyAssignedToUser,
     RoleAlreadyExists,
     RoleNotFound,
     RolePermissionNotFound,
@@ -72,7 +72,7 @@ class PermissionService:
 
             existing = self.user_role_repo.get(user_id, role_id)
             if existing:
-                raise RoleAlreadyAssigned()
+                raise RoleAlreadyAssignedToUser()
 
             self.user_role_repo.add(user_id, role_id)
 

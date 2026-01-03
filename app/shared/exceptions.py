@@ -87,7 +87,7 @@ class RoleNotAssignedToUser(Exception):
 class InvalidPermissionOperation(Exception):
     pass
 
-class UserRole(Exception):
+class UserRoleNotFound(Exception):
     pass
 
 

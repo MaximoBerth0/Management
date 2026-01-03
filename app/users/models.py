@@ -2,7 +2,6 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.sql import func
 
 from app.database.base import Base
-from app.shared.roles import Roles
 
 
 class User(Base):
@@ -22,4 +21,3 @@ class User(Base):
         onupdate=func.now(),
         nullable=True,
     )
-    role = Column(String(50), default=Roles.CLIENT, nullable=False) #This exists until permissions are complete

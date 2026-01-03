@@ -26,6 +26,22 @@ def list_users(
     return service.list_users(db)
 
 
+@router.get("/profile", response_model=schemas.UserOut)
+def get_profile(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+
+@router.put("/profile/update")
+def update_profile(
+    data: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return service.update_user(db, current_user.id, data)
+
 @router.delete("/{user_id}/delete")
 def delete_user(
     user_id: int,
@@ -70,19 +86,3 @@ def update_user(
     current_user: User = Depends(require_permission("users:update")),
 ):
     return service.update_user(db, user_id, data)
-
-
-@router.get("/profile")
-def get_profile(
-    current_user: User = Depends(get_current_user),
-):
-    return current_user
-
-
-@router.put("/profile/update")
-def update_profile(
-    data: schemas.UserUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return service.update_user(db, current_user.id, data)

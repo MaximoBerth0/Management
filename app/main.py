@@ -8,7 +8,7 @@ app = FastAPI(title=settings.APP_NAME)
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Management is running"}
 
 
