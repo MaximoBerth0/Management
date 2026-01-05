@@ -21,17 +21,27 @@ class UserRepository:
         stmt = select(User).offset(skip).limit(limit)
         return self.db.scalars(stmt).all()
 
-    def add(self, user: User) -> None:
+    def save(self, user: User) -> User:
         self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
 
     def delete(self, user: User) -> None:
         self.db.delete(user)
+        self.db.commit()
 
-    def set_active(self, user: User, is_active: bool) -> None:
+    def set_active(self, user: User, is_active: bool) -> User:
         user.is_active = is_active
+        self.db.commit()
+        self.db.refresh(user)
+        return user
 
-    def update_fields(self, user: User, data: dict) -> None:
+    def update_fields(self, user: User, data: dict) -> User:
         for field, value in data.items():
-            if not hasattr(user, field):
-                continue
-            setattr(user, field, value)
+            if hasattr(user, field):
+                setattr(user, field, value)
+
+        self.db.commit()
+        self.db.refresh(user)
+        return user

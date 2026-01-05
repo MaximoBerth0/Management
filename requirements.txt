@@ -3,6 +3,7 @@ uvicorn==0.40.0
 SQLAlchemy==2.0.45
 pydantic==2.12.5
 python-jose==3.5.0
-bcrypt==5.0.0
 httpx==0.28.1
 psycopg2-binary
+passlib==1.7.4
+bcrypt==3.2.2

@@ -15,4 +15,3 @@ def require_permission(permission_name: str):
         return current_user
 
     return dependency
-
