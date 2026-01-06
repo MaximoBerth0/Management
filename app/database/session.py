@@ -20,3 +20,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+"""
+The code below is for testing only.
+"""
+def create_db_engine():
+    return create_engine(settings.DATABASE_URL)
+
+engine = None
+SessionLocal = None
+
+def init_db():
+    global engine, SessionLocal
+    engine = create_db_engine()
+    SessionLocal = sessionmaker(bind=engine)
+
