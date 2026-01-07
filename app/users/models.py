@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.database.base import Base
@@ -21,3 +22,6 @@ class User(Base):
         onupdate=func.now(),
         nullable=True,
     )
+    refresh_token = relationship(
+        "RefreshToken",
+        back_populates="user")
