@@ -9,7 +9,7 @@ from app.users.service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(
     data: UserCreate,
     service: UserService = Depends(get_user_service),

@@ -13,7 +13,7 @@ class UserRepository:
     def get_by_id(self, user_id: int) -> Optional[User]:
         return self.db.get(User, user_id)
 
-    def get_by_email(self, email: str) -> Optional[User]:
+    def get_by_email(self, email: str) -> User | None:
         stmt = select(User).where(User.email == email)
         return self.db.scalar(stmt)
 

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 class UserBase(BaseModel):
     email: EmailStr
-    username: str = Field(min_length=8, max_length=50)
+    username: str = Field(min_length=3, max_length=50)
 
 class UserOut(UserBase):
     id: int

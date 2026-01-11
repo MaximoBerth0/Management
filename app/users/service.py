@@ -14,11 +14,11 @@ class UserService:
         self.user_repo = user_repo
 
     def create_user(self, data: UserCreate) -> User:
-        if self.user_repo.get_by_email(data.email):
+        if self.user_repo.get_by_email(str(data.email)):
             raise UserAlreadyExists("Email already registered")
 
         user = User(
-            email=data.email,
+            email=str(data.email),
             username=data.username,
             hashed_password=hash_password(data.password),
             is_active=True,
