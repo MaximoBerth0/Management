@@ -1,4 +1,4 @@
-`# Management API
+# Management API
 
 A modular, async backend built with FastAPI for **business management systems**.
 Designed with a layered architecture, clear separation of concerns, and scalability in mind.
@@ -17,13 +17,6 @@ The project follows a modular, layered, and decoupled architecture:
 - **Routers**: HTTP endpoints (FastAPI)
 
 Each module is independent and designed to scale.
-
-
-flowchart TD
-    A[Client] --> B[Router]
-    B --> C[Service]
-    C --> D[Repository]
-    D --> E[(Database)]
 
 ---
 
