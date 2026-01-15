@@ -1,9 +1,8 @@
-# Management API
+`# Management API
 
-Modular backend built with FastAPI for business management.
-Includes authentication, users, roles and permissions, inventory, orders,
-logistics, human resources, and reporting.
-This project is under active development. Additional modules will be implemented incrementally.
+A modular, async backend built with FastAPI for **business management systems**.
+Designed with a layered architecture, clear separation of concerns, and scalability in mind.
+The project is under active development, with modules added incrementally.
 
 ---
 
@@ -19,74 +18,90 @@ The project follows a modular, layered, and decoupled architecture:
 
 Each module is independent and designed to scale.
 
+
+flowchart TD
+    A[Client] --> B[Router]
+    B --> C[Service]
+    C --> D[Repository]
+    D --> E[(Database)]
+
+---
+
+## Key Characteristics
+- Async-first architecture
+- SQLAlchemy 2.0 ORM (typed models)
+- Clear separation: schemas, models, repositories, services, routers
+- Modular structure for long-term scalability
+- PostgreSQL as primary datastore
+
 ---
 
 ## Main Modules
 
 ### Authentication & Authorization
 - Login / logout
-- Refresh token
-- Password change and recovery
-- Roles and permissions (RBAC)
+- Refresh tokens
+- Password hashing and verification
+- JWT-based authentication
+- Role-based access control (RBAC)
 
 ### Users
-- User CRUD
-- User profile
+- User creation and management
 - Enable / disable accounts
-- Admin-only endpoints
+- Admin-level operations
+- Profile updates
 
-### Inventory
-- Items and categories
-- Stock movements
-- Audit logs
-
-### Orders & Logistics
-- Order management
-- Status handling and assignments
-- Deliveries and tracking
-
-### Human Resources
-- Employees
-- Schedules
-- Vacations and performance
-
-### Reports
-- Sales
+### Planned modules
 - Inventory
-- Data export
+- Orders & logistics
+- Human resources
+- Reporting & exports
 
 ---
 
-## Technologies
+## Tech stack
 
 - FastAPI
-- SQLAlchemy
+- SQLAlchemy 2.0 (async)
 - PostgreSQL
 - Alembic
-- JWT (python-jose)
-- Passlib (bcrypt)
+- Pydantic v2
+- python-jose (JWT)
+- Passlib (argon2)
 
 ---
 
-## Installation
-
+## Installation and setup
+### Clone the repository
 ```bash
 git clone https://github.com/your-username/Management.git
 cd Management
+```
 
+### Create and activate virtual environment
+```bash
 python -m venv .venv
 source .venv/bin/activate
+```
 
-pip install -r requirements.txt
+### install dependencies 
+```bash
+pip install -e .
+```
 
-Create a .env file with:
-DATABASE_URL=postgresql://user:password@localhost/dbname
+### Environment variables
+```bash
+DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
+
 SECRET_KEY=change-this
 APP_NAME=change-this
-#security:
+
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=15
 REFRESH_TOKEN_EXPIRE_DAYS=7
+```
 
-Run the aplicacion:
+### Running the application 
+```bash
 uvicorn app.main:app --reload
+```
