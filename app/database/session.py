@@ -1,37 +1,34 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from typing import AsyncGenerator
 
-from app.config import settings
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-engine = create_engine(
+from app.core.config import settings
+
+# Engine
+engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
-    echo=True,
+    echo=False,
+    future=True,
 )
 
-SessionLocal = sessionmaker(
+# Session factory
+AsyncSessionLocal = async_sessionmaker(
     bind=engine,
-    autocommit=False,
-    autoflush=False,
+    class_=AsyncSession,
+    expire_on_commit=False,
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Dependency
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
 
-"""
-The code below is for testing only.
-"""
-def create_db_engine():
-    return create_engine(settings.DATABASE_URL)
-
-engine = None
-SessionLocal = None
-
-def init_db():
-    global engine, SessionLocal
-    engine = create_db_engine()
-    SessionLocal = sessionmaker(bind=engine)
-
+# Init (startup)
+async def init_db() -> None:
+    # Placeholder for future checks / warmups
+    pass

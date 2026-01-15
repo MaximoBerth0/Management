@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from app.config import settings
+from app.core.config import settings
 from app.shared.exceptions import TokenExpired, TokenInvalid
 from jose import ExpiredSignatureError, JWTError, jwt
 

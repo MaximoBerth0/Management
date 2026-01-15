@@ -15,8 +15,21 @@ def get_auth_service(
     uow = UnitOfWork(db)
 
     return AuthService(
+        user_repo=UserRepository(db),
         refresh_token_repo=RefreshTokenRepository(db),
         password_reset_repo=PasswordResetTokenRepository(db),
-        user_repo=UserRepository(db),
         uow=uow,
     )
+
+class AuthService:
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        refresh_token_repo: RefreshTokenRepository,
+        password_reset_repo: PasswordResetTokenRepository,
+        uow: UnitOfWork,
+    ):
+        self.user_repo = user_repo
+        self.refresh_token_repo = refresh_token_repo
+        self.password_reset_repo = password_reset_repo
+        self.uow = uow

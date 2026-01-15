@@ -19,22 +19,29 @@ class RefreshTokenRepository:
         self.db.add(
             RefreshToken(
                 user_id=user_id,
-                token=token,
+                token_hash=token,
                 expires_at=expires_at,
-                revoked=False,
+                is_revoked=False,
             )
         )
 
+    def get_by_token(self, token: str) -> Optional[RefreshToken]:
+        stmt = select(RefreshToken).where(RefreshToken.token_hash == token)
+        return self.db.scalar(stmt)
+
     def get_active(self, token: str) -> Optional[RefreshToken]:
         stmt = select(RefreshToken).where(
-            RefreshToken.token == token,
-            RefreshToken.revoked.is_(False),
+            RefreshToken.token_hash == token,
+            RefreshToken.is_revoked.is_(False)
+
         )
         return self.db.scalar(stmt)
 
-    def revoke(self, token: str) -> None:
+    def revoke(self, token: RefreshToken) -> None:
         stmt = (
-            update(RefreshToken).where(RefreshToken.token == token).values(revoked=True)
+            update(RefreshToken)
+            .where(RefreshToken.id == token.id)
+            .values(is_revoked=True)
         )
         self.db.execute(stmt)
 
@@ -43,7 +50,8 @@ class RefreshTokenRepository:
             update(RefreshToken)
             .where(
                 RefreshToken.user_id == user_id,
-                RefreshToken.revoked.is_(False),
+                RefreshToken.is_revoked.is_(False)
+
             )
             .values(revoked=True)
         )

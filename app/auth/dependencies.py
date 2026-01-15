@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.shared.security.tokens import verify_access_token
+from app.core.security.tokens import verify_access_token
 from app.users.models import User
 from app.users.repository import UserRepository
 

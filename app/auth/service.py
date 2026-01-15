@@ -1,12 +1,24 @@
 from datetime import datetime, timedelta, timezone
 
+from app.core.security.passwords import (
+    verify_password,
+    hash_password,)
+
+from app.core.security.tokens import (create_access_token,
+                                      create_refresh_token,
+                                      )
+
+from app.shared.exceptions import (
+    InvalidCredentials,
+    TokenInvalid,
+    TokenExpired,
+)
+
 from app.auth.repositories.refresh_token import RefreshTokenRepository
-from app.config import settings
-from app.database.uow import UnitOfWork
-from app.shared.exceptions import InvalidCredentials, TokenExpired, TokenInvalid
-from app.shared.security.passwords import hash_password, verify_password
-from app.shared.security.tokens import create_access_token, create_refresh_token
 from app.users.repository import UserRepository
+
+from app.database.uow import UnitOfWork
+from app.core.config import settings
 
 
 class AuthService:
@@ -53,11 +65,12 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
         }
-    
+
     def logout(self, refresh_token: str) -> None:
         try:
             token = self.refresh_repo.get_by_token(refresh_token)
-            if not token:
+
+            if not token or token.is_revoked:
                 raise TokenInvalid()
 
             self.refresh_repo.revoke(token)
@@ -66,11 +79,11 @@ class AuthService:
         except Exception:
             self.uow.rollback()
             raise
-    
+
     def refresh_token(self, refresh_token: str) -> dict:
         token = self.refresh_repo.get_by_token(refresh_token)
 
-        if not token or token.revoked:
+        if not token or token.is_revoked:
             raise TokenInvalid()
 
         if token.expires_at < datetime.now(timezone.utc):
@@ -103,7 +116,7 @@ class AuthService:
             "refresh_token": new_refresh_token,
             "token_type": "bearer",
         }
-    
+
     def change_password(
         self,
         user_id: int,
@@ -147,26 +160,6 @@ class AuthService:
                 expires_at=expires_at,
             )
 
-            self.uow.commit()
-
-        except Exception:
-            self.uow.rollback()
-            raise
-
-    def reset_password(self, token: str, new_password: str) -> None:
-        reset_token = self.refresh_repo.get_by_token(token)
-
-        if not reset_token or reset_token.revoked:
-            raise TokenInvalid()
-
-        if reset_token.expires_at < datetime.now(timezone.utc):
-            raise TokenExpired()
-
-        try:
-            user = self.user_repo.get_by_id(reset_token.user_id)
-            user.hashed_password = hash_password(new_password)
-
-            self.refresh_repo.revoke_all_for_user(user.id)
             self.uow.commit()
 
         except Exception:

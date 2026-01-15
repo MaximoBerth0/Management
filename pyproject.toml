@@ -1,3 +1,40 @@
+[project]
+name = "management"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "gunicorn",
+
+  "sqlalchemy[asyncio]",
+  "asyncpg",
+  "alembic",
+
+  "pydantic",
+  "pydantic-settings",
+
+  "python-jose[cryptography]",
+  "passlib[argon2]",
+
+  "redis",
+  "celery",
+
+  "prometheus-client",
+  "sentry-sdk",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "httpx",
+  "factory-boy",
+  "ruff",
+]
+
+
 [tool.ruff]
 line-length = 88
 src = ["app"]

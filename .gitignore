@@ -9,7 +9,7 @@ __pycache__/
 venv/
 
 # Environment variables
-.env
+.env.example
 .env.*
 
 # IDEs

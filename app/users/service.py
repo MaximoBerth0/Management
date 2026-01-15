@@ -3,7 +3,7 @@ from app.shared.exceptions import (
     UserInactive,
     UserNotFound,
 )
-from app.shared.security.passwords import hash_password
+from app.core.security.passwords import hash_password
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas import UserCreate, UserUpdate
