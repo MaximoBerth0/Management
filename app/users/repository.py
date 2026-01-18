@@ -29,7 +29,7 @@ class UserRepository:
         await self.session.refresh(user)
         return user
 
-    async def delete(self, user: User) -> None:
+    async def delete(self, user: int) -> None:
         await self.session.delete(user)
         await self.session.commit()
 

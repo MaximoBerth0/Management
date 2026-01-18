@@ -59,3 +59,5 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+
+    role: Mapped[str] = mapped_column(nullable=False)

@@ -1,0 +1,22 @@
+
+Modulo Users
+client:
+- Crear e iniciar sesion
+- Ver su perfil
+
+driver:
+- Crear e iniciar sesion
+- Ver su perfil
+
+employee:
+- Crear e iniciar sesion
+- Ver usuarios que sean clientes
+- Ver su perfil
+
+- Crear e iniciar sesion
+- Listar todos los usuarios con sus roles y si estan activos
+- Ver info de un usuario en especifico
+- Habilitar o inabilitar usuarios
+- Ver su perfil
+- No puede modificar perfil de otros usuarios
+
