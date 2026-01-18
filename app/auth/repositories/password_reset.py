@@ -1,16 +1,17 @@
 from datetime import datetime
 from typing import Optional
 
-from app.auth.models import PasswordResetToken
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.models import PasswordResetToken
 
 
 class PasswordResetTokenRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create(
+    async def create(
         self,
         user_id: int,
         token: str,
@@ -24,18 +25,21 @@ class PasswordResetTokenRepository:
                 used=False,
             )
         )
+        await self.db.commit()
 
-    def get_valid(self, token: str) -> Optional[PasswordResetToken]:
+    async def get_valid(self, token: str) -> Optional[PasswordResetToken]:
         stmt = select(PasswordResetToken).where(
             PasswordResetToken.token == token,
             PasswordResetToken.used.is_(False),
         )
-        return self.db.scalar(stmt)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def invalidate(self, token: str) -> None:
+    async def invalidate(self, token: str) -> None:
         stmt = (
             update(PasswordResetToken)
             .where(PasswordResetToken.token == token)
             .values(used=True)
         )
-        self.db.execute(stmt)
+        await self.db.execute(stmt)
+        await self.db.commit()

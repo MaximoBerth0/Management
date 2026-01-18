@@ -4,9 +4,10 @@ from datetime import datetime, timedelta, timezone
 from app.core.config import settings
 from app.shared.exceptions import TokenExpired, TokenInvalid
 from jose import ExpiredSignatureError, JWTError, jwt
+import secrets
 
 """
-- create access and refresh JWT tokens.
+- create access JWT tokens.
 - verify access token and refresh token types.
 - decode JWT tokens.
 """
@@ -42,12 +43,8 @@ def create_access_token(user_id: int) -> str:
     )
 
 
-def create_refresh_token(user_id: int) -> str:
-    return create_token(
-        subject=str(user_id),
-        token_type="refresh",
-        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
-    )
+def generate_refresh_token() -> str:
+    return secrets.token_urlsafe(32)
 
 
 def decode_token(token: str) -> dict:
@@ -79,3 +76,7 @@ def verify_refresh_token(token: str) -> dict:
         raise TokenInvalid("incorrect token")
 
     return payload
+
+def generate_reset_token() -> str:
+    return secrets.token_urlsafe(32)
+

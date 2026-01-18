@@ -1,16 +1,17 @@
 from datetime import datetime
 from typing import Optional
 
-from app.auth.models import RefreshToken
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.models import RefreshToken
 
 
 class RefreshTokenRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create(
+    async def create(
         self,
         user_id: int,
         token: str,
@@ -24,35 +25,40 @@ class RefreshTokenRepository:
                 is_revoked=False,
             )
         )
+        await self.db.commit()
 
-    def get_by_token(self, token: str) -> Optional[RefreshToken]:
-        stmt = select(RefreshToken).where(RefreshToken.token_hash == token)
-        return self.db.scalar(stmt)
+    async def get_by_token(self, token: str) -> Optional[RefreshToken]:
+        stmt = select(RefreshToken).where(
+            RefreshToken.token_hash == token
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def get_active(self, token: str) -> Optional[RefreshToken]:
+    async def get_active(self, token: str) -> Optional[RefreshToken]:
         stmt = select(RefreshToken).where(
             RefreshToken.token_hash == token,
-            RefreshToken.is_revoked.is_(False)
-
+            RefreshToken.is_revoked.is_(False),
         )
-        return self.db.scalar(stmt)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def revoke(self, token: RefreshToken) -> None:
+    async def revoke(self, token_id: int) -> None:
         stmt = (
             update(RefreshToken)
-            .where(RefreshToken.id == token.id)
+            .where(RefreshToken.id == token_id)
             .values(is_revoked=True)
         )
-        self.db.execute(stmt)
+        await self.db.execute(stmt)
+        await self.db.commit()
 
-    def revoke_all_for_user(self, user_id: int) -> None:
+    async def revoke_all_for_user(self, user_id: int) -> None:
         stmt = (
             update(RefreshToken)
             .where(
                 RefreshToken.user_id == user_id,
-                RefreshToken.is_revoked.is_(False)
-
+                RefreshToken.is_revoked.is_(False),
             )
-            .values(revoked=True)
+            .values(is_revoked=True)
         )
-        self.db.execute(stmt)
+        await self.db.execute(stmt)
+        await self.db.commit()
