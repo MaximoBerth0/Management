@@ -43,3 +43,15 @@ class PasswordResetTokenRepository:
         )
         await self.db.execute(stmt)
         await self.db.commit()
+
+    async def invalidate_all_for_user(self, user_id: int) -> None:
+        stmt = (
+            update(PasswordResetToken)
+            .where(
+                PasswordResetToken.user_id == user_id,
+                PasswordResetToken.used.is_(False),
+            )
+            .values(used=True)
+        )
+        await self.db.execute(stmt)
+        await self.db.commit()
