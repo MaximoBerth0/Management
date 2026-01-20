@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.users.models import User
-from app.permissions.models import Role, Permission, UserRole, RolePermission
+from app.rbac.models import Role, Permission, UserRole, RolePermission
 from app.core.security.passwords import hash_password
 
 

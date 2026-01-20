@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.permissions.constants import SYSTEM_PERMISSIONS, SYSTEM_ROLES
-from app.permissions.models import Permission
-from app.permissions.repositories.permission_repo import PermissionRepository
-from app.permissions.repositories.role_permission_repo import RolePermissionRepository
-from app.permissions.repositories.role_repo import RoleRepository
+from app.rbac.constants import SYSTEM_PERMISSIONS, SYSTEM_ROLES
+from app.rbac.models import Permission
+from app.rbac.repositories.permission_repo import PermissionRepository
+from app.rbac.repositories.role_permission_repo import RolePermissionRepository
+from app.rbac.repositories.role_repo import RoleRepository
 
 
 def seed_permissions(db: Session):

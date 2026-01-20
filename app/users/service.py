@@ -109,7 +109,7 @@ class UserService:
         user_id: int,
     ) -> User:
         if current_user.role != UserRole.ADMIN.value:
-            raise PermissionDenied("Not enough permissions")
+            raise PermissionDenied("Not enough rbac")
 
         user = await self.repo.get_by_id(user_id)
         if not user:
@@ -124,7 +124,7 @@ class UserService:
         active: bool,
     ) -> User:
         if current_user.role != UserRole.ADMIN.value:
-            raise PermissionDenied("Not enough permissions")
+            raise PermissionDenied("Not enough rbac")
 
         user = await self.repo.get_by_id(user_id)
         if not user:

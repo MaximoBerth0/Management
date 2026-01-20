@@ -6,8 +6,8 @@ SYSTEM_PERMISSIONS = [
     "roles:delete",
 
     # role-permission
-    "roles:permissions:view",
-    "roles:permissions:update",
+    "roles:rbac:view",
+    "roles:rbac:update",
 
     # user-role
     "users:roles:view",

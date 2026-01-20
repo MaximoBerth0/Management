@@ -1,4 +1,4 @@
-from app.permissions.repositories.permission_repo import PermissionRepository
+from app.rbac.repositories.permission_repo import PermissionRepository
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -16,5 +16,5 @@ class PermissionAuthService:
         if permission_code not in permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions",
+                detail="Insufficient rbac",
             )

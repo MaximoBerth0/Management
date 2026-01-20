@@ -48,7 +48,7 @@ class UserInactive(UserError):
     pass
 
 
-"""permissions and roles errors"""
+"""rbac and roles errors"""
 
 
 class PermissionDenied(AppError):

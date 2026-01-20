@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends
 
 from app.auth.dependencies import get_current_user
-from app.permissions.schemas.permission import PermissionAssign
-from app.permissions.schemas.role import RoleCreate, RoleUpdate
-from app.permissions.schemas.user_role import AssignRole
-from app.permissions.services.permission_auth import PermissionAuthService
-from app.permissions.services.permission_service import PermissionService
+from app.rbac.schemas.permission import PermissionAssign
+from app.rbac.schemas.role import RoleCreate, RoleUpdate
+from app.rbac.schemas.user_role import AssignRole
+from app.rbac.services.permission_auth import PermissionAuthService
+from app.rbac.services.permission_service import PermissionService
 
 router = APIRouter(
-    prefix="/permissions",
+    prefix="/rbac",
     tags=["Permissions"],
 )
 
@@ -59,7 +59,7 @@ def list_role_permissions(
     auth: PermissionAuthService = Depends(),
     service: PermissionService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:permissions:view")
+    auth.require_permission(current_user.id, "roles:rbac:view")
     return service.list_role_permissions(role_id)
 
 @router.post("/roles/{role_id}/permissions")
@@ -70,7 +70,7 @@ def add_permission_to_role(
     auth: PermissionAuthService = Depends(),
     service: PermissionService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:permissions:update")
+    auth.require_permission(current_user.id, "roles:rbac:update")
     return service.add_permission_to_role(
         role_id=role_id,
         permission_id=payload.permission_id,
@@ -84,7 +84,7 @@ def remove_permission_from_role(
     auth: PermissionAuthService = Depends(),
     service: PermissionService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:permissions:update")
+    auth.require_permission(current_user.id, "roles:rbac:update")
     return service.remove_permission_from_role(role_id, permission_id)
 
 @router.get("/users/{user_id}/roles")

@@ -1,9 +1,9 @@
 from app.database.uow import UnitOfWork
-from app.permissions.models import Role
-from app.permissions.repositories.permission_repo import PermissionRepository
-from app.permissions.repositories.role_permission_repo import RolePermissionRepository
-from app.permissions.repositories.role_repo import RoleRepository
-from app.permissions.repositories.user_role_repo import UserRoleRepository
+from app.rbac.models import Role
+from app.rbac.repositories.permission_repo import PermissionRepository
+from app.rbac.repositories.role_permission_repo import RolePermissionRepository
+from app.rbac.repositories.role_repo import RoleRepository
+from app.rbac.repositories.user_role_repo import UserRoleRepository
 from app.shared.exceptions import (
     PermissionAlreadyAssignedToRole,
     PermissionNotFound,

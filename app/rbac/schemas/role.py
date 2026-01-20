@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.permissions.schemas.permission import PermissionRead
+from app.rbac.schemas.permission import PermissionRead
 
 
 class RoleRead(BaseModel):
