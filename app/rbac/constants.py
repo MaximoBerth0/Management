@@ -15,7 +15,7 @@ SYSTEM_PERMISSIONS = [
 ]
 
 SYSTEM_ROLES = {
-    "admin": SYSTEM_PERMISSIONS,
+    "admin": list(SYSTEM_PERMISSIONS),
     "employee": [
         "users:roles:view",
     ],

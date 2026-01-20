@@ -2,7 +2,7 @@ from fastapi import Depends
 
 from app.auth.dependencies import get_current_user
 from app.rbac.factory import get_permission_service
-from app.rbac.services.permission_service import PermissionService
+from app.rbac.services.rbac_service import PermissionService
 from app.users.models import User
 
 

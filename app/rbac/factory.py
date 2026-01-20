@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.rbac.repositories.role_repo import RoleRepository
-from app.rbac.services.permission_service import PermissionService
+from app.rbac.services.rbac_service import PermissionService
 
 
 def get_permission_service(

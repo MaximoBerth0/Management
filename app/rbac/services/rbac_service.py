@@ -1,4 +1,4 @@
-from app.database.uow import UnitOfWork
+from app.core.unit_of_work import UnitOfWork
 from app.rbac.models import Role
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
@@ -14,10 +14,8 @@ from app.shared.exceptions import (
     UserRoleNotFound,
 )
 
-"""
-This class executes the business logic
-"""
-class PermissionService:
+
+class RBACService:
     def __init__(
         self,
         role_repo: RoleRepository,

@@ -5,7 +5,7 @@ from app.rbac.schemas.permission import PermissionAssign
 from app.rbac.schemas.role import RoleCreate, RoleUpdate
 from app.rbac.schemas.user_role import AssignRole
 from app.rbac.services.permission_auth import PermissionAuthService
-from app.rbac.services.permission_service import PermissionService
+from app.rbac.services.rbac_service import PermissionService
 
 router = APIRouter(
     prefix="/rbac",
