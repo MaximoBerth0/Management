@@ -21,14 +21,6 @@ from app.mail.mailer import Mailer
 
 from app.core.config import settings
 
-"""
-login
-logout
-refresh_session
-forgot_password 
-reset_password 
-change_password 
-"""
 
 class AuthService:
     def __init__(
