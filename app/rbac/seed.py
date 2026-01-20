@@ -1,38 +1,60 @@
-from sqlalchemy.orm import Session
+"""
+RBAC seed script.
+
+This module initializes the base RBAC data:
+- system permissions
+- system roles
+- role-permission assignments
+
+It is intended to be executed:
+- during application bootstrap
+- after database migrations
+- in new environments or tests
+
+This file is NOT part of runtime business logic and
+should NOT be used inside request handlers.
+"""
+
 
 from app.rbac.constants import SYSTEM_PERMISSIONS, SYSTEM_ROLES
 from app.rbac.models import Permission
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
+from app.core.unit_of_work import UnitOfWork
 
 
-def seed_permissions(db: Session):
-    perm_repo = PermissionRepository(db)
+async def seed_permissions(uow: UnitOfWork) -> None:
+    async with uow as session:
+        perm_repo = PermissionRepository(session)
 
-    for name in SYSTEM_PERMISSIONS:
-        if not perm_repo.get_by_name(name):
-            perm_repo.create(Permission(name=name))
+        for code in SYSTEM_PERMISSIONS:
+            existing = await perm_repo.get_by_name(code)
+            if not existing:
+                await perm_repo.create(
+                    Permission(code=code, name=code)
+                )
 
-    db.commit()
+async def seed_roles(uow: UnitOfWork) -> None:
+    async with uow as session:
+        role_repo = RoleRepository(session)
+        perm_repo = PermissionRepository(session)
+        rp_repo = RolePermissionRepository(session)
 
-def seed_roles(db: Session):
-    role_repo = RoleRepository(db)
-    perm_repo = PermissionRepository(db)
-    rp_repo = RolePermissionRepository(db)
+        for role_name, perm_names in SYSTEM_ROLES.items():
+            role = await role_repo.get_or_create(role_name)
 
-    for role_name, perm_names in SYSTEM_ROLES.items():
-        role = role_repo.get_or_creat(role_name)
+            for perm_name in perm_names:
+                perm = await perm_repo.get_by_name(perm_name)
+                if not perm:
+                    continue
 
-        for perm_name in perm_names:
-            perm = perm_repo.get_by_name(perm_name)
-            if not perm:
-                continue  
+                await rp_repo.assign(role, perm)
 
-            rp_repo.assign(role, perm)
-    db.commit()
 
-def seed_all(db: Session):
-    seed_permissions(db)
-    seed_roles(db)
+async def seed_all(uow: UnitOfWork) -> None:
+    async with uow:
+        await seed_permissions(uow)
+        await seed_roles(uow)
+
 

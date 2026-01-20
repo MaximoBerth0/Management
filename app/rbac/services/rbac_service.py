@@ -12,6 +12,7 @@ from app.shared.exceptions import (
     RoleNotFound,
     RolePermissionNotFound,
     UserRoleNotFound,
+    PermissionDenied
 )
 
 
@@ -106,3 +107,17 @@ class RBACService:
                 raise RolePermissionNotFound()
 
             self.role_permission_repo.delete(role_permission)
+
+#for dependencies
+    async def require_permission(
+            self,
+            user_id: int,
+            permission_code: str,
+    ) -> None:
+        has_permission = await self.user_has_permission(
+            user_id=user_id,
+            permission_code=permission_code,
+        )
+
+        if not has_permission:
+            raise PermissionDenied()

@@ -6,10 +6,11 @@ class UnitOfWork:
         self.session = session
 
     async def __aenter__(self):
-        return self
+        return self.session
 
     async def __aexit__(self, exc_type, exc, tb):
         if exc:
             await self.session.rollback()
         else:
             await self.session.commit()
+
