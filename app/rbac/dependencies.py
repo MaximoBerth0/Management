@@ -26,15 +26,16 @@ async def get_rbac_service(
     )
 
 
-def require_permission(permission_code: str):
+def require_permission(permission_id: int):
     async def dependency(
         current_user: User = Depends(get_current_user),
         service: RBACService = Depends(get_rbac_service),
     ) -> User:
         await service.require_permission(
             user_id=current_user.id,
-            permission_code=permission_code,
+            permission_id=permission_id,
         )
         return current_user
 
     return dependency
+
