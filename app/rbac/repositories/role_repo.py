@@ -11,7 +11,7 @@ class RoleRepository:
     async def get_all(self) -> list[Role]:
         stmt = select(Role)
         result = await self.db.scalars(stmt)
-        return list(result.all())
+        return result.all()
     
     async def get_by_id(self, role_id: int) -> Role | None:
         stmt = select(Role).where(Role.id == role_id)
@@ -44,4 +44,5 @@ class RoleRepository:
 
     async def delete(self, role: Role) -> None:
         await self.db.delete(role)
+        await self.db.flush()
 

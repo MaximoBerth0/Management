@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.rbac.service import RBACService
-from app.rbac.dependencies import require_permission
+from app.rbac.dependencies import require_permission, get_rbac_service
 from app.rbac.schemas.role import RoleCreate, RoleUpdate
 from app.rbac.schemas.assign import PermissionAssign
 
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 async def create_role(
     data: RoleCreate,
-    service: RBACService = Depends(),
+    service: RBACService = Depends(get_rbac_service),
 ):
     return await service.create_role(data)
 
@@ -30,7 +30,7 @@ async def create_role(
 async def update_role(
     role_id: int,
     data: RoleUpdate,
-    service: RBACService = Depends(),
+    service: RBACService = Depends(get_rbac_service),
 ):
     return await service.update_role(role_id, data)
 
@@ -41,7 +41,7 @@ async def update_role(
 )
 async def delete_role(
     role_id: int,
-    service: RBACService = Depends(),
+    service: RBACService = Depends(get_rbac_service),
 ) -> None:
     await service.delete_role(role_id)
 
@@ -55,7 +55,7 @@ async def delete_role(
 async def assign_permission_to_role(
     role_id: int,
     data: PermissionAssign,
-    service: RBACService = Depends(),
+    service: RBACService = Depends(get_rbac_service),
 ):
     return await service.add_permission_to_role(
         role_id=role_id,
@@ -72,7 +72,7 @@ async def assign_permission_to_role(
 async def assign_role_to_user(
     user_id: int,
     role_id: int,
-    service: RBACService = Depends(),
+    service: RBACService = Depends(get_rbac_service),
 ):
     return await service.assign_role_to_user(
         user_id=user_id,

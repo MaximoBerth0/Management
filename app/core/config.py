@@ -3,6 +3,7 @@ from typing import List
 
 
 class Settings(BaseSettings):
+
     # App
     APP_NAME: str = "Management"
     ENV: str = "local"  # local | staging | production
