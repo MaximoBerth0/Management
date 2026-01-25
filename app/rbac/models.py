@@ -33,6 +33,7 @@ class Role(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_system: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(

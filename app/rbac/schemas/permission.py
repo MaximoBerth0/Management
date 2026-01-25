@@ -1,13 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-
-class PermissionRead(BaseModel):
+class PermissionResponse(BaseModel):
     id: int
-    name: str
+    code: str = Field(..., max_length=100)
+    description: str | None = None
 
-class PermissionCreate(BaseModel):
-    name: str
-
-class PermissionAssign(BaseModel):
-    permission_id: int
-  
+    class Config:
+        from_attributes = True

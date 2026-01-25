@@ -18,6 +18,11 @@ class PermissionRepository:
         result = await self.db.scalars(stmt)
         return result.first()
 
+    async def get_by_code(self, code: str) -> Permission | None:
+        stmt = select(Permission).where(Permission.code == code)
+        result = await self.db.scalars(stmt)
+        return result.first()
+
     async def get_by_name(self, name: str) -> Permission | None:
         stmt = select(Permission).where(Permission.name == name)
         result = await self.db.scalars(stmt)

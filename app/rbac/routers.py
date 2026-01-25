@@ -1,120 +1,80 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
-from app.rbac.schemas.permission import PermissionAssign
+from app.rbac.service import RBACService
+from app.rbac.dependencies import require_permission
 from app.rbac.schemas.role import RoleCreate, RoleUpdate
-from app.rbac.schemas.user_role import AssignRole
-from app.rbac.services.permission_auth import PermissionAuthService
-from app.rbac.services.rbac_service import PermissionService
+from app.rbac.schemas.assign import PermissionAssign
 
 router = APIRouter(
     prefix="/rbac",
-    tags=["Permissions"],
+    tags=["RBAC"],
 )
 
-@router.get("/roles")
-def list_roles(
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "roles:view")
-    return service.list_roles()
+#==== ROLES ====
 
-@router.post("/roles")
-def create_role(
-    payload: RoleCreate,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
+@router.post(
+    "/roles",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("role:create"))],
+)
+async def create_role(
+    data: RoleCreate,
+    service: RBACService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:create")
-    return service.create_role(payload)
+    return await service.create_role(data)
 
-@router.put("/roles/{role_id}")
-def update_role(
+@router.patch(
+    "/roles/{role_id}",
+    dependencies=[Depends(require_permission("role:update"))],
+)
+async def update_role(
     role_id: int,
-    payload: RoleUpdate,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
+    data: RoleUpdate,
+    service: RBACService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:update")
-    return service.update_role(role_id, payload)
+    return await service.update_role(role_id, data)
 
-@router.delete("/roles/{role_id}")
-def delete_role(
+@router.delete(
+    "/roles/{role_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("role:delete"))],
+)
+async def delete_role(
     role_id: int,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "roles:delete")
-    return service.delete_role(role_id)
+    service: RBACService = Depends(),
+) -> None:
+    await service.delete_role(role_id)
 
-@router.get("/roles/{role_id}/permissions")
-def list_role_permissions(
-    role_id: int,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "roles:rbac:view")
-    return service.list_role_permissions(role_id)
+#==== PERMISSION-ROLE ====
 
-@router.post("/roles/{role_id}/permissions")
-def add_permission_to_role(
+@router.post(
+    "/roles/{role_id}/permissions",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("role:assign_permission"))],
+)
+async def assign_permission_to_role(
     role_id: int,
-    payload: PermissionAssign,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
+    data: PermissionAssign,
+    service: RBACService = Depends(),
 ):
-    auth.require_permission(current_user.id, "roles:rbac:update")
-    return service.add_permission_to_role(
+    return await service.add_permission_to_role(
         role_id=role_id,
-        permission_id=payload.permission_id,
+        data=data,
     )
 
-@router.delete("/roles/{role_id}/permissions/{permission_id}")
-def remove_permission_from_role(
-    role_id: int,
-    permission_id: int,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "roles:rbac:update")
-    return service.remove_permission_from_role(role_id, permission_id)
+#==== ROLE-USER ====
 
-@router.get("/users/{user_id}/roles")
-def list_user_roles(
-    user_id: int,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "users:roles:view")
-    return service.list_user_roles(user_id)
-
-@router.post("/users/{user_id}/roles")
-def assign_role_to_user(
-    user_id: int,
-    payload: AssignRole,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
-):
-    auth.require_permission(current_user.id, "users:roles:update")
-    return service.assign_role_to_user(user_id, payload.role_id)
-
-@router.delete("/users/{user_id}/roles/{role_id}")
-def remove_role_from_user(
+@router.post(
+    "/users/{user_id}/roles/{role_id}",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("user:assign_role"))],
+)
+async def assign_role_to_user(
     user_id: int,
     role_id: int,
-    current_user = Depends(get_current_user),
-    auth: PermissionAuthService = Depends(),
-    service: PermissionService = Depends(),
+    service: RBACService = Depends(),
 ):
-    auth.require_permission(current_user.id, "users:roles:update")
-    return service.remove_role_from_user(user_id, role_id)
+    return await service.assign_role_to_user(
+        user_id=user_id,
+        role_id=role_id,
+    )

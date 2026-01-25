@@ -14,6 +14,8 @@ from app.shared.exceptions import (
     UserRoleNotFound,
     PermissionDenied
 )
+from app.rbac.schemas.role import RoleCreate, RoleUpdate
+from app.rbac.schemas.assign import PermissionAssign
 
 
 class RBACService:
@@ -32,16 +34,17 @@ class RBACService:
         self.uow = uow
 
 #roles
-    async def create_role(self, name: str):
-        async with self.uow as uow:
-            role_repo = RoleRepository(uow.session)
-
-            if await role_repo.get_by_name(name):
+    async def create_role(self, data: RoleCreate) -> Role:
+        async with self.uow:
+            if await self.role_repo.get_by_name(data.name):
                 raise RoleAlreadyExists()
 
-            role = Role(name=name)
-            await role_repo.create(role)
+            role = Role(
+                name=data.name,
+                description=data.description,
+            )
 
+            await self.role_repo.create(role)
             return role
 
     async def delete_role(self, role_id: int):
@@ -52,21 +55,25 @@ class RBACService:
 
             await self.role_repo.delete(role)
 
-    async def update_role(self, role_id: int, name: str) -> Role:
+    async def update_role(self, role_id: int, data: RoleUpdate) -> Role:
         async with self.uow:
             role = await self.role_repo.get_by_id(role_id)
             if not role:
                 raise RoleNotFound()
 
-            existing = await self.role_repo.get_by_name(name)
-            if existing and existing.id != role_id:
-                raise RoleAlreadyExists()
+            if data.name:
+                existing = await self.role_repo.get_by_name(data.name)
+                if existing and existing.id != role_id:
+                    raise RoleAlreadyExists()
+                role.name = data.name
 
-            role.name = name
+            if data.description is not None:
+                role.description = data.description
+
             return role
 
     async def list_roles(self):
-        return self.role_repo.get_all()
+        return await self.role_repo.get_all()
 
 #role-user
     async def assign_role_to_user(self, user_id: int, role_id: int):
@@ -90,21 +97,27 @@ class RBACService:
             await self.user_role_repo.delete(user_role)
 
 #role-permission
-    async def add_permission_to_role(self, role_id: int, permission_id: int):
+    async def add_permission_to_role(
+            self,
+            role_id: int,
+            data: PermissionAssign,
+    ):
         async with self.uow:
             role = await self.role_repo.get_by_id(role_id)
             if not role:
                 raise RoleNotFound()
 
-            permission = await self.permission_repo.get_by_id(permission_id)
+            permission = await self.permission_repo.get_by_id(data.permission_id)
             if not permission:
                 raise PermissionNotFound()
 
-            existing = await self.role_permission_repo.get(role_id, permission_id)
+            existing = await self.role_permission_repo.get(
+                role_id, data.permission_id
+            )
             if existing:
                 raise PermissionAlreadyAssignedToRole()
 
-            await self.role_permission_repo.add(role_id, permission_id)
+            await self.role_permission_repo.add(role_id, data.permission_id)
 
     async def remove_permission_from_role(self, role_id: int, permission_id: int):
         async with self.uow:
@@ -141,7 +154,3 @@ class RBACService:
     ) -> None:
         if not await self.user_has_permission(user_id, permission_id):
             raise PermissionDenied()
-
-
-
-

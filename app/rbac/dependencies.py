@@ -9,7 +9,8 @@ from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.user_role_repo import UserRoleRepository
-from app.rbac.services.rbac_service import RBACService
+from app.rbac.service import RBACService
+from app.shared.exceptions import PermissionNotFound
 
 
 async def get_rbac_service(
@@ -26,16 +27,22 @@ async def get_rbac_service(
     )
 
 
-def require_permission(permission_id: int):
+def require_permission(permission_code: str):
     async def dependency(
         current_user: User = Depends(get_current_user),
         service: RBACService = Depends(get_rbac_service),
     ) -> User:
+        permission = await service.permission_repo.get_by_code(permission_code)
+        if not permission:
+            raise PermissionNotFound()
+
         await service.require_permission(
             user_id=current_user.id,
-            permission_id=permission_id,
+            permission_id=permission.id,
         )
+
         return current_user
 
     return dependency
+
 
