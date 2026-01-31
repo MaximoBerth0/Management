@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
-from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -22,14 +21,7 @@ class Settings(BaseSettings):
     PASSWORD_HASH_SCHEME: str = "argon2"
 
     # CORS
-    CORS_ALLOW_ORIGINS: str = ""
-
-    @property
-    def cors_origins(self) -> list[str]:
-        if not self.CORS_ALLOW_ORIGINS:
-            return []
-        return [o.strip() for o in self.CORS_ALLOW_ORIGINS.split(",")]
-
+    CORS_ALLOW_ORIGINS: List[str] = []
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: List[str] = ["*"]
     CORS_ALLOW_HEADERS: List[str] = ["*"]
@@ -49,6 +41,7 @@ class Settings(BaseSettings):
     GUNICORN_WORKERS: int = 2
 
     model_config = SettingsConfigDict(
+        env_file=".env.example",
         case_sensitive=True,
     )
 

@@ -1,7 +1,10 @@
 # Management API
 
-A modular, async backend built with FastAPI for **business management systems**.
-Designed with a layered architecture, clear separation of concerns, and scalability in mind.
+A modular, async backend built with **FastAPI** for business management systems.
+
+Designed with a **clean layered architecture**, strong separation of concerns, and
+infrastructure-ready configuration (Docker, PostgreSQL, Redis).
+
 The project is under active development, with modules added incrementally.
 
 ---
@@ -11,25 +14,28 @@ The project is under active development, with modules added incrementally.
 The project follows a modular, layered, and decoupled architecture:
 
 - **Schemas**: data validation and serialization (Pydantic)
-- **Models**: ORM models (SQLAlchemy)
-- **Repository**: data access layer
-- **Service**: business logic
+- **Models**: ORM models (SQLAlchemy 2.0)
+- **Repositories**: data access layer
+- **Services**: business logic
 - **Routers**: HTTP endpoints (FastAPI)
 
-Each module is independent and designed to scale.
+Each module is isolated and designed for long-term scalability.
 
 ---
 
-## Key Characteristics
+## Key characteristics
+
 - Async-first architecture
-- SQLAlchemy 2.0 ORM (typed models)
+- SQLAlchemy 2.0 (typed, async ORM)
 - Clear separation: schemas, models, repositories, services, routers
-- Modular structure for long-term scalability
+- Modular structure for incremental growth
+- Docker-based development environment
 - PostgreSQL as primary datastore
+- Redis for background jobs and caching
 
 ---
 
-## Main Modules
+## Main modules
 
 ### Authentication & Authorization
 - Login / logout
@@ -44,8 +50,14 @@ Each module is independent and designed to scale.
 - Admin-level operations
 - Profile updates
 
+### Inventory
+- Product and category management
+- Stock tracking and adjustments
+- Stock movement history (audit)
+- Warehouse / location support
+- RBAC-controlled operations
+
 ### Planned modules
-- Inventory
 - Orders & logistics
 - Human resources
 - Reporting & exports
@@ -57,44 +69,65 @@ Each module is independent and designed to scale.
 - FastAPI
 - SQLAlchemy 2.0 (async)
 - PostgreSQL
+- Redis
 - Alembic
 - Pydantic v2
 - python-jose (JWT)
 - Passlib (argon2)
+- Docker & Docker Compose
 
 ---
 
-## Installation and setup
+## Installation & setup (recommended: Docker)
+
+### Prerequisites
+- Docker
+- Docker Compose
+
 ### Clone the repository
 ```bash
 git clone https://github.com/your-username/Management.git
 cd Management
 ```
+### Environment variables
+#### .env example: 
+```bash
+APP_NAME=Management
+ENV=local
+DEBUG=true
 
-### Create and activate virtual environment
+DATABASE_URL=postgresql+asyncpg://management:management@db:5432/management
+
+JWT_PRIVATE_KEY=dev-private
+JWT_PUBLIC_KEY=dev-public
+
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://redis:6379/1
+CELERY_RESULT_BACKEND=redis://redis:6379/2
+
+CORS_ALLOW_ORIGINS=http://localhost:3000
+```
+### Run the application
+```bash
+docker compose up --build
+```
+#### The API will be available at:
+```bash
+http://localhost:8000
+```
+#### Swagger UI:
+```bash
+http://localhost:8000/docs
+```
+
+### Local development (optional, without Docker)
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-### install dependencies 
-```bash
 pip install -e .
-```
-
-### Environment variables
-```bash
-DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
-
-SECRET_KEY=change-this
-APP_NAME=change-this
-
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=15
-REFRESH_TOKEN_EXPIRE_DAYS=7
-```
-
-### Running the application 
-```bash
 uvicorn app.main:app --reload
 ```
+- Note: when running locally, you must provide your own PostgreSQL and Redis instances.
