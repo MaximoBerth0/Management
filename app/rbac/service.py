@@ -4,16 +4,7 @@ from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.repositories.user_role_repo import UserRoleRepository
-from app.shared.exceptions import (
-    PermissionAlreadyAssignedToRole,
-    PermissionNotFound,
-    RoleAlreadyAssignedToUser,
-    RoleAlreadyExists,
-    RoleNotFound,
-    RolePermissionNotFound,
-    UserRoleNotFound,
-    PermissionDenied
-)
+from app.shared.exceptions.rbac_errors import RoleNotFound, RoleAlreadyExists, RoleAlreadyAssignedToUser, PermissionNotFound, PermissionAlreadyAssigned, RolePermissionNotFound, UserRoleNotFound, PermissionDenied
 from app.rbac.schemas.role import RoleCreate, RoleUpdate
 from app.rbac.schemas.assign import PermissionAssign
 
@@ -115,7 +106,7 @@ class RBACService:
                 role_id, data.permission_id
             )
             if existing:
-                raise PermissionAlreadyAssignedToRole()
+                raise PermissionAlreadyAssigned()
 
             await self.role_permission_repo.add(role_id, data.permission_id)
 

@@ -7,11 +7,7 @@ from app.core.security.passwords import (
 
 from app.core.security.tokens import (create_access_token, generate_refresh_token, generate_reset_token)
 
-from app.shared.exceptions import (
-    InvalidCredentials,
-    TokenInvalid,
-    TokenExpired,
-)
+from app.shared.exceptions.auth_errors import InvalidCredentials, TokenExpired, TokenInvalid
 
 from app.auth.repositories.refresh_token import RefreshTokenRepository
 from app.auth.repositories.password_reset import PasswordResetTokenRepository

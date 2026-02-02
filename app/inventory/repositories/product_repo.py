@@ -35,9 +35,10 @@ class ProductRepository:
         )
 
     async def list(self) -> list[Product]:
-        stmt = select(Product).where(Product.is_active_(True))
+        stmt = select(Product).where(Product.is_active.is_(True))
         result = await self.db.scalars(stmt)
-        return result.all()
+        products: list[Product] = list(result.all())
+        return products
 
     async def update(self, product: Product) -> Product:
         self.db.add(product)

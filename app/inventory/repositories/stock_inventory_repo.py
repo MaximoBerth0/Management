@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
 from typing import Optional, List
-from app.inventory.models import
+from sqlalchemy import select, update
+from sqlalchemy.engine import ScalarResult
 
 from app.inventory.models import (
-    StockInventory,
+    InventoryStock,
     StockReservation,
 )
 
@@ -13,38 +13,51 @@ class StockInventoryRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # ======================================================
-    # Inventory (estado del stock)
-    # ======================================================
-
     async def get_by_product_id(
-        self,
-        product_id: int
-    ) -> Optional[StockInventory]:
-        """
-        Devuelve el estado de stock de un producto
-        """
-        ...
+            self,
+            product_id: int
+    ) -> Optional[InventoryStock]:
+
+        stmt = (
+            select(InventoryStock)
+            .where(InventoryStock.product_id == product_id)
+        )
+
+        result: ScalarResult[InventoryStock] = await self.db.scalars(stmt)
+        return result.first()
 
     async def create_inventory(
         self,
-        inventory: StockInventory
-    ) -> StockInventory:
-        """
-        Crea el registro de inventario para un producto
-        """
-        ...
+        inventory: InventoryStock
+    ) -> InventoryStock:
+        self.db.add(inventory)
+        await self.db.flush()
+        return inventory
 
-    async def increase(
-        self,
-        *,
-        product_id: int,
-        amount: int
+    async def increase_available_stock(
+            self,
+            *,
+            product_id: int,
+            location_id: int,
+            amount: int
     ) -> None:
-        """
-        Incrementa el stock total
-        """
-        ...
+        stmt = (
+            update(InventoryStock)
+            .where(
+                InventoryStock.product_id == product_id,
+                InventoryStock.location_id == location_id,
+            )
+            .values(
+                quantity_available=InventoryStock.quantity_available + amount
+            )
+        )
+
+        result = await self.db.execute(stmt)
+
+        if result.rowcount == 0:
+            raise InventoryNotFound(
+                f"Stock not found for product={product_id} location={location_id}"
+            )
 
     async def decrease(
         self,
@@ -67,10 +80,7 @@ class StockInventoryRepository:
         """
         ...
 
-    # ======================================================
     # Reservations
-    # ======================================================
-
     async def reserve(
         self,
         *,

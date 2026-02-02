@@ -13,7 +13,7 @@ from app.auth.schemas import (
     ChangePasswordRequest,
 )
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login", response_model=TokenResponse)

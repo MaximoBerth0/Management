@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
@@ -8,10 +9,9 @@ from app.database.session import init_db
 
 from app.auth.routers import router as auth_router
 from app.users.routers import router as users_router
-from app.rbac.routers import router as permissions_router
+from app.rbac.routers import router as rbac_router
 
-from app.shared.exceptions import UserAlreadyExists
-from app.shared.handlers import user_already_exists_handler
+from app.shared.exceptions.core_errors import AppError
 
 
 @asynccontextmanager
@@ -35,13 +35,18 @@ app.add_middleware(
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
 
-# Exception handlers
-app.add_exception_handler(
-    UserAlreadyExists,
-    user_already_exists_handler,
-)
+# Exception handler
+@app.exception_handler(AppError)
+async def app_error_handler(request, exc: AppError):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": exc.__class__.__name__,
+            "detail": str(exc),
+        },
+    )
 
 # Routers
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(permissions_router, prefix="/rbac", tags=["rbac"])
+app.include_router(users_router)
+app.include_router(auth_router)
+app.include_router(rbac_router)
