@@ -140,7 +140,6 @@ class StockMovement(Base):
 
     stock: Mapped["InventoryStock"] = relationship(back_populates="movements")
 
-
 # reservations
 
 class StockReservation(Base):
