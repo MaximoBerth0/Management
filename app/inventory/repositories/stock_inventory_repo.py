@@ -1,14 +1,22 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from sqlalchemy import select, update, func
-from sqlalchemy.engine import ScalarResult
 
 from app.inventory.models import (
     InventoryStock,
-    StockReservation, StockReservationStatus, StockMovement, StockMovementType,
+    StockMovement,
+    StockMovementType,
+    StockReservation,
+    StockReservationStatus,
 )
-from app.shared.exceptions.inventory_errors import InventoryDBError, InsufficientStock, StockNotFound, ReservationInactive, ReservationNotExists
-
+from app.shared.exceptions.inventory_errors import (
+    InsufficientStock,
+    InventoryDBError,
+    ReservationInactive,
+    ReservationNotExists,
+    StockNotFound,
+)
+from sqlalchemy import func, select, update
+from sqlalchemy.engine import ScalarResult
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class StockInventoryRepository:

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
 
-from app.rbac.service import RBACService
-from app.rbac.dependencies import require_permission, get_rbac_service
-from app.rbac.schemas.role import RoleCreate, RoleUpdate
+from app.rbac.dependencies import get_rbac_service, require_permission
 from app.rbac.schemas.assign import PermissionAssign
+from app.rbac.schemas.role import RoleCreate, RoleUpdate
+from app.rbac.service import RBACService
 
 router = APIRouter(
     prefix="/rbac",

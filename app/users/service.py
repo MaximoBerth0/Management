@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.exceptions.user_errors import UserAlreadyExists, UserNotFound
-from app.shared.exceptions.rbac_errors import PermissionDenied, InvalidRole
-from app.users.repository import UserRepository
-from app.users.models import User
-from app.users.schemas import UserCreate, UserUpdate
-from app.users.constants import UserRole
 from app.core.security.passwords import hash_password, verify_password
+from app.shared.exceptions.rbac_errors import InvalidRole, PermissionDenied
+from app.shared.exceptions.user_errors import UserAlreadyExists, UserNotFound
+from app.users.constants import UserRole
+from app.users.models import User
+from app.users.repository import UserRepository
+from app.users.schemas import UserCreate, UserUpdate
 
 
 class UserService:

@@ -16,12 +16,12 @@ should NOT be used inside request handlers.
 """
 
 
+from app.core.unit_of_work import UnitOfWork
 from app.rbac.constants import SYSTEM_PERMISSIONS, SYSTEM_ROLES
 from app.rbac.models import Permission
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
-from app.core.unit_of_work import UnitOfWork
 
 
 async def seed_permissions(uow: UnitOfWork) -> None:

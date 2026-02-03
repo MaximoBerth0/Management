@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
+from app.auth.models import RefreshToken
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.auth.models import RefreshToken
 
 
 class RefreshTokenRepository:

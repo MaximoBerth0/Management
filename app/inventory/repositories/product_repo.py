@@ -1,6 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from app.inventory.models import Product
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
 

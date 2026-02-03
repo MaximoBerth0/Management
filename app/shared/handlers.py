@@ -1,6 +1,7 @@
+from app.shared.exceptions import UserAlreadyExists
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.shared.exceptions import UserAlreadyExists
+
 
 def user_already_exists_handler(request: Request, exc: UserAlreadyExists):
     return JSONResponse(

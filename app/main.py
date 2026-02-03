@@ -1,17 +1,15 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.core.config import settings
-from app.database.session import init_db
+from fastapi.responses import JSONResponse
 
 from app.auth.routers import router as auth_router
-from app.users.routers import router as users_router
+from app.core.config import settings
+from app.database.session import init_db
 from app.rbac.routers import router as rbac_router
-
 from app.shared.exceptions.core_errors import AppError
+from app.users.routers import router as users_router
 
 
 @asynccontextmanager

@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+
 class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

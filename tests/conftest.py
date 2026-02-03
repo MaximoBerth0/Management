@@ -1,16 +1,14 @@
 import pytest
+from app.core.security.passwords import hash_password
 from app.database.base import Base
 from app.database.session import get_db
 from app.main import app
+from app.rbac.models import Permission, Role, RolePermission, UserRole
+from app.users.models import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from app.users.models import User
-from app.rbac.models import Role, Permission, UserRole, RolePermission
-from app.core.security.passwords import hash_password
-
-
 
 engine = create_engine(
     "sqlite://",

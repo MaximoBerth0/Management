@@ -1,6 +1,5 @@
 from app.shared.exceptions.core_errors import AppError
 
-
 # -------- Permissions --------
 
 class PermissionError(AppError):

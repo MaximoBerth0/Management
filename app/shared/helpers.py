@@ -1,5 +1,5 @@
-from app.shared.exceptions import RoleNotFound
 from app.rbac.models import Role
+from app.shared.exceptions import RoleNotFound
 
 
 async def _get_role_or_fail(self, role_id: int) -> Role:
