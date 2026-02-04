@@ -9,6 +9,20 @@ class InventoryError(AppError):
 class InventoryDBError(InventoryError):
     pass
 
+# products
+
+class ProductAlreadyExists(InventoryError):
+    pass
+
+class ProductNotFound(InventoryError):
+    pass
+
+class ProductAlreadyInactive(InventoryError):
+    pass
+
+class ProductSkuAlreadyExists(InventoryError):
+    pass
+
 # stock
 
 class InsufficientStock(InventoryError):

@@ -9,7 +9,7 @@ from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.repositories.user_role_repo import UserRoleRepository
 from app.rbac.service import RBACService
-from app.shared.exceptions import PermissionNotFound
+from app.shared.exceptions.rbac_errors import PermissionNotFound
 from app.users.models import User
 
 

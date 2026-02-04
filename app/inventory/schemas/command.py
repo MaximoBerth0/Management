@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from app.inventory.models.enums import StockMovementType
 
 
@@ -10,6 +10,12 @@ class CreateProductCommand(BaseModel):
 class DeactivateProductCommand(BaseModel):
     product_id: int
     reason: str | None = None
+
+
+class UpdateProductCommand(BaseModel):
+    product_id: int
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    sku: str | None = Field(default=None, min_length=1, max_length=100)
 
 
 class ProductDTO(BaseModel):
