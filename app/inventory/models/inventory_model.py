@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from app.database.base import Base
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -10,12 +9,13 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    func,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.inventory.models.enums import StockMovementType, StockReservationStatus
 
+from app.database.base import Base
+from app.inventory.models.enums import StockMovementType, StockReservationStatus
 
 # product
 
