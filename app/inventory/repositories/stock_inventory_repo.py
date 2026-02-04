@@ -1,12 +1,11 @@
 from typing import Optional
 
-from app.inventory.models import (
+from app.inventory.models.inventory_model import (
     InventoryStock,
     StockMovement,
-    StockMovementType,
     StockReservation,
-    StockReservationStatus,
 )
+from app.inventory.models.enums import StockReservationStatus, StockMovementType
 from app.shared.exceptions.inventory_errors import (
     InsufficientStock,
     InventoryDBError,

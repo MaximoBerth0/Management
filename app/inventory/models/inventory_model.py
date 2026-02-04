@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 
 from app.database.base import Base
 from sqlalchemy import (
@@ -12,23 +11,10 @@ from sqlalchemy import (
     String,
     Text,
     func,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-# enums (It's only used in databases)
-
-class StockMovementType(str, Enum):
-    IN = "in"
-    OUT = "out"
-    ADJUST = "adjust"
-    RESERVE = "reserve"
-    RELEASE = "release"
-
-
-class StockReservationStatus(str, Enum):
-    ACTIVE = "active"
-    RELEASED = "released"
-    CONFIRMED = "confirmed"
+from app.inventory.models.enums import StockMovementType, StockReservationStatus
 
 
 # product
@@ -41,9 +27,8 @@ class Product(Base):
     sku: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    stock: Mapped["InventoryStock"] = relationship(
+    stocks: Mapped[list["InventoryStock"]] = relationship(
         back_populates="product",
-        uselist=False,
         cascade="all, delete-orphan",
     )
 
@@ -70,7 +55,13 @@ class InventoryLocation(Base):
 
 class InventoryStock(Base):
     __tablename__ = "inventory_stock"
+
     __table_args__ = (
+        UniqueConstraint(
+            "product_id",
+            "location_id",
+            name="uq_stock_product_location",
+        ),
         CheckConstraint(
             "quantity_available >= 0",
             name="ck_stock_available_non_negative",
@@ -85,7 +76,6 @@ class InventoryStock(Base):
 
     product_id: Mapped[int] = mapped_column(
         ForeignKey("inventory_products.id", ondelete="CASCADE"),
-        unique=True,
         nullable=False,
     )
 
@@ -97,7 +87,7 @@ class InventoryStock(Base):
     quantity_available: Mapped[int] = mapped_column(Integer, default=0)
     quantity_reserved: Mapped[int] = mapped_column(Integer, default=0)
 
-    product: Mapped["Product"] = relationship(back_populates="stock")
+    product: Mapped["Product"] = relationship(back_populates="stocks")
     location: Mapped["InventoryLocation"] = relationship(back_populates="stock_items")
 
     movements: Mapped[list["StockMovement"]] = relationship(
@@ -110,6 +100,13 @@ class InventoryStock(Base):
 
 class StockMovement(Base):
     __tablename__ = "inventory_stock_movements"
+    __table_args__ = (
+        CheckConstraint(
+            "quantity > 0",
+            name="ck_stock_movement_quantity_positive",
+        )
+
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -171,3 +168,10 @@ class StockReservation(Base):
     )
 
     product: Mapped["Product"] = relationship(back_populates="reservations")
+
+    location_id: Mapped[int] = mapped_column(
+        ForeignKey("inventory_locations.id"),
+        nullable=False,
+    )
+
+    location: Mapped["InventoryLocation"] = relationship()

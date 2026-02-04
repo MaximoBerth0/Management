@@ -1,4 +1,4 @@
-from app.inventory.models import Product
+from app.inventory.models.inventory_model import Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
