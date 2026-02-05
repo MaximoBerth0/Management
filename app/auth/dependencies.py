@@ -8,7 +8,7 @@ from app.auth.service import AuthService
 from app.core.security.tokens import verify_access_token
 from app.database.session import get_session
 from app.mail.mailer import Mailer
-from app.shared.exceptions import TokenExpired, TokenInvalid
+from app.shared.exceptions.auth_errors import TokenExpired, TokenInvalid
 from app.users.models import User
 from app.users.repository import UserRepository
 
