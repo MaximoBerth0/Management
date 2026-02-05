@@ -31,6 +31,9 @@ class InsufficientStock(InventoryError):
 class StockNotFound(InventoryError):
     pass
 
+class InvalidRelease(InventoryError):
+    pass
+
 # reservations
 
 class ReservationNotExists(InventoryError):
