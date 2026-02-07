@@ -11,7 +11,7 @@ class RoleRepository:
     async def get_all(self) -> list[Role]:
         stmt = select(Role)
         result = await self.db.scalars(stmt)
-        return result.all()
+        return list(result.all())
     
     async def get_by_id(self, role_id: int) -> Role | None:
         stmt = select(Role).where(Role.id == role_id)
@@ -28,15 +28,23 @@ class RoleRepository:
         await self.db.flush()
         return role
 
-    async def get_or_create(self, name: str) -> Role:
+    async def get_or_create(
+            self,
+            name: str,
+            *,
+            is_system: bool = False,
+            description: str | None = None,
+    ) -> Role:
         role = await self.get_by_name(name)
         if role:
             return role
 
-        role = Role(name=name)
-        self.db.add(role)
-        await self.db.flush()
-        return role
+        role = Role(
+            name=name,
+            is_system=is_system,
+            description=description,
+        )
+        return await self.create(role)
 
     async def update(self, role: Role) -> Role:
         await self.db.flush()
