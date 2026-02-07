@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.inventory.models.inventory_model import Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,11 +36,18 @@ class ProductRepository:
             select(Product).where(Product.name == product_name)
         )
 
-    async def list(self) -> list[Product]:
-        stmt = select(Product).where(Product.is_active.is_(True))
+    async def list(
+            self,
+            *,
+            is_active: Optional[bool] = None,
+    ) -> list[Product]:
+        stmt = select(Product)
+
+        if is_active is not None:
+            stmt = stmt.where(Product.is_active.is_(is_active))
+
         result = await self.db.scalars(stmt)
-        products: list[Product] = list(result.all())
-        return products
+        return list(result.all())
 
     async def update(self, product: Product) -> Product:
         self.db.add(product)

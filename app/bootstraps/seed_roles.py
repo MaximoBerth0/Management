@@ -1,9 +1,8 @@
-from app.core.unit_of_work import UnitOfWork
 from app.core.constants.system_roles import SYSTEM_ROLES
-
-from app.rbac.repositories.role_repo import RoleRepository
+from app.core.unit_of_work import UnitOfWork
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_permission_repo import RolePermissionRepository
+from app.rbac.repositories.role_repo import RoleRepository
 
 
 async def seed_roles(uow: UnitOfWork) -> None:

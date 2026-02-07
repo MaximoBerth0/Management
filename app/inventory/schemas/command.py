@@ -1,17 +1,13 @@
-from pydantic import BaseModel, Field
-from app.inventory.models.enums import StockMovementType
 from datetime import datetime
-from app.inventory.models.enums import StockReservationStatus
+
+from app.inventory.models.enums import StockMovementType, StockReservationStatus
+from pydantic import BaseModel, Field
 
 # ==== inputs ====
 
 class CreateProductCommand(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     sku: str = Field(min_length=1, max_length=100)
-
-
-class DeactivateProductCommand(BaseModel):
-    product_id: int
 
 
 class UpdateProductCommand(BaseModel):

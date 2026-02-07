@@ -1,9 +1,8 @@
 import asyncio
 
-from app.core.unit_of_work import UnitOfWork
 from app.bootstraps.seed_permissions import seed_permissions
 from app.bootstraps.seed_roles import seed_roles
-
+from app.core.unit_of_work import UnitOfWork
 
 
 async def seed_all():

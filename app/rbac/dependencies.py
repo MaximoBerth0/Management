@@ -16,7 +16,7 @@ from app.users.models import User
 async def get_rbac_service(
     db: AsyncSession = Depends(get_session),
 ) -> RBACService:
-    uow = UnitOfWork(db)
+    uow = UnitOfWork()
 
     return RBACService(
         role_repo=RoleRepository(db),

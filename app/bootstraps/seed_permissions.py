@@ -1,10 +1,8 @@
+from app.core.constants.inventory_permissions import INVENTORY_PERMISSIONS
+from app.core.constants.system_permissions import SYSTEM_PERMISSIONS
 from app.core.unit_of_work import UnitOfWork
 from app.rbac.models import Permission
 from app.rbac.repositories.permission_repo import PermissionRepository
-
-from app.core.constants.system_permissions import SYSTEM_PERMISSIONS
-from app.core.constants.inventory_permissions import INVENTORY_PERMISSIONS
-
 
 ALL_PERMISSIONS = set(
     SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS

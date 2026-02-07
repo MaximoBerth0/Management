@@ -1,6 +1,8 @@
 
 """
 PRODUCT:
+get_product()
+list_products()
 create_product()
 deactivate_product()
 update_product()
@@ -14,16 +16,51 @@ release_reservation()
 confirm_reservation()
 
 to be added in the future:
-- list products
 - list reservations
 """
 
-from app.inventory.models.inventory_model import Product, StockMovement, StockMovementType, StockReservationStatus, StockReservation
-from app.inventory.repositories.stock_inventory_repo import StockInventoryRepository
-from app.inventory.repositories.product_repo import ProductRepository
+from typing import List, Optional
+
 from app.core.unit_of_work import UnitOfWork
-from app.inventory.schemas.command import CreateProductCommand, ProductDTO, DeactivateProductCommand,UpdateProductCommand, CreateStockMovementCommand, StockMovementDTO, CreateReservationCommand, ReservationDTO, ReleaseReservationCommand, ConfirmReservationCommand
-from app.shared.exceptions.inventory_errors import ProductAlreadyExists, ProductNotFound, ProductAlreadyInactive, ProductSkuAlreadyExists, InsufficientStock, ReservationInactive
+from app.inventory.models.inventory_model import (
+    Product,
+    StockMovement,
+    StockMovementType,
+    StockReservation,
+    StockReservationStatus,
+)
+from app.inventory.repositories.product_repo import ProductRepository
+from app.inventory.repositories.stock_inventory_repo import StockInventoryRepository
+from app.inventory.schemas.command import (
+    ConfirmReservationCommand,
+    CreateProductCommand,
+    CreateReservationCommand,
+    CreateStockMovementCommand,
+    ProductDTO,
+    ReleaseReservationCommand,
+    ReservationDTO,
+    StockMovementDTO,
+    UpdateProductCommand,
+)
+from app.shared.exceptions.inventory_errors import (
+    InsufficientStock,
+    ProductAlreadyExists,
+    ProductAlreadyInactive,
+    ProductNotFound,
+    ProductSkuAlreadyExists,
+    ReservationInactive,
+)
+
+
+#internal helper
+def to_product_dto(product: Product) -> ProductDTO:
+    return ProductDTO(
+        id=product.id,
+        name=product.name,
+        sku=product.sku,
+        is_active=bool(product.is_active),
+    )
+
 
 class InventoryService:
     def __init__(
@@ -38,6 +75,15 @@ class InventoryService:
 
 # Product
 
+    async def get_product(self, *, product_id: int) -> ProductDTO:
+        async with self.uow:
+            product = await self.product_repo.get_by_id(product_id)
+
+            if not product:
+                raise ProductNotFound()
+
+            return to_product_dto(product)
+
     async def create_product(self, cmd: CreateProductCommand):
         async with self.uow:
             if await self.product_repo.get_by_sku(cmd.sku):
@@ -50,20 +96,11 @@ class InventoryService:
 
             await self.product_repo.create(product)
 
-            return ProductDTO(
-                id=product.id,
-                name=product.name,
-                sku=product.sku,
-                is_active=product.is_active,
-            )
+            return to_product_dto(product)
 
-    async def deactivate_product(
-            self,
-            cmd: DeactivateProductCommand,
-    ) -> ProductDTO:
+    async def deactivate_product(self, *, product_id: int) -> None:
         async with self.uow:
-
-            product = await self.product_repo.get_by_id(cmd.product_id)
+            product = await self.product_repo.get_by_id(product_id)
 
             if not product:
                 raise ProductNotFound()
@@ -72,13 +109,6 @@ class InventoryService:
                 raise ProductAlreadyInactive()
 
             product.is_active = False
-
-            return ProductDTO(
-                id=product.id,
-                name=product.name,
-                sku=product.sku,
-                is_active=bool(product.is_active),
-            )
 
     async def update_product(
             self,
@@ -102,12 +132,22 @@ class InventoryService:
                     raise ProductSkuAlreadyExists()
                 product.sku = cmd.sku
 
-            return ProductDTO(
-                id=product.id,
-                name=product.name,
-                sku=product.sku,
-                is_active=product.is_active,
+            return to_product_dto(product)
+
+    async def list_products(
+            self,
+            *,
+            is_active: Optional[bool] = None,
+    ) -> List[ProductDTO]:
+        async with self.uow:
+            products = await self.product_repo.list(
+                is_active=is_active
             )
+
+            return [
+                to_product_dto(product)
+                for product in products
+            ]
 
     async def create_stock_movement(
         self,

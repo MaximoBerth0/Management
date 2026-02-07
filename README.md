@@ -114,6 +114,11 @@ CORS_ALLOW_ORIGINS=http://localhost:3000
 ```bash
 docker compose up --build
 ```
+
+### Run bootstrap (to initialize system data such as 'permissions' and 'roles')
+```bash
+docker compose exec api python -m app.bootstraps.seed_all
+```
 #### The API will be available at:
 ```bash
 http://localhost:8000

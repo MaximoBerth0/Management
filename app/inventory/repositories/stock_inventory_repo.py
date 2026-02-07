@@ -1,16 +1,15 @@
 from typing import Optional
 
-from sqlalchemy import func, select
-from sqlalchemy.engine import ScalarResult
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.inventory.models.enums import StockReservationStatus
 from app.inventory.models.inventory_model import (
     InventoryStock,
     StockMovement,
     StockReservation,
 )
-from app.shared.exceptions.inventory_errors import StockNotFound, ReservationNotExists
+from app.shared.exceptions.inventory_errors import ReservationNotExists, StockNotFound
+from sqlalchemy import func, select
+from sqlalchemy.engine import ScalarResult
+from sqlalchemy.ext.asyncio import AsyncSession
 
 """
 functions are pure persistence + locking (without business logic): 
