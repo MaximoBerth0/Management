@@ -1,11 +1,11 @@
 # Management API
 
-A modular, async backend built with **FastAPI** for business management systems.
+A modular, async backend built with **FastAPI**, focused on **backoffice systems for businesses and companies**.
 
-Designed with a **clean layered architecture**, strong separation of concerns, and
-infrastructure-ready configuration (Docker, PostgreSQL, Redis).
+Designed to support real-world business workflows such as user management, roles and permissions, inventory, orders, and internal operations, following a **clean layered architecture** with a strong separation of concerns.
 
-The project is under active development, with modules added incrementally.
+The project is infrastructure-ready, with support for **Docker**, **PostgreSQL**, and **Redis**, and is developed incrementally with new modules added over time.
+
 
 ---
 
@@ -27,7 +27,7 @@ Each module is isolated and designed for long-term scalability.
 
 - Async-first architecture
 - SQLAlchemy 2.0 (typed, async ORM)
-- Clear separation: schemas, models, repositories, services, routers
+- Testing (pytest) with sqlite-in-memory
 - Modular structure for incremental growth
 - Docker-based development environment
 - PostgreSQL as primary datastore
@@ -74,6 +74,7 @@ Each module is isolated and designed for long-term scalability.
 - Pydantic v2
 - python-jose (JWT)
 - Passlib (argon2)
+- Pytest
 - Docker & Docker Compose
 
 ---
