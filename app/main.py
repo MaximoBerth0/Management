@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.auth.routers import router as auth_router
 from app.core.config import settings
 from app.database.session import init_db
+from app.inventory.router import router as inventory_router
 from app.rbac.routers import router as rbac_router
 from app.shared.exceptions.core_errors import AppError
 from app.users.routers import router as users_router
@@ -35,7 +36,7 @@ app.add_middleware(
 
 # Exception handler
 @app.exception_handler(AppError)
-async def app_error_handler(request, exc: AppError):
+async def app_error_handler(exc: AppError):
     return JSONResponse(
         status_code=400,
         content={
@@ -48,3 +49,4 @@ async def app_error_handler(request, exc: AppError):
 app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(rbac_router)
+app.include_router(inventory_router)

@@ -14,7 +14,7 @@ INVENTORY_PERMISSIONS = [
 
     # reservations
     "reservations:view",
-    "reservations:create",
-    "reservations:update",
-    "reservations:cancel",
+    "reservations:reserve",
+    "reservations:release",
+    "reservations:confirm",
 ]

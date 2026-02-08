@@ -104,7 +104,7 @@ class StockMovement(Base):
         CheckConstraint(
             "quantity > 0",
             name="ck_stock_movement_quantity_positive",
-        )
+        ),
 
     )
 
