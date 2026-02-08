@@ -5,7 +5,7 @@ from app.shared.exceptions.user_errors import UserAlreadyExists, UserNotFound
 from app.shared.exceptions.rbac_errors import PermissionDenied
 from app.users.models import User
 from app.users.repository import UserRepository
-from app.users.schemas import UserCreate, UserUpdate
+from app.users.schemas.command import CreateUserCommand, UpdateUserCommand
 
 
 class UserService:
@@ -14,7 +14,7 @@ class UserService:
         self.repo = UserRepository(session)
 
 
-    async def register_user(self, data: UserCreate) -> User:
+    async def register_user(self, data: CreateUserCommand) -> User:
         existing = await self.repo.get_by_email(str(data.email))
         if existing:
             raise UserAlreadyExists("User with this email already exists")
@@ -33,7 +33,7 @@ class UserService:
     async def update_profile(
         self,
         current_user: User,
-        data: UserUpdate,
+        data: UpdateUserCommand,
     ) -> User:
         update_data = data.model_dump(exclude_unset=True)
 

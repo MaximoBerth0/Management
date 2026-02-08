@@ -1,30 +1,28 @@
-from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
-
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from datetime import datetime
 
 
 class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-class UserBase(BaseModel):
+
+class UserCreateRequest(BaseModel):
     email: EmailStr
     username: str = Field(min_length=3, max_length=150)
-
-class UserCreate(UserBase):
     password: str = Field(min_length=8)
 
-class UserUpdate(BaseModel):
+
+class UserUpdateRequest(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = Field(default=None, min_length=3, max_length=150)
 
-class UserUpdateAdmin(BaseModel):
-    email: Optional[EmailStr] = None
-    username: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_superuser: Optional[bool] = None
 
-class UserRead(ORMModel):
+class UserStatusUpdateRequest(BaseModel):
+    is_active: bool
+
+
+class UserReadResponse(ORMModel):
     id: int
     email: EmailStr
     username: str
@@ -32,14 +30,10 @@ class UserRead(ORMModel):
     is_superuser: bool
     created_at: datetime
 
-class UserListItem(ORMModel):
+
+class UserListItemResponse(ORMModel):
     id: int
     email: EmailStr
     username: str
     is_active: bool
     is_superuser: bool
-
-class UserStatusUpdate(BaseModel):
-    is_active: bool
-
-
