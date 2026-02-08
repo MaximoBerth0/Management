@@ -9,6 +9,7 @@ from app.database.base import Base
 
 if TYPE_CHECKING:
     from app.auth.models import RefreshToken
+    from app.rbac.models import Role
 
 
 class User(Base):
@@ -64,4 +65,8 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
-    role: Mapped[str] = mapped_column(nullable=False)
+    roles: Mapped[list["Role"]] = relationship(
+        secondary="user_roles",
+        back_populates="users",
+        lazy="selectin",
+    )

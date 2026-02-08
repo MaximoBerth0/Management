@@ -1,9 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security.passwords import hash_password, verify_password
-from app.shared.exceptions.rbac_errors import InvalidRole, PermissionDenied
+from app.core.security.passwords import hash_password
 from app.shared.exceptions.user_errors import UserAlreadyExists, UserNotFound
-from app.users.constants import UserRole
+from app.shared.exceptions.rbac_errors import PermissionDenied
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas import UserCreate, UserUpdate
@@ -14,14 +13,8 @@ class UserService:
         self.session = session
         self.repo = UserRepository(session)
 
-    async def register_user(
-        self,
-        data: UserCreate,
-        role: UserRole,
-    ) -> User:
-        if role not in {UserRole.CLIENT, UserRole.DRIVER}:
-            raise InvalidRole("Role not allowed for public registration")
 
+    async def register_user(self, data: UserCreate) -> User:
         existing = await self.repo.get_by_email(str(data.email))
         if existing:
             raise UserAlreadyExists("User with this email already exists")
@@ -30,23 +23,12 @@ class UserService:
             email=str(data.email),
             username=data.username,
             hashed_password=hash_password(data.password),
-            role=str(role.value),
             is_active=True,
         )
 
         await self.repo.save(user)
         return user
 
-    async def authenticate_user(self, email: str, password: str) -> User:
-        user = await self.repo.get_by_email(email)
-
-        if not user or not verify_password(password, user.hashed_password):
-            raise UserNotFound("Invalid email or password")
-
-        if not user.is_active:
-            raise PermissionDenied("User is inactive")
-
-        return user
 
     async def update_profile(
         self,
@@ -60,10 +42,10 @@ class UserService:
 
         forbidden_fields = {
             "id",
-            "role",
             "is_active",
             "is_superuser",
             "created_at",
+            "updated_at",
         }
 
         safe_data = {
@@ -80,16 +62,12 @@ class UserService:
             data=safe_data,
         )
 
-    # admin only
+
     async def list_users(
         self,
-        current_user: User,
         skip: int = 0,
         limit: int = 100,
     ) -> list[User]:
-        if current_user.role != UserRole.ADMIN.value:
-            raise PermissionDenied("You do not have permission to list users")
-
         limit = min(limit, 100)
 
         users = await self.repo.list(
@@ -101,12 +79,8 @@ class UserService:
 
     async def get_user(
         self,
-        current_user: User,
         user_id: int,
     ) -> User:
-        if current_user.role != UserRole.ADMIN.value:
-            raise PermissionDenied("Not enough rbac")
-
         user = await self.repo.get_by_id(user_id)
         if not user:
             raise UserNotFound("User not found")
@@ -119,9 +93,6 @@ class UserService:
         user_id: int,
         active: bool,
     ) -> User:
-        if current_user.role != UserRole.ADMIN.value:
-            raise PermissionDenied("Not enough rbac")
-
         user = await self.repo.get_by_id(user_id)
         if not user:
             raise UserNotFound("User not found")
