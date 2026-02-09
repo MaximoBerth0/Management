@@ -1,4 +1,4 @@
-from app.rbac.models import Role
+from app.rbac.models.main_model import Role
 from app.shared.exceptions import RoleNotFound
 
 

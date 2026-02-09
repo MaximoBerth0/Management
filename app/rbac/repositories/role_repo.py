@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.rbac.models import Role
+from app.rbac.models.main_model import Role
 
 
 class RoleRepository:

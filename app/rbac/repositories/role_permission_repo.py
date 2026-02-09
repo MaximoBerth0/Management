@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.rbac.models import Permission, Role, RolePermission
+from app.rbac.models.main_model import Permission, Role, RolePermission
 
 
 class RolePermissionRepository:

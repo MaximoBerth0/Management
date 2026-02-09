@@ -1,15 +1,13 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database.base import Base
-
-if TYPE_CHECKING:
-    from app.auth.models import RefreshToken
-    from app.rbac.models import Role
+from app.auth.models import RefreshToken
+from app.rbac.models.main_model import Role
+from app.rbac.models.tables import user_roles
 
 
 class User(Base):
@@ -66,7 +64,8 @@ class User(Base):
     )
 
     roles: Mapped[list["Role"]] = relationship(
-        secondary="user_roles",
+        "Role",
+        secondary=user_roles,
         back_populates="users",
         lazy="selectin",
     )
