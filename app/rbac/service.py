@@ -1,11 +1,7 @@
 from app.core.unit_of_work import UnitOfWork
 from app.rbac.models.main_model import Role
 from app.rbac.repositories.permission_repo import PermissionRepository
-from app.rbac.repositories.role_permission_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
-from app.rbac.repositories.user_role_repo import UserRoleRepository
-from app.rbac.schemas.assign import PermissionAssign
-from app.rbac.schemas.role import RoleCreate, RoleUpdate
 from app.shared.exceptions.rbac_errors import (
     PermissionAlreadyAssigned,
     PermissionDenied,
@@ -147,10 +143,4 @@ class RBACService:
 
         return False
 
-    async def require_permission(
-            self,
-            user_id: int,
-            permission_id: int,
-    ) -> None:
-        if not await self.user_has_permission(user_id, permission_id):
-            raise PermissionDenied()
+#    async def require_permission(self, user: User, permission: Permission):

@@ -5,21 +5,21 @@ from app.rbac.models.main_model import Role
 
 
 class RoleRepository:
-    def __init__ (self, db:AsyncSession):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
     async def get_all(self) -> list[Role]:
         stmt = select(Role)
         result = await self.db.scalars(stmt)
         return list(result.all())
-    
+
     async def get_by_id(self, role_id: int) -> Role | None:
         stmt = select(Role).where(Role.id == role_id)
         result = await self.db.scalars(stmt)
         return result.first()
 
-    async def get_by_name(self, name: str) -> Role | None:
-        stmt = select(Role).where(Role.name == name)
+    async def get_by_code(self, code: str) -> Role | None:
+        stmt = select(Role).where(Role.code == code)
         result = await self.db.scalars(stmt)
         return result.first()
 
@@ -28,29 +28,10 @@ class RoleRepository:
         await self.db.flush()
         return role
 
-    async def get_or_create(
-            self,
-            name: str,
-            *,
-            is_system: bool = False,
-            description: str | None = None,
-    ) -> Role:
-        role = await self.get_by_name(name)
-        if role:
-            return role
-
-        role = Role(
-            name=name,
-            is_system=is_system,
-            description=description,
-        )
-        return await self.create(role)
-
-    async def update(self, role: Role) -> Role:
-        await self.db.flush()
-        return role
-
     async def delete(self, role: Role) -> None:
         await self.db.delete(role)
-        await self.db.flush()
+
+#    async def get_user_with_roles_and_permissions(self):
+
+
 

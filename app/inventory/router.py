@@ -48,7 +48,9 @@ from app.inventory.schemas.responses import (
     StockReservationOut,
 )
 from app.inventory.service import InventoryService
-from app.rbac.dependencies import get_current_user, require_permission
+from app.rbac.dependencies import require_permission
+from app.auth.dependencies import get_current_user
+
 
 router = APIRouter(
     prefix="/inventory",
