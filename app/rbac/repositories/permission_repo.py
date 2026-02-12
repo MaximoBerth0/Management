@@ -36,6 +36,25 @@ class PermissionRepository:
     async def delete(self, permission: Permission) -> None:
         await self.db.delete(permission)
 
+    async def user_has_permission(
+            self,
+            user_id: int,
+            permission_id: int,
+    ) -> bool:
+        stmt = (
+            select(RolePermission.role_id)
+            .join(
+                UserRole,
+                UserRole.role_id == RolePermission.role_id,
+            )
+            .where(
+                UserRole.user_id == user_id,
+                RolePermission.permission_id == permission_id,
+            )
+            .limit(1)
+        )
 
+        result = await self.db.scalar(stmt)
+        return result is not None
 
 
