@@ -113,7 +113,7 @@ class RBACService:
 
     async def add_permission_to_role(
         self,
-        role_id: int,
+        role_id,
         data: AddPermissionToRoleDTO,
     ):
         async with self.uow:
@@ -156,19 +156,21 @@ class RBACService:
     # permission checks
 
     async def user_has_permission(
-        self,
-        data: PermissionCheckDTO,
-    ) -> PermissionCheckResponseDTO:
+            self,
+            user_id: int,
+            permission_code: str,
+    ) -> bool:
+        async with self.uow:
+            user = await self.role_repo.get_user_with_roles_and_permissions(
+                user_id
+            )
 
-        has_permission = await self.permission_repo.user_has_permission(
-            user_id=data.user_id,
-            permission_id=data.permission_id,
-        )
+            if not user:
+                return False
 
-        return PermissionCheckResponseDTO(
-            has_permission=has_permission
-        )
+            for role in user.roles:
+                for permission in role.permissions:
+                    if permission.code == permission_code:
+                        return True
 
-
-
-#    async def require_permission(self, user: User, permission: Permission):
+            return False

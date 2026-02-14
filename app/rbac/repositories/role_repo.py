@@ -1,7 +1,9 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.rbac.models.main_model import Role
+from app.users.models import User
 from app.rbac.models.tables import user_roles, role_permissions
 
 
@@ -100,7 +102,22 @@ class RoleRepository:
         await self.db.execute(stmt)
 
 
-#    async def get_user_with_roles_and_permissions(self):
+    async def get_user_with_roles_and_permissions(
+            self,
+            user_id: int,
+    ):
+        stmt = (
+            select(User)
+            .where(User.id == user_id)
+            .options(
+                selectinload(User.roles)
+                .selectinload(Role.permissions)
+            )
+        )
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
 
 
 

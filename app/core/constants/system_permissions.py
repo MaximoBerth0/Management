@@ -3,13 +3,12 @@ SYSTEM_PERMISSIONS = [
     "roles:view",
     "roles:create",
     "roles:update",
-    "roles:delete",
 
     # role-permission
-    "roles:rbac:view",
-    "roles:rbac:update",
+    "role:assign_permission"
+    "role:remove_permission"
 
     # user-role
-    "users:roles:view",
-    "users:roles:update",
+    "users:assign_role"
+    "users:remove_role"
 ]

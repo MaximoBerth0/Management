@@ -26,7 +26,7 @@ class RemoveRoleFromUserDTO(BaseModel):
 
 class PermissionCheckDTO(BaseModel):
     user_id: int
-    permission_id: int
+    permission_code: int
 
 
 class AddPermissionToRoleDTO(BaseModel):

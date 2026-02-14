@@ -1,0 +1,3 @@
+rbac/dependencies: okay
+rbac/service (user_has_permission): okay
+rbac/repositories/role_repo: pending
