@@ -7,7 +7,7 @@ from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.service import RBACService
 from app.auth.dependencies import get_current_user
-from app.users.models import User
+from app.shared.exceptions.rbac_errors import PermissionDenied
 
 
 async def get_rbac_service(
@@ -23,21 +23,23 @@ async def get_rbac_service(
 
 
 def require_permission(permission_code: str):
-    async def dependency(
-        current_user: User = Depends(get_current_user),
-        service: RBACService = Depends(get_rbac_service),
-    ):
-        has_permission = await service.user_has_permission(
-            user_id=current_user.id,
-            permission_code=permission_code,
-        )
 
-        if not has_permission:
+    async def dependency(
+        current_user = Depends(get_current_user),
+        rbac_service: RBACService = Depends(get_rbac_service),
+    ):
+        try:
+            await rbac_service.ensure_permission(
+                user_id=current_user.id,
+                permission_code=permission_code,
+            )
+        except PermissionDenied:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied",
+                detail="Not enough permissions",
             )
 
     return dependency
+
 
 

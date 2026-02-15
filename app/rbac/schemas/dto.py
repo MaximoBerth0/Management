@@ -24,11 +24,6 @@ class RemoveRoleFromUserDTO(BaseModel):
     role_id: int
 
 
-class PermissionCheckDTO(BaseModel):
-    user_id: int
-    permission_code: int
-
-
 class AddPermissionToRoleDTO(BaseModel):
     permission_id: int
 
@@ -48,7 +43,4 @@ class RoleResponseDTO(BaseModel):
         "from_attributes": True  # allows ORM → DTO
     }
 
-
-class PermissionCheckResponseDTO(BaseModel):
-    has_permission: bool
 

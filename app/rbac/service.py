@@ -8,8 +8,6 @@ from app.rbac.schemas.dto import (
     RoleResponseDTO,
     AssignRoleToUserDTO,
     AddPermissionToRoleDTO,
-    PermissionCheckDTO,
-    PermissionCheckResponseDTO,
     RemoveRoleFromUserDTO,
     RemovePermissionFromRoleDTO,
 )
@@ -21,8 +19,8 @@ from app.shared.exceptions.rbac_errors import (
     RoleNotFound,
     RolePermissionNotFound,
     UserRoleNotFound,
+    PermissionDenied,
 )
-
 
 class RBACService:
     def __init__(
@@ -155,22 +153,26 @@ class RBACService:
 
     # permission checks
 
-    async def user_has_permission(
+    async def ensure_permission(
             self,
             user_id: int,
             permission_code: str,
-    ) -> bool:
+    ) -> None:
         async with self.uow:
             user = await self.role_repo.get_user_with_roles_and_permissions(
                 user_id
             )
 
             if not user:
-                return False
+                raise PermissionDenied()
 
-            for role in user.roles:
-                for permission in role.permissions:
-                    if permission.code == permission_code:
-                        return True
+            has_permission = any(
+                permission.code == permission_code
+                for role in user.roles
+                for permission in role.permissions
+            )
 
-            return False
+            if not has_permission:
+                raise PermissionDenied()
+
+
