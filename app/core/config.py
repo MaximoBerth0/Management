@@ -14,9 +14,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     # Security /Auth
-    JWT_ALGORITHM: str = "RS256"
-    JWT_PRIVATE_KEY: str
-    JWT_PUBLIC_KEY: str
+    SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     PASSWORD_HASH_SCHEME: str = "argon2"

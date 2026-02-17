@@ -9,6 +9,7 @@ from app.rbac.schemas.api import (
 )
 from app.rbac.schemas.dto import RoleCreateDTO, RoleUpdateDTO, AddPermissionToRoleDTO, AssignRoleToUserDTO, RemovePermissionFromRoleDTO, RemoveRoleFromUserDTO
 from app.rbac.service import RBACService
+from app.rbac.dependencies import require_permission
 
 router = APIRouter(
     prefix="/rbac",

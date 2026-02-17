@@ -11,6 +11,7 @@ venv/
 # Environment variables
 .env.example
 .env
+.env.test
 
 # IDEs
 .vscode/
