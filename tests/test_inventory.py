@@ -15,7 +15,7 @@ async def test_create_product_without_permission(client, db_session):
     user = User(
         username="testuser",
         email="test@test.com",
-        hashed_password=hash_password("123456"),
+        hashed_password=hash_password("fj8f835jfefue9df"),
     )
 
     user.roles.append(role)
@@ -28,7 +28,7 @@ async def test_create_product_without_permission(client, db_session):
         "/auth/login",
         json={
             "email": "test@test.com",
-            "password": "123456"
+            "password": "fj8f835jfefue9df"
         }
     )
 
@@ -37,7 +37,7 @@ async def test_create_product_without_permission(client, db_session):
     token = response.json()["access_token"]
 
     response = await client.post(
-        "/products",
+        "inventory/products",
         headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "new_product",

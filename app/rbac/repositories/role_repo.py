@@ -115,8 +115,9 @@ class RoleRepository:
             )
         )
 
-        result = await self.session.execute(stmt)
+        result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
 
 
 
