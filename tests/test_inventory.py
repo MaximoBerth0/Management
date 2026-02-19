@@ -23,7 +23,6 @@ async def test_create_product_without_permission(client, db_session):
     db_session.add(user)
     await db_session.commit()
 
-    # Login SOLO con email + password
     response = await client.post(
         "/auth/login",
         json={
