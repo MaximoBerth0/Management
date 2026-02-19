@@ -70,11 +70,13 @@ class AuthService:
 
         await self.refresh_repo.revoke(token.id)
 
-
     async def refresh_session(self, refresh_token: str) -> dict:
         token = await self.refresh_repo.get_active(refresh_token)
 
-        if not token or token.expires_at < datetime.now(timezone.utc):
+        if not token:
+            raise TokenExpired("Invalid refresh token.")
+
+        if token.expires_at < datetime.now(timezone.utc):
             raise TokenExpired("Invalid refresh token.")
 
         await self.refresh_repo.revoke(token.id)
@@ -97,7 +99,6 @@ class AuthService:
             "refresh_token": new_refresh_token,
             "token_type": "bearer",
         }
-
 
     async def forgot_password(self, email: str) -> None:
         user = await self.user_repo.get_by_email(email)

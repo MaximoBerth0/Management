@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -36,7 +36,7 @@ app.add_middleware(
 
 # Exception handler
 @app.exception_handler(AppError)
-async def app_error_handler(exc: AppError):
+async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=400,
         content={

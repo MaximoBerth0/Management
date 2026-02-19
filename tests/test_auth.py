@@ -42,3 +42,43 @@ async def test_login_success(db_session):
     assert result["refresh_token"] is not None
     assert result["token_type"] == "bearer"
 
+
+@pytest.mark.asyncio
+async def test_refresh_token_rotation(client, db_session):
+
+    await client.post(
+        "/users/register",
+        json={
+            "email": "test@test.com",
+            "username": "testuser",
+            "password": "fj8f835jfefue9df"
+        }
+    )
+
+    login_response = await client.post(
+        "/auth/login",
+        json={
+            "email": "test@test.com",
+            "password": "fj8f835jfefue9df"
+        }
+    )
+
+    assert login_response.status_code == 200
+    tokens = login_response.json()
+
+    refresh_token_1 = tokens["refresh_token"]
+
+    refresh_response = await client.post(
+        "/auth/refresh",
+        json={"refresh_token": refresh_token_1}
+    )
+
+    assert refresh_response.status_code == 200, refresh_response.json()
+
+    new_tokens = refresh_response.json()
+    refresh_token_2 = new_tokens["refresh_token"]
+
+    assert refresh_token_1 != refresh_token_2
+
+
+
