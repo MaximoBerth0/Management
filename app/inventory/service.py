@@ -14,9 +14,6 @@ RESERVATION:
 create_reservation()
 release_reservation()
 confirm_reservation()
-
-to be added in the future:
-- list reservations
 """
 
 from typing import List, Optional
