@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import List
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.orders.models.enums import OrderStatus
 from app.database.base import Base
+from app.shared.exceptions.order_errors import InvalidOrderStateError
 
 
 class Order(Base):
@@ -23,11 +23,6 @@ class Order(Base):
 
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus),
-        nullable=False,
-    )
-
-    total_amount: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2),
         nullable=False,
     )
 
@@ -48,6 +43,53 @@ class Order(Base):
         back_populates="order",
         cascade="all, delete-orphan",
     )
+
+    @classmethod
+    def create(cls, user_id: int) -> "Order":
+        return cls(
+            user_id=user_id,
+            status=OrderStatus.CREATED,
+        )
+
+    def add_item(self, product_id: int, quantity: int):
+        if self.status != OrderStatus.CREATED:
+            raise InvalidOrderStateError(
+                "Cannot modify order in current state"
+            )
+
+        item = OrderItem(
+            product_id=product_id,
+            quantity=quantity,
+        )
+
+        self.items.append(item)
+
+    def confirm(self):
+        if self.status != OrderStatus.CREATED:
+            raise InvalidOrderStateError(
+                "Only created orders can be confirmed"
+            )
+
+        self.status = OrderStatus.CONFIRMED
+
+    def cancel(self):
+        if self.status not in {
+            OrderStatus.CREATED,
+            OrderStatus.CONFIRMED,
+        }:
+            raise InvalidOrderStateError(
+                "Cannot cancel this order"
+            )
+
+        self.status = OrderStatus.CANCELLED
+
+    def complete(self):
+        if self.status != OrderStatus.CONFIRMED:
+            raise InvalidOrderStateError(
+                "Only confirmed orders can be completed"
+            )
+
+        self.status = OrderStatus.COMPLETED
 
 
 class OrderItem(Base):
@@ -74,11 +116,6 @@ class OrderItem(Base):
         nullable=False,
     )
 
-    unit_price: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2),
-        nullable=False,
-    )
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -88,6 +125,3 @@ class OrderItem(Base):
     order: Mapped["Order"] = relationship(
         back_populates="items",
     )
-
-
-

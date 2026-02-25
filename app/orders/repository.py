@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.orders.models.orders_model import Order
-from app.orders.models.enums import OrderStatus
 
 
 class OrderRepository:
@@ -22,8 +21,8 @@ class OrderRepository:
             .where(Order.id == order_id)
             .options(selectinload(Order.items))
         )
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        result = await self.session.scalars(stmt)
+        return result.first()
 
     async def get_by_user(self, user_id: int) -> Sequence[Order]:
         stmt = (
@@ -35,15 +34,7 @@ class OrderRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def update_status(
-        self,
-        order: Order,
-        new_status: OrderStatus,
-    ) -> Order:
-        order.status = new_status
-        await self.session.flush()
-        return order
-
     async def delete(self, order: Order) -> None:
         await self.session.delete(order)
         await self.session.flush()
+

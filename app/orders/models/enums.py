@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class OrderStatus(str, Enum):
-    PENDING = "pending"
+    CREATED = "created"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
