@@ -52,10 +52,19 @@ class Order(Base):
         )
 
     def add_item(self, product_id: int, quantity: int):
+
         if self.status != OrderStatus.CREATED:
             raise InvalidOrderStateError(
                 "Cannot modify order in current state"
             )
+
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than zero")
+
+        for item in self.items:
+            if item.product_id == product_id:
+                item.quantity += quantity
+                return
 
         item = OrderItem(
             product_id=product_id,
