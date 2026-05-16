@@ -6,7 +6,7 @@ from app.users.dependencies import get_user_service
 from app.users.models import User
 from app.users.service import UserService
 
-from app.users.schemas.https import (
+from app.users.schemas.http import (
     UserCreateRequest,
     UserUpdateRequest,
     UserReadResponse,

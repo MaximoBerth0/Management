@@ -1,5 +1,5 @@
-from app.shared.exceptions.core_errors import AppError
-
+class AppError(Exception):
+    pass
 
 class UserError(AppError):
     pass

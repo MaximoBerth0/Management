@@ -9,5 +9,3 @@ async def get_user_service(
     db: AsyncSession = Depends(get_session),
 ) -> UserService:
     return UserService(session=db)
-
-

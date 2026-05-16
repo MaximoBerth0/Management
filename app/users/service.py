@@ -1,12 +1,22 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security.passwords import hash_password
-from app.shared.exceptions.user_errors import UserAlreadyExists, UserNotFound
+from app.users.errors import UserAlreadyExists, UserNotFound
 from app.shared.exceptions.rbac_errors import PermissionDenied
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas.command import CreateUserCommand, UpdateUserCommand
 
+"""
+register_user()     [normal user]
+update_profile()    [normal user]
+list_users()        [admin user]
+get_user_by_email() [admin user]
+get_user_by_id()    [admin user]
+enable_account()    [admin user]
+disable_account()   [admin user]
+
+"""
 
 class UserService:
     def __init__(self, session: AsyncSession):
@@ -22,7 +32,7 @@ class UserService:
         user = User(
             email=str(data.email),
             username=data.username,
-            hashed_password=hash_password(data.password),
+            hashed_password=hash_password(data.hashed_password),
             is_active=True,
         )
 
@@ -43,7 +53,6 @@ class UserService:
         forbidden_fields = {
             "id",
             "is_active",
-            "is_superuser",
             "created_at",
             "updated_at",
         }
@@ -57,12 +66,11 @@ class UserService:
         if not safe_data:
             return current_user
 
-        return await self.repo.update(
+        return await self.repo.update_profile(
             user=current_user,
             data=safe_data,
         )
-
-
+    
     async def list_users(
         self,
         skip: int = 0,
@@ -104,6 +112,4 @@ class UserService:
             user=user,
             data={"is_active": active},
         )
-
-
 

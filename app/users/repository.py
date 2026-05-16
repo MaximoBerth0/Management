@@ -18,32 +18,34 @@ class UserRepository:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def list(self, skip: int = 0, limit: int = 100) -> Sequence[User]:
+    async def list_users(self, skip: int = 0, limit: int = 100) -> Sequence[User]:
         stmt = select(User).offset(skip).limit(limit)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def save(self, user: User) -> User:
+    async def enable_account(self, user: User) -> User:
+        user.is_active = True
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
+    async def disable_account(self, user: User) -> User:
+        user.is_active = False
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
+    async def create_user(self, user: User) -> User:
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
         return user
 
-    async def delete(self, user: int) -> None:
-        await self.session.delete(user)
-        await self.session.commit()
-
-    async def set_active(self, user: User, is_active: bool) -> User:
-        user.is_active = is_active
-        await self.session.commit()
-        await self.session.refresh(user)
-        return user
-
-    async def update(self, user: User, data: dict) -> User:
+    async def update_profile(self, user: User, data: dict) -> User:
         for field, value in data.items():
             if hasattr(user, field):
                 setattr(user, field, value)
-
         await self.session.commit()
         await self.session.refresh(user)
         return user
+

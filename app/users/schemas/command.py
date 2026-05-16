@@ -5,7 +5,7 @@ from typing import Optional
 class CreateUserCommand(BaseModel):
     email: EmailStr
     username: str
-    password: str
+    hashed_password: str
 
 
 class UpdateUserCommand(BaseModel):

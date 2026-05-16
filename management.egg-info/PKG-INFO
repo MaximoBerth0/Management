@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: management
+Version: 0.1.0
+Requires-Python: >=3.10
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: gunicorn
+Requires-Dist: sqlalchemy[asyncio]
+Requires-Dist: asyncpg
+Requires-Dist: alembic
+Requires-Dist: pydantic
+Requires-Dist: pydantic-settings
+Requires-Dist: email-validator
+Requires-Dist: python-jose[cryptography]
+Requires-Dist: passlib[argon2]
+Requires-Dist: redis
+Requires-Dist: celery
+Requires-Dist: prometheus-client
+Requires-Dist: sentry-sdk
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: httpx; extra == "dev"
+Requires-Dist: factory-boy; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
