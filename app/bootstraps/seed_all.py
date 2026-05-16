@@ -11,7 +11,5 @@ async def seed_all():
     await seed_permissions(uow)
     await seed_roles(uow)
 
-
-
 if __name__ == "__main__":
     asyncio.run(seed_all())

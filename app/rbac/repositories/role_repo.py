@@ -101,7 +101,7 @@ class RoleRepository:
         )
         await self.db.execute(stmt)
 
-
+# used by ensure_permission() avoiding N+1 queries
     async def get_user_with_roles_and_permissions(
             self,
             user_id: int,
