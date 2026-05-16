@@ -6,17 +6,28 @@ from app.users.dependencies import get_user_service
 from app.users.models import User
 from app.users.service import UserService
 
-from app.users.schemas.http import (
+from app.users.schemas.api import (
     UserCreateRequest,
     UserUpdateRequest,
     UserReadResponse,
     UserListItemResponse,
+    DisableUserRequest,
 )
 
 from app.users.schemas.command import (
     CreateUserCommand,
     UpdateUserCommand,
 )
+
+"""
+register_user()
+update_profile() 
+list_users()
+get_user_by_id()
+get_user_by_email()
+enable_account()
+disable_account()
+"""
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -33,31 +44,10 @@ async def register_user(
     command = CreateUserCommand(
         email=data.email,
         username=data.username,
-        password=data.password,
+        hashed_password=data.password,
     )
 
     return await service.register_user(command)
-
-
-@router.get(
-    "/list",
-    response_model=list[UserListItemResponse],
-    dependencies=[Depends(require_permission("users:view"))],
-)
-async def list_users(
-    service: UserService = Depends(get_user_service),
-):
-    return await service.list_users()
-
-
-@router.get(
-    "/me",
-    response_model=UserReadResponse,
-)
-async def get_profile(
-    current_user: User = Depends(get_current_user),
-):
-    return current_user
 
 @router.put(
     "/me",
@@ -78,33 +68,56 @@ async def update_profile(
         data=command,
     )
 
+@router.get(
+    "/list",
+    response_model=list[UserListItemResponse],
+    dependencies=[Depends(require_permission("users:view"))],
+)
+async def list_users(
+    service: UserService = Depends(get_user_service),
+):
+    return await service.list_users()
+
 
 @router.get(
     "/{user_id}",
     response_model=UserReadResponse,
     dependencies=[Depends(require_permission("users:view"))],
 )
-async def get_user(
+async def get_user_by_id(
     user_id: int,
     service: UserService = Depends(get_user_service),
 ):
-    return await service.get_user(user_id=user_id)
+    return await service.get_user_by_id(user_id=user_id)
+
+
+@router.get(
+    "/email/{email}",
+    response_model=UserReadResponse,
+    dependencies=[Depends(require_permission("users:view"))],
+)
+async def get_user_by_email(
+    email: str,
+    service: UserService = Depends(get_user_service),
+):
+    return await service.get_user_by_email(email=email)
 
 
 @router.patch(
-    "/{user_id}/disable",
+    "/{user_id}/disable-account",
     response_model=UserReadResponse,
     dependencies=[Depends(require_permission("users:update"))],
 )
 async def disable_user(
     user_id: int,
+    data: DisableUserRequest,
     service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.set_user_active(
-        current_user=current_user,
+    return await service.disable_account(
         user_id=user_id,
-        active=False,
+        disabled_by_user_id=current_user.id,
+        reason=data.reason,
     )
 
 
@@ -116,10 +129,5 @@ async def disable_user(
 async def enable_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
-    current_user: User = Depends(get_current_user),
 ):
-    return await service.set_user_active(
-        current_user=current_user,
-        user_id=user_id,
-        active=True,
-    )
+    return await service.enable_account(user_id=user_id)

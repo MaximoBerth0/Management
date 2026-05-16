@@ -7,7 +7,7 @@ from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.service import RBACService
 from app.auth.dependencies import get_current_user
-from app.shared.exceptions.rbac_errors import PermissionDenied
+from app.rbac.errors import PermissionDenied
 
 
 async def get_rbac_service(

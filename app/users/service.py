@@ -1,22 +1,14 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security.passwords import hash_password
 from app.users.errors import UserAlreadyExists, UserNotFound
-from app.shared.exceptions.rbac_errors import PermissionDenied
+from app.rbac.errors import PermissionDenied
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas.command import CreateUserCommand, UpdateUserCommand
 
-"""
-register_user()     [normal user]
-update_profile()    [normal user]
-list_users()        [admin user]
-get_user_by_email() [admin user]
-get_user_by_id()    [admin user]
-enable_account()    [admin user]
-disable_account()   [admin user]
-
-"""
 
 class UserService:
     def __init__(self, session: AsyncSession):
@@ -36,7 +28,7 @@ class UserService:
             is_active=True,
         )
 
-        await self.repo.save(user)
+        await self.repo.create_user(user)
         return user
 
 
@@ -78,14 +70,14 @@ class UserService:
     ) -> list[User]:
         limit = min(limit, 100)
 
-        users = await self.repo.list(
+        users = await self.repo.list_users(
             skip=skip,
             limit=limit,
         )
 
         return list(users)
 
-    async def get_user(
+    async def get_user_by_id(
         self,
         user_id: int,
     ) -> User:
@@ -94,22 +86,35 @@ class UserService:
             raise UserNotFound("User not found")
 
         return user
-
-    async def set_user_active(
+    
+    async def get_user_by_email(
         self,
-        current_user: User,
-        user_id: int,
-        active: bool,
+        email: str,
     ) -> User:
+        user = await self.repo.get_by_email(email)
+        if not user:
+            raise UserNotFound("User not found")
+
+        return user
+    
+    async def enable_account(self, user_id: int) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:
             raise UserNotFound("User not found")
 
-        if user.id == current_user.id:
-            raise PermissionDenied("You cannot change your own active status")
+        user.disabled_at = None
+        user.disabled_by = None
+        user.reason = None
 
-        return await self.repo.update(
-            user=user,
-            data={"is_active": active},
-        )
+        return await self.repo.enable_account(user)
 
+    async def disable_account(self, user_id: int, disabled_by_user_id: int, reason: str) -> User:
+        user = await self.repo.get_by_id(user_id)
+        if not user:
+            raise UserNotFound("User not found")
+
+        user.disabled_at = datetime.now(timezone.utc)
+        user.disabled_by = disabled_by_user_id
+        user.reason = reason
+
+        return await self.repo.disable_account(user)
