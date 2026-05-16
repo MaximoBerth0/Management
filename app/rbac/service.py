@@ -11,7 +11,7 @@ from app.rbac.schemas.dto import (
     RemoveRoleFromUserDTO,
     RemovePermissionFromRoleDTO,
 )
-from app.shared.exceptions.rbac_errors import (
+from app.rbac.errors import (
     PermissionAlreadyAssigned,
     PermissionNotFound,
     RoleAlreadyAssignedToUser,

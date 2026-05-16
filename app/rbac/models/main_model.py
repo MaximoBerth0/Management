@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database.base import Base
-from app.rbac.models.tables import user_roles, role_permissions
+from app.rbac.models.intermediate import user_roles, role_permissions
 
 from typing import TYPE_CHECKING
 

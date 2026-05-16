@@ -19,17 +19,6 @@ from app.users.schemas.command import (
     UpdateUserCommand,
 )
 
-"""
-register_user()
-update_profile() 
-list_users()
-get_user_by_id()
-get_user_by_email()
-enable_account()
-disable_account()
-"""
-
-
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post(

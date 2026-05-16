@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 from app.database.base import Base
 from app.auth.models import RefreshToken
 from app.rbac.models.main_model import Role
-from app.rbac.models.tables import user_roles
+from app.rbac.models.intermediate import user_roles
 
 
 class User(Base):
