@@ -36,10 +36,17 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-# dependency for FastAPI
+# dependency fastAPI (transactions)
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()  # ← auto-commit on success
+        except Exception:
+            await session.rollback()  # ← auto-rollback on error
+            raise
+        finally:
+            await session.close()
 
 # lifecycle management
 async def startup() -> None:

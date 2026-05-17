@@ -46,15 +46,11 @@ async def get_current_user(
     return user
 
 
-def get_auth_service(db = Depends(get_session)) -> AuthService:
-    user_repo = UserRepository(db)
-    refresh_repo = RefreshTokenRepository(db)
-    reset_repo = PasswordResetTokenRepository(db)
-    mailer = Mailer()
-
+def get_auth_service(session: AsyncSession = Depends(get_session)) -> AuthService:
+    """Dependency injection for AuthService with all repositories."""
     return AuthService(
-        user_repo=user_repo,
-        refresh_repo=refresh_repo,
-        reset_repo=reset_repo,
-        mailer=mailer,
+        user_repo=UserRepository(session),
+        refresh_repo=RefreshTokenRepository(session),
+        reset_repo=PasswordResetTokenRepository(session),
+        mailer=Mailer() 
     )
