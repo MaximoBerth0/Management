@@ -18,7 +18,7 @@ confirm_reservation()
 
 from typing import List, Optional
 
-from app.core.unit_of_work import UnitOfWork
+from app.database.unit_of_work import UnitOfWork
 from app.inventory.models.inventory_model import (
     Product,
     StockMovement,

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from jose import ExpiredSignatureError, JWTError, jwt
 
 from app.core.config import settings
-from app.shared.exceptions.auth_errors import TokenExpired, TokenInvalid
+from app.auth.errors import TokenExpired, TokenInvalid
 
 """
 - create access JWT tokens.

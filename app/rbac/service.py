@@ -1,4 +1,4 @@
-from app.core.unit_of_work import UnitOfWork
+from app.database.unit_of_work import UnitOfWork
 from app.rbac.models.main_model import Role
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository

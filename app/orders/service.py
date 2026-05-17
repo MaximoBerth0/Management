@@ -1,4 +1,4 @@
-from app.core.unit_of_work import UnitOfWork
+from app.database.unit_of_work import UnitOfWork
 from app.orders.models.orders_model import Order
 from app.orders.repository import OrderRepository
 from app.inventory.repositories.product_repo import ProductRepository

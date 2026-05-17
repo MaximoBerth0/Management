@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.unit_of_work import UnitOfWork
+from app.database.unit_of_work import UnitOfWork
 from app.database.session import get_session
 from app.inventory.repositories.product_repo import ProductRepository
 from app.inventory.repositories.stock_inventory_repo import StockInventoryRepository

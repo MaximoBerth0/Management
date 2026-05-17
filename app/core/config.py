@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,41 +5,31 @@ class Settings(BaseSettings):
 
     # App
     APP_NAME: str = "Management"
-    ENV: str = "local"  # local | staging | production
+    ENV: str = "local"  # local | staging | prod
     DEBUG: bool = False
 
-    # Database (Async SQLAlchemy)
+    # Database (Postgres)
     DATABASE_URL: str
+
+    # Connection pool
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    DB_POOL_RECYCLE: int = 3600
+    DB_POOL_PRE_PING: bool = True
+    DB_ECHO: bool = False
+
+    # Connection Timeouts (asyncpg specific)
+    DB_CONNECT_TIMEOUT: int = 10      # Timeout to establish connection
+    DB_COMMAND_TIMEOUT: int = 60      # Timeout for individual queries
+    DB_STATEMENT_TIMEOUT: int = 30000 # PostgreSQL statement timeout (ms)
 
     # Security /Auth
     SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15     
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    PASSWORD_HASH_SCHEME: str = "argon2"
-
-    # CORS
-    CORS_ALLOW_ORIGINS: str = ""
-
-    @property
-    def cors_origins(self) -> list[str]:
-        if not self.CORS_ALLOW_ORIGINS:
-            return []
-        return [o.strip() for o in self.CORS_ALLOW_ORIGINS.split(",")]
-
-    CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: List[str] = ["*"]
-    CORS_ALLOW_HEADERS: List[str] = ["*"]
-
-    # Redis/ Celery
-    REDIS_URL: str
-    CELERY_BROKER_URL: str
-    CELERY_RESULT_BACKEND: str
-
-    # Observability
-    LOG_LEVEL: str = "INFO"
-    SENTRY_DSN: str | None = None
-    PROMETHEUS_ENABLED: bool = True
+    PASSWORD_HASH_SCHEME: str = "argon2"   # > security/passwords.py
 
     # Server
     UVICORN_WORKERS: int = 1
@@ -49,8 +37,9 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         case_sensitive=True,
+        env_file=".env", 
+        env_file_encoding="utf-8",  
     )
 
-
-settings = Settings()
+settings = Settings() # type: ignore
 

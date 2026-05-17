@@ -1,5 +1,5 @@
 from app.core.constants.system_roles import SYSTEM_ROLES
-from app.core.unit_of_work import UnitOfWork
+from app.database.unit_of_work import UnitOfWork
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RolePermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
