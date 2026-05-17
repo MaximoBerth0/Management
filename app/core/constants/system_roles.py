@@ -12,13 +12,8 @@ SYSTEM_ROLES = {
         "reservations:view",
     ],
 
-    "driver": [
-        "products:view",
-        "reservations:view",
-    ],
-
     "client": [
         "products:view",
-        "reservations:view",  # own reserve
+        "reservations:view",  
     ],
 }

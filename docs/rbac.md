@@ -66,7 +66,6 @@ Creates role records and assigns permissions based on `SYSTEM_ROLES` constant:
 SYSTEM_ROLES = {
     "admin": SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS + USER_PERMISSIONS,
     "employee": ["products:view", "stock:in", "stock:out"],
-    "driver": ["products:view", "reservations:view"],
     "client": ["products:view", "reservations:view"]
 }
 ```

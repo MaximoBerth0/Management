@@ -95,7 +95,7 @@ async def get_user_by_email(
 @router.patch(
     "/{user_id}/disable-account",
     response_model=UserReadResponse,
-    dependencies=[Depends(require_permission("users:update"))],
+    dependencies=[Depends(require_permission("users:disable"))],
 )
 async def disable_user(
     user_id: int,
@@ -113,7 +113,7 @@ async def disable_user(
 @router.patch(
     "/{user_id}/enable",
     response_model=UserReadResponse,
-    dependencies=[Depends(require_permission("users:update"))],
+    dependencies=[Depends(require_permission("users:enable"))],
 )
 async def enable_user(
     user_id: int,

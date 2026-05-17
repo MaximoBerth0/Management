@@ -13,7 +13,7 @@ from app.core.security.tokens import (
     generate_reset_token,
 )
 from app.mail.mailer import Mailer
-from app.shared.exceptions.auth_errors import (
+from app.auth.errors import (
     InvalidCredentials,
     TokenExpired,
     TokenInvalid,
@@ -131,8 +131,11 @@ class AuthService:
 
         user = await self.user_repo.get_by_id(int(reset.user_id))
 
+        if not user:
+            raise TokenInvalid("Invalid reset token")
+
         user.hashed_password = hash_password(new_password)
-        await self.user_repo.save(user)
+        await self.user_repo.save_user(user)
 
         await self.reset_repo.invalidate(token)
         user_id: int = reset.user_id
@@ -149,6 +152,6 @@ class AuthService:
             raise InvalidCredentials("Invalid password")
 
         current_user.hashed_password = hash_password(new_password)
-        await self.user_repo.save(current_user)
+        await self.user_repo.save_user(current_user)
 
         await self.refresh_repo.revoke_all_for_user(int(current_user.id))
