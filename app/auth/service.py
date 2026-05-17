@@ -18,6 +18,15 @@ from app.auth.errors import (
     TokenExpired,
     TokenInvalid,
 )
+from app.auth.schemas.dto import (
+    LoginDTO,
+    LogoutDTO,
+    RefreshSessionDTO,
+    ForgotPasswordDTO,
+    ResetPasswordDTO,
+    ChangePasswordDTO,
+    TokenResponseDTO,
+)
 from app.users.models import User
 from app.users.repository import UserRepository
 
@@ -28,7 +37,7 @@ class AuthService:
         user_repo: UserRepository,
         refresh_repo: RefreshTokenRepository,
         reset_repo: PasswordResetTokenRepository,
-        mailer: Mailer,
+        mailer: Mailer
     ):
         self.user_repo = user_repo
         self.refresh_repo = refresh_repo
@@ -36,10 +45,10 @@ class AuthService:
         self.mailer = mailer
 
 
-    async def login(self, email: str, password: str) -> dict:
-        user = await self.user_repo.get_by_email(email)
+    async def login(self, data: LoginDTO) -> TokenResponseDTO:
+        user = await self.user_repo.get_by_email(data.email)
 
-        if not user or not verify_password(password, user.hashed_password):
+        if not user or not verify_password(data.password, user.hashed_password):
             raise InvalidCredentials("Credentials not valid.")
 
         access_token = create_access_token(user.id)
@@ -55,23 +64,21 @@ class AuthService:
             expires_at=expires_at,
         )
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer",
-        }
+        return TokenResponseDTO(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
 
-
-    async def logout(self, refresh_token: str) -> None:
-        token = await self.refresh_repo.get_active(refresh_token)
+    async def logout(self, data: LogoutDTO) -> None:
+        token = await self.refresh_repo.get_active(data.refresh_token)
 
         if not token:
-            return
+            raise TokenInvalid("token is inactive")
 
         await self.refresh_repo.revoke(token.id)
 
-    async def refresh_session(self, refresh_token: str) -> dict:
-        token = await self.refresh_repo.get_active(refresh_token)
+    async def refresh_session(self, data: RefreshSessionDTO) -> TokenResponseDTO:
+        token = await self.refresh_repo.get_active(data.refresh_token)
 
         if not token:
             raise TokenExpired("Invalid refresh token.")
@@ -94,18 +101,17 @@ class AuthService:
 
         access_token = create_access_token(token.user_id)
 
-        return {
-            "access_token": access_token,
-            "refresh_token": new_refresh_token,
-            "token_type": "bearer",
-        }
+        return TokenResponseDTO(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+        )
 
-    async def forgot_password(self, email: str) -> None:
-        user = await self.user_repo.get_by_email(email)
+    async def forgot_password(self, data: ForgotPasswordDTO) -> None:
+        user = await self.user_repo.get_by_email(data.email)
 
         if not user:
-            return
-
+            return 
+        
         await self.reset_repo.invalidate_all_for_user(user.id)
 
         token = generate_reset_token()
@@ -120,8 +126,9 @@ class AuthService:
         await self.mailer.send_reset_email(user.email, token)
 
 
-    async def reset_password(self, token: str, new_password: str) -> None:
-        reset = await self.reset_repo.get_valid(token)
+    async def reset_password(self, data: ResetPasswordDTO) -> None:
+
+        reset = await self.reset_repo.get_valid(data.token)
 
         if not reset:
             raise TokenInvalid("Invalid reset token")
@@ -134,24 +141,18 @@ class AuthService:
         if not user:
             raise TokenInvalid("Invalid reset token")
 
-        user.hashed_password = hash_password(new_password)
+        user.hashed_password = hash_password(data.new_password)
         await self.user_repo.save_user(user)
 
-        await self.reset_repo.invalidate(token)
-        user_id: int = reset.user_id
-        await self.refresh_repo.revoke_all_for_user(user_id)
+        await self.reset_repo.invalidate(data.token)
+        await self.refresh_repo.revoke_all_for_user(int(reset.user_id))
 
 
-    async def change_password(
-            self,
-            current_user: User,
-            old_password: str,
-            new_password: str,
-    ) -> None:
-        if not verify_password(old_password, current_user.hashed_password):
+    async def change_password(self, current_user: User, data: ChangePasswordDTO) -> None:
+        if not verify_password(data.old_password, current_user.hashed_password):
             raise InvalidCredentials("Invalid password")
 
-        current_user.hashed_password = hash_password(new_password)
+        current_user.hashed_password = hash_password(data.new_password)
         await self.user_repo.save_user(current_user)
 
         await self.refresh_repo.revoke_all_for_user(int(current_user.id))
