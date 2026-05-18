@@ -34,7 +34,3 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: Literal["bearer"] = "bearer"
-
-
-class MessageResponse(BaseModel):
-    detail: str

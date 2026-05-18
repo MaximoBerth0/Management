@@ -69,15 +69,6 @@ def verify_access_token(token: str) -> dict:
 
     return payload
 
-
-def verify_refresh_token(token: str) -> dict:
-    payload = decode_token(token)
-
-    if payload.get("type") != "refresh":
-        raise TokenInvalid("incorrect token")
-
-    return payload
-
 def generate_reset_token() -> str:
     return secrets.token_urlsafe(32)
 

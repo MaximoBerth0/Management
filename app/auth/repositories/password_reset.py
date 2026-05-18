@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from app.auth.models import PasswordResetToken
@@ -30,6 +30,8 @@ class PasswordResetTokenRepository:
         stmt = select(PasswordResetToken).where(
             PasswordResetToken.token == token,
             PasswordResetToken.used.is_(False),
+            PasswordResetToken.expires_at > datetime.now(timezone.utc),
+
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

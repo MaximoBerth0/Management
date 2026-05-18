@@ -1,9 +1,14 @@
+import hashlib
 from datetime import datetime
 from typing import Optional
 
 from app.auth.models import RefreshToken
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 class RefreshTokenRepository:
@@ -19,7 +24,7 @@ class RefreshTokenRepository:
         self.db.add(
             RefreshToken(
                 user_id=user_id,
-                token_hash=token,
+                token_hash=_hash_token(token),
                 expires_at=expires_at,
                 is_revoked=False,
             )
@@ -28,14 +33,14 @@ class RefreshTokenRepository:
 
     async def get_by_token(self, token: str) -> Optional[RefreshToken]:
         stmt = select(RefreshToken).where(
-            RefreshToken.token_hash == token
+            RefreshToken.token_hash == _hash_token(token)
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_active(self, token: str) -> Optional[RefreshToken]:
         stmt = select(RefreshToken).where(
-            RefreshToken.token_hash == token,
+            RefreshToken.token_hash == _hash_token(token),
             RefreshToken.is_revoked.is_(False),
         )
         result = await self.db.execute(stmt)
