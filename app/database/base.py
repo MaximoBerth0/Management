@@ -2,7 +2,6 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-from app.users.models import User 
 # Add all model imports
 
 """ Alembic commands

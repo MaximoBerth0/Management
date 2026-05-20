@@ -22,12 +22,6 @@ dependencies = [
 
   "python-jose[cryptography]",
   "passlib[argon2]",
-
-  "redis",
-  "celery",
-
-  "prometheus-client",
-  "sentry-sdk",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +33,11 @@ dev = [
   "ruff",
 ]
 
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["alembic*"]
 
 [tool.ruff]
 line-length = 88

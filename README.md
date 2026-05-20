@@ -69,7 +69,6 @@ Each module is isolated and designed for long-term scalability.
 - FastAPI
 - SQLAlchemy 2.0 (async)
 - PostgreSQL
-- Redis
 - Alembic
 - Pydantic v2
 - python-jose (JWT)
@@ -91,25 +90,35 @@ git clone https://github.com/your-username/Management.git
 cd Management
 ```
 ### Environment variables
-#### .env example: 
+#### env example: 
 ```bash
+# application
 APP_NAME=Management
 ENV=local
 DEBUG=true
 
-DATABASE_URL=postgresql+asyncpg://management:management@db:5432/management
+# database
+DATABASE_URL=postgresql+asyncpg://postgres:yourpassword@localhost:5432/management_db
 
-JWT_PRIVATE_KEY=dev-private
-JWT_PUBLIC_KEY=dev-public
+# Connection pool 
+DB_POOL_SIZE=20
+DB_MAX_OVERFLOW=10
+DB_POOL_TIMEOUT=30
+DB_POOL_RECYCLE=3600
+DB_POOL_PRE_PING=true
+DB_ECHO=false
 
+# security and authentication
+SECRET_KEY=your-secret-key-here-change-this-in-production-min-32-chars
+JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=15
 REFRESH_TOKEN_EXPIRE_DAYS=7
+PASSWORD_HASH_SCHEME=argon2
 
-REDIS_URL=redis://redis:6379/0
-CELERY_BROKER_URL=redis://redis:6379/1
-CELERY_RESULT_BACKEND=redis://redis:6379/2
+# server
+UVICORN_WORKERS=1
+GUNICORN_WORKERS=2
 
-CORS_ALLOW_ORIGINS=http://localhost:3000
 ```
 ### Run the application
 ```bash

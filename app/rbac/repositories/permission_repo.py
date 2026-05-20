@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.rbac.models.intermediate import role_permissions, user_roles
 from app.rbac.models.main_model import Permission
 
 
@@ -42,14 +43,14 @@ class PermissionRepository:
             permission_id: int,
     ) -> bool:
         stmt = (
-            select(RolePermission.role_id)
+            select(role_permissions.c.role_id)
             .join(
-                UserRole,
-                UserRole.role_id == RolePermission.role_id,
+                user_roles,
+                user_roles.c.role_id == role_permissions.c.role_id,
             )
             .where(
-                UserRole.user_id == user_id,
-                RolePermission.permission_id == permission_id,
+                user_roles.c.user_id == user_id,
+                role_permissions.c.permission_id == permission_id,
             )
             .limit(1)
         )

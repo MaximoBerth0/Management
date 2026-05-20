@@ -1,11 +1,13 @@
 from typing import AsyncGenerator
-from sqlalchemy import text 
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+
 from app.core.config import settings
 
 # engine with connection pooling

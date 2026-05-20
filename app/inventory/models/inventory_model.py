@@ -17,6 +17,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from app.inventory.models.enums import StockMovementType, StockReservationStatus
 
+"""
+Core entities:
+
+Category — organizes products 
+Product — what company sell (SKU, name, belongs to category)
+Location — where store (Central, branch, branch)
+InventoryStock — product + location intersection with two counts (available, reserved)
+StockMovement — audit trail for every change (IN, OUT, ADJUST, RESERVE, RELEASE)
+StockReservation — for pending orders (amount, status, product+location)
+"""
 # product
 
 class Product(Base):
