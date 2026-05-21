@@ -1,59 +1,72 @@
-from typing import Optional
-
-from app.inventory.models.inventory_model import Product
+from app.inventory.models.product import Category, Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
 
 
 class ProductRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    #Internal helper (DRY)
-    async def _one(self, stmt: Select) -> Product | None:
-        result = await self.db.scalars(stmt)
-        return result.first()
-
-    # CRUD
-    async def create(self, product: Product) -> Product:
-        self.db.add(product)
-        await self.db.flush()
-        return product
-
-    async def get_by_id(self, product_id: int) -> Product | None:
-        return await self._one(
-            select(Product).where(Product.id == product_id)
-        )
-
-    async def get_by_sku(self, product_sku: str) -> Product | None:
-        return await self._one(
-            select(Product).where(Product.sku == product_sku)
-        )
-
-    async def get_by_name(self, product_name: str) -> Product | None:
-        return await self._one(
-            select(Product).where(Product.name == product_name)
-        )
-
-    async def list(
-            self,
-            *,
-            is_active: Optional[bool] = None,
-    ) -> list[Product]:
+    async def get_product(self, product_id: int) -> Product | None:
+        stmt = select(Product).where(Product.id == product_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+    
+    async def list_products(self) -> list[Product]: 
         stmt = select(Product)
-
-        if is_active is not None:
-            stmt = stmt.where(Product.is_active.is_(is_active))
-
-        result = await self.db.scalars(stmt)
-        return list(result.all())
-
-    async def update(self, product: Product) -> Product:
-        self.db.add(product)
-        await self.db.flush()
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+    
+    async def create_product(self, name: str, sku: str, category: Category) -> Product | None:
+        product = Product(name=name, sku=sku, category=category)
+        await self.db.commit()
+        await self.db.refresh(product)
+        return product 
+    
+    async def update_product(
+        self, 
+        product_id: int,
+        name: str | None = None,
+        sku: str | None = None
+    ) -> Product | None:
+        stmt = select(Product).where(Product.id == product_id)
+        result = await self.db.execute(stmt)
+        product = result.scalar_one_or_none()
+    
+        if not product:
+            return None
+    
+        if name is not None:
+           product.name = name
+        if sku is not None:
+            product.sku = sku
+    
+        await self.db.commit()
+        await self.db.refresh(product)
+    
         return product
+    
+    async def activate_product(self, product_id: int) -> Product | None:
+        stmt = select(Product).where(Product.id == product_id)
+        result = await self.db.execute(stmt)
+        product = result.scalar_one_or_none()
+    
+        if not product:
+            return None
+    
+        product.is_active = True
+    
+    async def deactivate_product(self, product_id: int) -> Product | None: 
+        stmt = select(Product).where(Product.id == product_id)
+        result = await self.db.execute(stmt)
+        product = result.scalar_one_or_none()
+    
+        if not product:
+            return None
+        
+        product.is_active = False 
 
-    async def delete(self, product: Product) -> None:
-        await self.db.delete(product)
-        await self.db.flush()
+        await self.db.commit()
+        await self.db.refresh(product)
+
+        return product

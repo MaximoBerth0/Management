@@ -13,17 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 """
 functions are pure persistence + locking (without business logic): 
-
-get_by_product_id
-create_inventory
-get_product_total_stock
-get_for_update
-save
-add_movement
-add_reservation
-get_reserved_amount
-get_reservation_for_update
-list_reservations
 """
 
 class StockInventoryRepository:

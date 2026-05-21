@@ -18,8 +18,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 
 if TYPE_CHECKING:
-    from app.inventory.models.reservation import StockReservation
     from app.inventory.models.stock import InventoryStock
+    from app.orders.models.reservation import StockReservation
 
 # this is for many-to-many relationships (product-category)
 product_category = Table(
