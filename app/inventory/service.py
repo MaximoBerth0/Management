@@ -5,7 +5,10 @@ PRODUCT:
   create_product()
   update_product()
   activate_product()         
-  deactivate_product()         
+  deactivate_product() 
+  create_category()
+  remove_category()
+  add_product_to_category()        
 
 STOCK:
   reserve_stock()             
@@ -17,3 +20,5 @@ STOCK:
   update_reserved_quantity()
   check_stock_availability()   
 """
+        
+        

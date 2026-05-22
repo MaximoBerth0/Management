@@ -70,3 +70,41 @@ class ProductRepository:
         await self.db.refresh(product)
 
         return product
+    
+    async def save(self, product: Product) -> Product:
+        await self.db.commit()
+        await self.db.refresh(product)
+        return product
+
+# Category operations 
+
+    async def add_category(
+        self, 
+        product_id: int, 
+        category: Category
+    ) -> Product | None:
+        product = await self.get_product(product_id)
+        if not product:
+            return None
+        
+        # add category to product (many-to-many)
+        if category not in product.categories:
+            product.categories.append(category)
+        
+        await self.save(product)
+        return product
+    
+    async def remove_category(
+        self,
+        product_id: int,
+        category: Category
+    ) -> Product | None:
+        product = await self.get_product(product_id)
+        if not product:
+            return None
+        
+        if category in product.categories:
+            product.categories.remove(category)
+        
+        await self.save(product)
+        return product
