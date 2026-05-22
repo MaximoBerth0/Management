@@ -1,4 +1,5 @@
-from app.inventory.models.product import Category, Product
+from app.inventory.models.category import Category
+from app.inventory.models.product import Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,13 +13,18 @@ class ProductRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
     
-    async def list_products(self) -> list[Product]: 
+    async def get_by_sku(self, sku: str) -> Product | None:
+        stmt = select(Product).where(Product.sku == sku)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def list_products(self) -> list[Product]:
         stmt = select(Product)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
     
-    async def create_product(self, name: str, sku: str, category: Category) -> Product | None:
-        product = Product(name=name, sku=sku, category=category)
+    async def create_product(self, name: str, sku: str, category_id: int) -> Product | None:
+        product = Product(name=name, sku=sku, category_id=category_id)
         await self.db.commit()
         await self.db.refresh(product)
         return product 
