@@ -12,18 +12,24 @@ class CategoryRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
     
+    async def get_by_name(self, name:str) -> Category | None:
+        stmt = select(Category).where(Category.name == name)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+    
     async def list_categories(self) -> list[Category]:
         stmt = select(Category)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
     
-    async def create_category(self, category: Category) -> Category:
-        self.db.add(category)
+    async def create_category(self, name: str, description: str) -> Category:
+        category = Category(name=name, description=description)
+        self.db.add(category)  
         await self.db.commit()
         await self.db.refresh(category)
         return category
     
-    async def save_catagory(self, category: Category) -> Category:
+    async def save_category(self, category: Category) -> Category:
         await self.db.commit()
         await self.db.refresh(category)
         return category

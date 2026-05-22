@@ -38,6 +38,8 @@ class InventoryService:
         self.stock_repo = stock_repo
         self.product_repo = product_repo
         self.category_repo = category_repo
+
+# product 
         
     async def get_product(self, product_id: int):
       result = self.product_repo.get_product(product_id)
@@ -102,6 +104,45 @@ class InventoryService:
       return activate
         
     async def deactivate_product(self, product_id):
-       deactivate = self.product_repo.deactivate_product(product_id)
-       return deactivate
+      deactivate = self.product_repo.deactivate_product(product_id)
+      return deactivate
     
+# category 
+
+    async def create_category(self, name: str, description: str):
+      if not name or not name.strip():
+        raise ValueError("category name is required")
+    
+      if not description or not description.strip():
+        raise ValueError("category description is required")
+    
+      name = name.strip()
+      description = description.strip()
+    
+      existing = await self.category_repo.get_by_name(name)
+      if existing:
+        raise ValueError(f"category '{name}' already exists")
+    
+      return await self.category_repo.create_category(name, description)
+    
+    async def remove_category(self, category_id: int):
+      return await self.category_repo.delete_category(category_id)
+
+    async def add_product_to_category(self, product_id: int, category_id: int):
+      category = await self.category_repo.get_category(category_id)
+      if not category:
+        raise ValueError(f"Category with ID {category_id} not found")
+    
+      product = await self.product_repo.get_product(product_id)
+      if not product:
+        raise ValueError(f"Product with ID {product_id} not found")
+    
+      if product not in category.products:
+        category.products.append(product)
+        await self.category_repo.save_category(category)  
+    
+      return category
+
+# stock
+
+   
