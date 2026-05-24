@@ -20,6 +20,8 @@ STOCK:
   list_stock_movements() 
 """
 
+from app.inventory.models.enums import StockMovementType
+from app.inventory.models.stock import StockMovement
 from app.inventory.repositories.category_repo import CategoryRepository
 from app.inventory.repositories.location_repo import LocationRepository
 from app.inventory.repositories.product_repo import ProductRepository
@@ -55,7 +57,7 @@ class InventoryService:
     
       if not sku or not sku.strip():
         raise ValueError("SKU is required")
-    
+
       # normalize
       name = name.strip()
       sku = sku.strip().upper()
@@ -146,13 +148,104 @@ class InventoryService:
 # stock
 
     async def initialize_stock(self, location_id: int, product_id: int, quantity: int, reorder_point: int):
-        location = await self.location_repo.get_location(location_id)
-        if not location:
-           raise ValueError("invalid location id")
-        product = await self.product_repo.get_product(product_id)
-        if not product:
-           raise ValueError("invalid product id")
-        if quantity <= 0:
-          raise ValueError("quantity must be > 0")
+      location_id = abs(int(location_id))
+      product_id = abs(int(product_id))
+      quantity = abs(int(quantity))
+      reorder_point = abs(int(reorder_point))
+    
+    # ensure reorder_point doesn't exceed quantity
+      reorder_point = min(reorder_point, quantity)
+    
+      location = await self.location_repo.get_location(location_id)
+      if not location:
+        raise ValueError("invalid location id")
+    
+      product = await self.product_repo.get_product(product_id)
+      if not product:
+        raise ValueError("invalid product id")
+    
+      if quantity <= 0:
+        raise ValueError("quantity must be > 0")
+    
+      return await self.stock_repo.initialize_stock(location_id, product_id, quantity, reorder_point)
 
-        return await self.stock_repo.initialize_stock(location_id, product_id, quantity, reorder_point)
+    async def add_stock(self, product_id, location_id, quantity, user_id):
+      stock = await self.stock_repo.get_stock_by_location_and_product(product_id, location_id)
+      if not stock:
+        raise ValueError("Invalid product or location id")
+      
+      previous_quantity = stock.quantity 
+
+      stock.quantity += quantity
+      new_quantity = stock.quantity
+
+      movement = StockMovement(
+        stock_id=stock.id, 
+        movement_type=StockMovementType.IN,
+        quantity=quantity,
+        previous_quantity=previous_quantity,
+        new_quantity=new_quantity,
+        created_by=user_id
+    )
+      await self.stock_repo.update_quantity_stock(stock)      
+      await self.stock_repo.create_movement(movement) 
+    
+      return movement
+    
+    async def remove_stock(self, product_id, location_id, quantity, user_id): 
+      stock = await self.stock_repo.get_stock_by_location_and_product(product_id, location_id)
+      if not stock:
+        raise ValueError("Invalid product or location id")
+      
+      if stock.quantity < quantity:
+        raise ValueError("stock cannot be negative")
+      
+      previous_quantity = stock.quantity 
+
+      stock.quantity -= quantity
+      new_quantity = stock.quantity
+
+      movement = StockMovement(
+        stock_id=stock.id, 
+        movement_type=StockMovementType.OUT,
+        quantity=quantity,
+        previous_quantity=previous_quantity,
+        new_quantity=new_quantity,
+        created_by=user_id
+    )
+      await self.stock_repo.update_quantity_stock(stock)      
+      await self.stock_repo.create_movement(movement) 
+    
+      return movement
+    
+    async def adjust_stock(self, product_id, location_id, quantity, user_id): 
+      stock = await self.stock_repo.get_stock_by_location_and_product(product_id, location_id)
+      if not stock:
+        raise ValueError("Invalid product or location id")
+    
+      if quantity < 0:  
+        raise ValueError("stock cannot be negative")
+    
+      previous_quantity = stock.quantity 
+      stock.quantity = quantity 
+      new_quantity = stock.quantity
+    
+      movement = StockMovement(
+        stock_id=stock.id, 
+        movement_type=StockMovementType.ADJUST,
+        quantity=abs(new_quantity - previous_quantity),  # store the difference
+        previous_quantity=previous_quantity,
+        new_quantity=new_quantity,
+        created_by=user_id
+      )
+    
+      await self.stock_repo.update_quantity_stock(stock)      
+      await self.stock_repo.create_movement(movement)
+      return movement
+    
+    async def list_stock_movements(self, stock_id: int, limit: int = 100):
+      stock = await self.stock_repo.get_stock(stock_id)
+      if not stock:
+        raise ValueError(f"Stock with ID {stock_id} not found")
+
+      return await self.stock_repo.list_stock_movements(stock_id, limit)
