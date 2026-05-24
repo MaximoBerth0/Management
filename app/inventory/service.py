@@ -13,17 +13,15 @@ CATEGORY:
   add_product_to_category()        
 
 STOCK:
-  reserve_stock()             
-  release_reservation()       
-  fulfill_reservation()       
-  create_stock_movement()
-  list_stock_movements()    
-  get_available_stock()       
-  update_reserved_quantity()
-  check_stock_availability()   
+  initialize_stock()     
+  add_stock()         
+  remove_stock()       
+  adjust_stock()        
+  list_stock_movements() 
 """
 
 from app.inventory.repositories.category_repo import CategoryRepository
+from app.inventory.repositories.location_repo import LocationRepository
 from app.inventory.repositories.product_repo import ProductRepository
 from app.inventory.repositories.stock_repo import StockRepository
 
@@ -34,10 +32,12 @@ class InventoryService:
         stock_repo: StockRepository,
         product_repo: ProductRepository,
         category_repo: CategoryRepository,
+        location_repo: LocationRepository
       ): 
         self.stock_repo = stock_repo
         self.product_repo = product_repo
         self.category_repo = category_repo
+        self.location_repo = location_repo
 
 # product 
         
@@ -145,4 +145,14 @@ class InventoryService:
 
 # stock
 
-   
+    async def initialize_stock(self, location_id: int, product_id: int, quantity: int, reorder_point: int):
+        location = await self.location_repo.get_location(location_id)
+        if not location:
+           raise ValueError("invalid location id")
+        product = await self.product_repo.get_product(product_id)
+        if not product:
+           raise ValueError("invalid product id")
+        if quantity <= 0:
+          raise ValueError("quantity must be > 0")
+
+        return await self.stock_repo.initialize_stock(location_id, product_id, quantity, reorder_point)
