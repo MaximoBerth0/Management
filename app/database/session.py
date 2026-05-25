@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy import text
@@ -59,3 +60,17 @@ async def startup() -> None:
 async def shutdown() -> None:
     """Dispose engine on shutdown"""
     await engine.dispose()
+
+
+# helper for bootstraps (same logic as get_session)
+@asynccontextmanager
+async def get_script_session() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()

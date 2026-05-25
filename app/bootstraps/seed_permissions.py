@@ -1,6 +1,6 @@
 from app.core.constants.inventory_permissions import INVENTORY_PERMISSIONS
 from app.core.constants.system_permissions import SYSTEM_PERMISSIONS
-from app.database.unit_of_work import UnitOfWork
+from app.database.session import get_script_session
 from app.rbac.models.main_model import Permission
 from app.rbac.repositories.permission_repo import PermissionRepository
 
@@ -9,8 +9,8 @@ ALL_PERMISSIONS = set(
 )
 
 
-async def seed_permissions(uow: UnitOfWork) -> None:
-    async with uow as session:
+async def seed_permissions() -> None:
+    async with get_script_session() as session:
         repo = PermissionRepository(session)
 
         for code in ALL_PERMISSIONS:

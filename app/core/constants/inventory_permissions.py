@@ -3,18 +3,19 @@ INVENTORY_PERMISSIONS = [
     "products:view",
     "products:create",
     "products:update",
+    "products:activate",
     "products:deactivate",
+
+    # categories
+
+    "category:create",
+    "category:delete",   # delete category 
+    "category:add",
+    "category:remove",   # remove a PRODUCT from category 
 
     # stock
     "stock:in",
     "stock:out",
-    "stock:reserve",
-    "stock:release",
     "stock:adjust",
-
-    # reservations
-    "reservations:view",
-    "reservations:reserve",
-    "reservations:release",
-    "reservations:confirm",
+    "stock:view",
 ]

@@ -1,10 +1,10 @@
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.rbac.models.intermediate import role_permissions, user_roles
 from app.rbac.models.main_model import Role
 from app.users.models import User
-from app.rbac.models.intermediate import user_roles, role_permissions
 
 
 class RoleRepository:
@@ -35,6 +35,13 @@ class RoleRepository:
         self.db.add(role)
         await self.db.flush()
         return role
+
+    async def get_or_create(self, name: str, **kwargs) -> Role:
+        """ this is for bootstraps"""
+        role = await self.get_by_name(name)
+        if role:
+            return role
+        return await self.create(Role(name=name, **kwargs))
 
     async def delete(self, role: Role) -> None:
         await self.db.delete(role)

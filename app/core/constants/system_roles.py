@@ -12,8 +12,5 @@ SYSTEM_ROLES = {
         "reservations:view",
     ],
 
-    "client": [
-        "products:view",
-        "reservations:view",  
-    ],
+    "client": []
 }
