@@ -24,6 +24,8 @@ from fastapi import APIRouter, Depends, status
 from app.auth.dependencies import get_current_user
 from app.inventory.dependencies import provide_inventory_service
 from app.inventory.schemas import (
+    CategoryCreate,
+    CategoryResponse,
     ProductCreate,
     ProductListItemResponse,
     ProductResponse,
@@ -114,3 +116,28 @@ async def activate_product(
     service: InventoryService = Depends(provide_inventory_service),
 ):
     return await service.activate_product(id)
+
+@router.post(
+    "/categories",
+    response_model=CategoryResponse,
+    dependencies=[Depends(require_permission("category:create"))]
+)
+async def create_category(
+    payload: CategoryCreate,
+    service: InventoryService = Depends(provide_inventory_service)
+):
+    return await service.create_category(
+        name=payload.name,
+        description=payload.description
+    )
+
+@router.delete(
+    "/categories/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("category:delete"))]
+)
+async def delete_category(
+    id: int, 
+    service: InventoryService = Depends(provide_inventory_service)
+): 
+    await service.delete_category(id)

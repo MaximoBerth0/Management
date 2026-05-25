@@ -127,7 +127,7 @@ class InventoryService:
     
       return await self.category_repo.create_category(name, description)
     
-    async def remove_category(self, category_id: int):
+    async def delete_category(self, category_id: int):
       return await self.category_repo.delete_category(category_id)
 
     async def add_product_to_category(self, product_id: int, category_id: int):
@@ -144,6 +144,17 @@ class InventoryService:
         await self.category_repo.save_category(category)  
     
       return category
+    
+    async def remove_product_from_category(self, product_id: int, category_id: int):
+      category = await self.category_repo.get_category(category_id)
+      if not category:
+        raise ValueError(f"Category with ID {category_id} not found")
+
+      product = await self.product_repo.get_product(product_id)
+      if not product:
+        raise ValueError(f"Product with ID {product_id} not found")
+
+      return await self.category_repo.remove_product(category, product)
 
 # stock
 

@@ -1,4 +1,5 @@
 from app.inventory.models.category import Category
+from app.inventory.models.product import Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,6 +35,13 @@ class CategoryRepository:
         await self.db.refresh(category)
         return category
     
+    async def remove_product(self, category: Category, product: Product) -> Category:
+        if product in category.products:
+            category.products.remove(product)
+            await self.db.commit()
+            await self.db.refresh(category)
+        return category
+
     async def delete_category(self, category_id: int) -> bool:
         category = await self.get_category(category_id)
         if not category:

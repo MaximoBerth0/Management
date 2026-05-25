@@ -1,4 +1,3 @@
-# schema for router.py, only http for request and response
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -20,6 +19,16 @@ class ProductUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     sku: str | None = Field(None, min_length=1, max_length=100)
 
+class CategoryCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    description: str = Field(..., min_length=1, max_length=255)
+
+class AddProductToCategory(BaseModel):
+    product_id: int
+
+class RemoveProducFromCategory(BaseModel):
+    product_id: int
+
 
 # product response
 
@@ -38,3 +47,8 @@ class ProductResponse(ORMModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+class CategoryResponse(ORMModel):
+    id: int
+    name: str
+    description: str 
