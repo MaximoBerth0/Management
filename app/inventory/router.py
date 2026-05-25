@@ -17,7 +17,7 @@ POST   /inventory/stock/in                             - add stock
 POST   /inventory/stock/out                            - remove stock  
 POST   /inventory/stock/adjust                         - adjust stock
 GET    /inventory/stock/movements                      - list stock movements
-GET    /inventory/stock                                - get current stock levels
+GET    /inventory/stock?location_id&product_id&low_stock    - get current stock levels
 
 """
 from typing import Optional
@@ -169,7 +169,7 @@ async def add_product_to_category(
     await service.add_product_to_category(payload.product_id, category_id)
 
 @router.delete(
-    "categories/{category_id}/products",
+    "/categories/{category_id}/products",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require_permission("category:remove"))]
 )
@@ -216,7 +216,7 @@ async def add_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
-        user_id=current_user["id"]
+        user_id=current_user.id
     )
 
 
@@ -234,7 +234,7 @@ async def remove_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
-        user_id=current_user["id"]
+        user_id=current_user.id
     )
 
 
@@ -252,7 +252,7 @@ async def adjust_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
-        user_id=current_user["id"]
+        user_id=current_user.id
     )
 
 
