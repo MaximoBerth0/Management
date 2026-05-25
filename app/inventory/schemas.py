@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.inventory.models.enums import StockMovementType
 
 
 class ORMModel(BaseModel):
@@ -29,6 +32,19 @@ class AddProductToCategory(BaseModel):
 class RemoveProducFromCategory(BaseModel):
     product_id: int
 
+class StockInitialize(BaseModel):
+    location_id: int = Field()
+    product_id: int = Field()
+    quantity: int = Field()
+    reorder_point: int = Field()
+
+class StockTransaction(BaseModel):
+    product_id: int = Field()
+    location_id: int = Field()
+    quantity: int = Field()
+    reason: Optional[str] = Field(None, max_length=500)
+
+
 
 # product response
 
@@ -52,3 +68,30 @@ class CategoryResponse(ORMModel):
     id: int
     name: str
     description: str 
+
+class StockMovementResponse(BaseModel):
+    id: int
+    stock_id: int
+    movement_type: StockMovementType
+    quantity: int
+    previous_quantity: int
+    new_quantity: int
+    created_by: int
+    created_at: datetime
+
+class StockResponse(BaseModel):
+    id: int
+    location_id: int
+    product_id: int
+    quantity: int
+    reorder_point: int
+    created_at: datetime
+    updated_at: datetime
+
+class StockMovementListResponse(BaseModel):
+    items: List[StockMovementResponse]  
+    total: int
+
+class StockListResponse(BaseModel):
+    items: List[StockResponse]  
+    total: int

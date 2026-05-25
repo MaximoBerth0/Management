@@ -14,6 +14,7 @@ INVENTORY_PERMISSIONS = [
     "category:remove",   # remove a PRODUCT from category 
 
     # stock
+    "stock:create"
     "stock:in",
     "stock:out",
     "stock:adjust",

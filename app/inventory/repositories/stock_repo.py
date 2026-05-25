@@ -1,6 +1,9 @@
+from typing import Optional
+
 from app.inventory.models.stock import InventoryStock, StockMovement
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 class StockRepository:
@@ -55,6 +58,32 @@ class StockRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_stock_levels(
+        self,
+        location_id: Optional[int] = None,
+        product_id: Optional[int] = None,
+        low_stock: Optional[bool] = None
+    ) -> list[InventoryStock]:
+    
+        stmt = select(InventoryStock)
+    
+        if location_id:
+            stmt = stmt.where(InventoryStock.location_id == location_id)
+        if product_id:
+            stmt = stmt.where(InventoryStock.product_id == product_id)
+        if low_stock:
+            stmt = stmt.where(InventoryStock.quantity < InventoryStock.reorder_point)
+    
+    # load relationships with selecinload to avoid N+1 
+        stmt = stmt.options(
+            selectinload(InventoryStock.product),
+            selectinload(InventoryStock.location)
+         )
+    
+        stmt = stmt.order_by(InventoryStock.product_id, InventoryStock.location_id)
+    
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
 
 """

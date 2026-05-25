@@ -10,7 +10,8 @@ PRODUCT:
 CATEGORY:
   create_category()
   remove_category()
-  add_product_to_category()        
+  add_product_to_category() 
+  remove_product_from_category       
 
 STOCK:
   initialize_stock()     
@@ -18,10 +19,14 @@ STOCK:
   remove_stock()       
   adjust_stock()        
   list_stock_movements() 
+  get_stock_levels()
+
 """
 
+from typing import Optional
+
 from app.inventory.models.enums import StockMovementType
-from app.inventory.models.stock import StockMovement
+from app.inventory.models.stock import InventoryStock, StockMovement
 from app.inventory.repositories.category_repo import CategoryRepository
 from app.inventory.repositories.location_repo import LocationRepository
 from app.inventory.repositories.product_repo import ProductRepository
@@ -260,3 +265,16 @@ class InventoryService:
         raise ValueError(f"Stock with ID {stock_id} not found")
 
       return await self.stock_repo.list_stock_movements(stock_id, limit)
+    
+    async def get_stock_levels(
+      self,
+      location_id: Optional[int] = None,
+      product_id: Optional[int] = None,
+      low_stock: Optional[bool] = None
+    ) -> list[InventoryStock]:
+      
+      return await self.stock_repo.get_stock_levels(
+          location_id=location_id,
+          product_id=product_id,
+          low_stock=low_stock
+        )
