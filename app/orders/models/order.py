@@ -4,9 +4,8 @@ from typing import List
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.orders.models.enums import OrderStatus
 from app.database.base import Base
-from app.shared.exceptions.order_errors import InvalidOrderStateError
+from app.orders.models.enums import OrderStatus
 
 
 class Order(Base):
@@ -54,7 +53,7 @@ class Order(Base):
     def add_item(self, product_id: int, quantity: int):
 
         if self.status != OrderStatus.CREATED:
-            raise InvalidOrderStateError(
+            raise ValueError(
                 "Cannot modify order in current state"
             )
 
@@ -75,7 +74,7 @@ class Order(Base):
 
     def confirm(self):
         if self.status != OrderStatus.CREATED:
-            raise InvalidOrderStateError(
+            raise ValueError(
                 "Only created orders can be confirmed"
             )
 
@@ -86,7 +85,7 @@ class Order(Base):
             OrderStatus.CREATED,
             OrderStatus.CONFIRMED,
         }:
-            raise InvalidOrderStateError(
+            raise ValueError(
                 "Cannot cancel this order"
             )
 
@@ -94,7 +93,7 @@ class Order(Base):
 
     def complete(self):
         if self.status != OrderStatus.CONFIRMED:
-            raise InvalidOrderStateError(
+            raise ValueError(
                 "Only confirmed orders can be completed"
             )
 

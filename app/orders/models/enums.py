@@ -6,3 +6,8 @@ class OrderStatus(str, Enum):
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
+
+class ReservationStatus(str, Enum):
+    RESERVED = "reserved"
+    FULFILLED = "fulfilled"
+    RELEASED = "released"

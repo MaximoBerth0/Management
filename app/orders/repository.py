@@ -1,9 +1,10 @@
 from typing import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.orders.models.orders_model import Order
+from app.orders.models.order import Order
 
 
 class OrderRepository:
