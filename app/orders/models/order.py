@@ -50,28 +50,6 @@ class Order(Base):
             status=OrderStatus.CREATED,
         )
 
-    def add_item(self, product_id: int, quantity: int):
-
-        if self.status != OrderStatus.CREATED:
-            raise ValueError(
-                "Cannot modify order in current state"
-            )
-
-        if quantity <= 0:
-            raise ValueError("Quantity must be greater than zero")
-
-        for item in self.items:
-            if item.product_id == product_id:
-                item.quantity += quantity
-                return
-
-        item = OrderItem(
-            product_id=product_id,
-            quantity=quantity,
-        )
-
-        self.items.append(item)
-
     def confirm(self):
         if self.status != OrderStatus.CREATED:
             raise ValueError(
@@ -104,32 +82,36 @@ class OrderItem(Base):
     __tablename__ = "order_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
     order_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("orders.id"),
         nullable=False,
         index=True,
     )
-
     product_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("products.id"),
         nullable=False,
         index=True,
     )
-
     quantity: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
-
     order: Mapped["Order"] = relationship(
         back_populates="items",
     )
+
+    @classmethod
+    def create(cls, product_id: int, quantity: int) -> "OrderItem":
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than zero")
+        return cls(
+            product_id=product_id,
+            quantity=quantity,
+        )

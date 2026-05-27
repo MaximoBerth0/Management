@@ -11,8 +11,8 @@ from app.inventory.models.category import product_category
 
 if TYPE_CHECKING:
     from app.inventory.models.category import Category
+    from app.inventory.models.reservation import StockReservation
     from app.inventory.models.stock import InventoryStock
-    from app.orders.models.reservation import StockReservation
 
 
 class Product(Base):

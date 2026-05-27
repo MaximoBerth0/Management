@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
-from app.orders.models.enums import ReservationStatus
+from app.inventory.models.enums import ReservationStatus
+from app.inventory.models.stock import InventoryStock
+from app.orders.models.order import OrderItem
 
 
 class StockReservation(Base):
@@ -41,3 +43,18 @@ class StockReservation(Base):
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
+
+
+    order_item: Mapped["OrderItem"] = relationship(back_populates="reservation")
+    stock: Mapped["InventoryStock"] = relationship(back_populates="reservations")
+
+    @classmethod
+    def create(cls, order_item_id: int, stock_id: int, quantity: int) -> "StockReservation":
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than zero")
+        return cls(
+            order_item_id=order_item_id,
+            stock_id=stock_id,
+            quantity=quantity,
+            status=ReservationStatus.RESERVED,
+        )

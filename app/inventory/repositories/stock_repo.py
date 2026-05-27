@@ -84,12 +84,10 @@ class StockRepository:
     
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
-
-
-"""
-# used by orders/ 
-    async def get_available_stock() # stock.quantity - stock.reserved_quantity
-    async def reserve_stock()          
-    async def release_reservation()    
-    async def fulfill_reservation() 
-"""
+    
+    async def get_available_stock(self, stock_id: int) -> int | None:
+        stmt = select(
+            InventoryStock.quantity - InventoryStock.reserved_quantity
+        ).where(InventoryStock.id == stock_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()

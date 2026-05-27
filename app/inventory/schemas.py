@@ -10,7 +10,7 @@ class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# product request
+# request
 
 class ProductCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
@@ -46,7 +46,7 @@ class StockTransaction(BaseModel):
 
 
 
-# product response
+# response
 
 class ProductListItemResponse(ORMModel):
     id: int
