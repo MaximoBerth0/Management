@@ -25,6 +25,12 @@ class StockRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
     
+    async def get_available_stock_by_product(self, product_id: int) -> InventoryStock | None:
+        stmt = select(InventoryStock).where(InventoryStock.product_id == product_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    
     async def initialize_stock(self, location_id: int, product_id: int, quantity: int, reorder_point: int) -> InventoryStock:
         stock = InventoryStock(
             location_id=location_id,
