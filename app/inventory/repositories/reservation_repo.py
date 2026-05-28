@@ -63,8 +63,7 @@ class ReservationRepository:
         if not stock:
             raise ValueError("Stock not found")
 
-        stock.quantity += reservation.quantity
-        stock.reserved_quantity += reservation.quantity
+        stock.reserved_quantity -= reservation.quantity
 
         reservation.status = ReservationStatus.RELEASED
 

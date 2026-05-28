@@ -21,6 +21,11 @@ STOCK:
   list_stock_movements() 
   get_stock_levels()
 
+RESERVATION:
+  reserve_for_item()
+  release_reservation()
+  fulfill_reservation()
+
 """
 
 from typing import Optional
@@ -30,21 +35,24 @@ from app.inventory.models.stock import InventoryStock, StockMovement
 from app.inventory.repositories.category_repo import CategoryRepository
 from app.inventory.repositories.location_repo import LocationRepository
 from app.inventory.repositories.product_repo import ProductRepository
+from app.inventory.repositories.reservation_repo import ReservationRepository
 from app.inventory.repositories.stock_repo import StockRepository
 
 
-class InventoryService: 
+class InventoryService:
     def __init__(
         self,
         stock_repo: StockRepository,
         product_repo: ProductRepository,
         category_repo: CategoryRepository,
-        location_repo: LocationRepository
-      ): 
+        location_repo: LocationRepository,
+        reservation_repo: ReservationRepository,
+      ):
         self.stock_repo = stock_repo
         self.product_repo = product_repo
         self.category_repo = category_repo
         self.location_repo = location_repo
+        self.reservation_repo = reservation_repo
 
 # product 
         
@@ -278,3 +286,36 @@ class InventoryService:
           product_id=product_id,
           low_stock=low_stock
         )
+    
+# reservation
+
+    async def reserve_for_item(
+      self,
+      order_item_id: int,
+      product_id: int,
+      location_id: int,
+      quantity: int,
+    ):
+      if quantity <= 0:
+        raise ValueError("quantity must be > 0")
+
+      stock = await self.stock_repo.get_stock_by_location_and_product(
+        product_id=product_id,
+        location_id=location_id,
+      )
+      if not stock:
+        raise ValueError(
+          f"no stock for product {product_id} at location {location_id}"
+        )
+
+      return await self.reservation_repo.reserve_stock(
+        stock_id=stock.id,
+        order_item_id=order_item_id,
+        quantity=quantity,
+      )
+
+    async def release_reservation(self, reservation_id: int):
+      return await self.reservation_repo.release_reservation(reservation_id)
+
+    async def fulfill_reservation(self, reservation_id: int):
+      return await self.reservation_repo.fulfill_reservation(reservation_id)

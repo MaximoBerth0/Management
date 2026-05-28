@@ -11,7 +11,6 @@ from app.inventory.models.category import product_category
 
 if TYPE_CHECKING:
     from app.inventory.models.category import Category
-    from app.inventory.models.reservation import StockReservation
     from app.inventory.models.stock import InventoryStock
 
 
@@ -40,7 +39,4 @@ class Product(Base):
     stocks: Mapped[list["InventoryStock"]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",
-    )
-    reservations: Mapped[list["StockReservation"]] = relationship(
-        back_populates="product"
     )

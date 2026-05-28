@@ -1,11 +1,14 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 from app.orders.models.enums import OrderStatus
+
+if TYPE_CHECKING:
+    from app.inventory.models.reservation import StockReservation
 
 
 class Order(Base):
@@ -77,6 +80,26 @@ class Order(Base):
 
         self.status = OrderStatus.COMPLETED
 
+    def add_item(self, product_id: int, quantity: int) -> "OrderItem":
+        if self.status != OrderStatus.CREATED:
+            raise ValueError(
+                "Items can only be added to created orders"
+            )
+
+        item = OrderItem.create(product_id=product_id, quantity=quantity)
+        item.order = self
+        return item
+
+    def remove_item(self, product_id: int) -> None:
+        if self.status != OrderStatus.CREATED:
+            raise ValueError("Items can only be removed from created orders")
+        
+        for item in self.items:
+            if item.product_id == product_id:
+                self.items.remove(item)
+                return
+        
+        raise ValueError("Item not found in order")
 
 class OrderItem(Base):
     __tablename__ = "order_items"
@@ -105,6 +128,10 @@ class OrderItem(Base):
     )
     order: Mapped["Order"] = relationship(
         back_populates="items",
+    )
+    reservation: Mapped[Optional["StockReservation"]] = relationship(
+        back_populates="order_item",
+        uselist=False,
     )
 
     @classmethod
