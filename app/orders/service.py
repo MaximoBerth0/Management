@@ -41,7 +41,7 @@ class OrderService:
             raise ValueError("Order not found")
         return order
     
-    async def confirm_order(self, order_id: int, location_id: int, user_id: int) -> Order:
+    async def confirm_order(self, order_id: int, location_id: int) -> Order:
         async with self.db.begin(): 
             
             order = await self.order_repo.get_order(order_id)

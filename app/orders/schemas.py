@@ -17,6 +17,10 @@ class AddItemRequest(BaseModel):
     quantity: int = Field(..., gt=0)
 
 
+class ConfirmOrderRequest(BaseModel):
+    location_id: int = Field(..., gt=0)
+
+
 # response
 
 class OrderItemResponse(ORMModel):
@@ -24,7 +28,6 @@ class OrderItemResponse(ORMModel):
     product_id: int
     quantity: int
     created_at: datetime
-
 
 class OrderResponse(ORMModel):
     id: int

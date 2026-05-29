@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user
 from app.orders.dependencies import get_order_service
-from app.orders.models.order import Order
-from app.orders.schemas import AddItemRequest, OrderResponse
+from app.orders.schemas import AddItemRequest, ConfirmOrderRequest, OrderResponse
 from app.orders.service import OrderService
 from app.rbac.dependencies import require_permission
 from app.users.models import User
@@ -62,11 +61,70 @@ async def add_item_to_order(
 
 @router.delete(
     "/{order_id}/items/{product_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=OrderResponse,
     dependencies=[Depends(require_permission("order:remove"))]
 )
-async def remove_item_from_order(self, order_id: int, product_id: int) -> Order:
-    order = await self.order_repo.remove_item(order_id, product_id)
-    if order is None:
-        raise ValueError("Order not found")
+async def remove_item_from_order(
+    order_id: int,
+    product_id: int,
+    service: OrderService = Depends(get_order_service),
+) -> OrderResponse:
+    try:
+        order = await service.remove_item_from_order(
+            order_id=order_id,
+            product_id=product_id,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    return order
+
+# state transitions
+
+@router.patch(
+    "/{id}/confirm",
+    response_model=OrderResponse,
+    dependencies=[Depends(require_permission("order:confirm"))]
+)
+async def confirm_order(
+    id: int,
+    payload: ConfirmOrderRequest,
+    service: OrderService = Depends(get_order_service),
+) -> OrderResponse:
+    try:
+        order = await service.confirm_order(
+            order_id=id,
+            location_id=payload.location_id,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    return order
+
+@router.patch(
+    "/{id}/cancel",
+    response_model=OrderResponse,
+    dependencies=[Depends(require_permission("order:cancel"))]
+)
+async def cancel_order(
+    id: int,
+    service: OrderService = Depends(get_order_service),
+) -> OrderResponse:
+    try:
+        order = await service.cancel_order(order_id=id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    return order
+
+@router.patch(
+    "/{id}/complete",
+    response_model=OrderResponse,
+    dependencies=[Depends(require_permission("order:complete"))]
+)
+async def complete_order(
+    id: int,
+    service: OrderService = Depends(get_order_service),
+) -> OrderResponse:
+    try:
+        order = await service.complete_order(order_id=id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error))
     return order
