@@ -12,7 +12,6 @@ remove_item_from_order()
 confirm_order()
 cancel_order()
 complete_order()
-
 """
 
 class OrderService:
