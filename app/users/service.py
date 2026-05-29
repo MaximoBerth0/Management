@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security.passwords import hash_password
 from app.users.errors import UserAlreadyExists, UserNotFound
-from app.rbac.errors import PermissionDenied
 from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.schemas.command import CreateUserCommand, UpdateUserCommand
@@ -14,7 +13,6 @@ class UserService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.repo = UserRepository(session)
-
 
     async def register_user(self, data: CreateUserCommand) -> User:
         existing = await self.repo.get_by_email(str(data.email))
@@ -30,7 +28,6 @@ class UserService:
 
         await self.repo.create_user(user)
         return user
-
 
     async def update_profile(
         self,
@@ -62,7 +59,7 @@ class UserService:
             user=current_user,
             data=safe_data,
         )
-    
+
     async def list_users(
         self,
         skip: int = 0,
@@ -86,7 +83,7 @@ class UserService:
             raise UserNotFound("User not found")
 
         return user
-    
+
     async def get_user_by_email(
         self,
         email: str,
@@ -96,7 +93,7 @@ class UserService:
             raise UserNotFound("User not found")
 
         return user
-    
+
     async def enable_account(self, user_id: int) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:
@@ -108,7 +105,9 @@ class UserService:
 
         return await self.repo.enable_account(user)
 
-    async def disable_account(self, user_id: int, disabled_by_user_id: int, reason: str) -> User:
+    async def disable_account(
+        self, user_id: int, disabled_by_user_id: int, reason: str
+    ) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:
             raise UserNotFound("User not found")

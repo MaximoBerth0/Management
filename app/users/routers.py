@@ -4,22 +4,21 @@ from app.auth.dependencies import get_current_user
 from app.rbac.dependencies import require_permission
 from app.users.dependencies import get_user_service
 from app.users.models import User
-from app.users.service import UserService
-
 from app.users.schemas.api import (
-    UserCreateRequest,
-    UserUpdateRequest,
-    UserReadResponse,
-    UserListItemResponse,
     DisableUserRequest,
+    UserCreateRequest,
+    UserListItemResponse,
+    UserReadResponse,
+    UserUpdateRequest,
 )
-
 from app.users.schemas.command import (
     CreateUserCommand,
     UpdateUserCommand,
 )
+from app.users.service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
 
 @router.post(
     "/register",
@@ -37,6 +36,7 @@ async def register_user(
     )
 
     return await service.register_user(command)
+
 
 @router.put(
     "/me",
@@ -56,6 +56,7 @@ async def update_profile(
         current_user=current_user,
         data=command,
     )
+
 
 @router.get(
     "/list",

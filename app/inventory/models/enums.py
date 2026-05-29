@@ -6,6 +6,7 @@ class StockMovementType(str, Enum):
     OUT = "out"
     ADJUST = "adjust"
 
+
 class ReservationStatus(str, Enum):
     RESERVED = "reserved"
     FULFILLED = "fulfilled"

@@ -1,6 +1,1 @@
-USER_PERMISSIONS = [
-    "users:update",
-    "users:view",
-    "users:disable"
-    "users:enable"
-]
+USER_PERMISSIONS = ["users:update", "users:view", "users:disableusers:enable"]

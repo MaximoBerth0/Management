@@ -40,8 +40,8 @@ class UserRepository:
         await self.session.commit()
         await self.session.refresh(user)
         return user
-    
-    async def save_user(self, user:User) -> User: 
+
+    async def save_user(self, user: User) -> User:
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
@@ -54,4 +54,3 @@ class UserRepository:
         await self.session.commit()
         await self.session.refresh(user)
         return user
-

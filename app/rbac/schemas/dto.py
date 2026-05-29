@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
 from typing import Optional
 
+from pydantic import BaseModel, Field
 
-#input
+# input
+
 
 class RoleCreateDTO(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -32,7 +33,8 @@ class RemovePermissionFromRoleDTO(BaseModel):
     permission_id: int
 
 
-#output
+# output
+
 
 class RoleResponseDTO(BaseModel):
     id: int
@@ -42,5 +44,3 @@ class RoleResponseDTO(BaseModel):
     model_config = {
         "from_attributes": True  # allows ORM → DTO
     }
-
-

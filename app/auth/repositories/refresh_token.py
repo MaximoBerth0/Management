@@ -32,9 +32,7 @@ class RefreshTokenRepository:
         await self.db.commit()
 
     async def get_by_token(self, token: str) -> Optional[RefreshToken]:
-        stmt = select(RefreshToken).where(
-            RefreshToken.token_hash == _hash_token(token)
-        )
+        stmt = select(RefreshToken).where(RefreshToken.token_hash == _hash_token(token))
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 

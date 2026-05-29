@@ -7,10 +7,10 @@ all custom exceptions inherit from AppError and include:
 - error_code: machine-readable error identifier
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 
-class AppError(Exception):    
+class AppError(Exception):
     def __init__(
         self,
         message: str,

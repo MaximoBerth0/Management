@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import List, Optional
 
+from pydantic import BaseModel, Field
 
 # role request
+
 
 class RoleCreateRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -16,6 +17,7 @@ class RoleUpdateRequest(BaseModel):
 
 # permission request
 
+
 class AddPermissionToRoleRequest(BaseModel):
     permission_id: int
 
@@ -24,8 +26,8 @@ class RemovePermissionFromRoleRequest(BaseModel):
     permission_id: int
 
 
-
 # response model
+
 
 class PermissionResponse(BaseModel):
     id: int

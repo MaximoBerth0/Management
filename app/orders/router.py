@@ -18,18 +18,16 @@ PATCH /orders/{id}/cancel                - cancel order
 PATCH /orders/{id}/complete              - complete order
 """
 
-router = APIRouter(
-    prefix="orders/",
-    tags=["ORDERS"]
-)
+router = APIRouter(prefix="orders/", tags=["ORDERS"])
 
 # orders
+
 
 @router.post(
     "/",
     response_model=OrderResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_permission("order:create"))]
+    dependencies=[Depends(require_permission("order:create"))],
 )
 async def create_order(
     current_user: User = Depends(get_current_user),
@@ -38,12 +36,13 @@ async def create_order(
     order = await service.create_order(user_id=current_user.id)
     return order
 
+
 @router.post(
     "/{id}/items",
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_permission("order:add"))]
-) 
+    dependencies=[Depends(require_permission("order:add"))],
+)
 async def add_item_to_order(
     id: int,
     payload: AddItemRequest,
@@ -59,10 +58,11 @@ async def add_item_to_order(
         raise HTTPException(status_code=404, detail=str(error))
     return order
 
+
 @router.delete(
     "/{order_id}/items/{product_id}",
     response_model=OrderResponse,
-    dependencies=[Depends(require_permission("order:remove"))]
+    dependencies=[Depends(require_permission("order:remove"))],
 )
 async def remove_item_from_order(
     order_id: int,
@@ -78,12 +78,14 @@ async def remove_item_from_order(
         raise HTTPException(status_code=404, detail=str(error))
     return order
 
+
 # state transitions
+
 
 @router.patch(
     "/{id}/confirm",
     response_model=OrderResponse,
-    dependencies=[Depends(require_permission("order:confirm"))]
+    dependencies=[Depends(require_permission("order:confirm"))],
 )
 async def confirm_order(
     id: int,
@@ -99,10 +101,11 @@ async def confirm_order(
         raise HTTPException(status_code=404, detail=str(error))
     return order
 
+
 @router.patch(
     "/{id}/cancel",
     response_model=OrderResponse,
-    dependencies=[Depends(require_permission("order:cancel"))]
+    dependencies=[Depends(require_permission("order:cancel"))],
 )
 async def cancel_order(
     id: int,
@@ -114,10 +117,11 @@ async def cancel_order(
         raise HTTPException(status_code=404, detail=str(error))
     return order
 
+
 @router.patch(
     "/{id}/complete",
     response_model=OrderResponse,
-    dependencies=[Depends(require_permission("order:complete"))]
+    dependencies=[Depends(require_permission("order:complete"))],
 )
 async def complete_order(
     id: int,

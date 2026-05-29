@@ -34,6 +34,7 @@ app.add_middleware(
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
 
+
 # Exception handler
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
@@ -44,6 +45,7 @@ async def app_error_handler(request: Request, exc: AppError):
             "detail": str(exc),
         },
     )
+
 
 # Routers
 app.include_router(users_router)

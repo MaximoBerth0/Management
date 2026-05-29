@@ -10,7 +10,14 @@ from app.auth.schemas.api import (
     ResetPasswordRequest,
     TokenResponse,
 )
-from app.auth.schemas.dto import LoginDTO, LogoutDTO, RefreshSessionDTO, ForgotPasswordDTO, ResetPasswordDTO, ChangePasswordDTO
+from app.auth.schemas.dto import (
+    ChangePasswordDTO,
+    ForgotPasswordDTO,
+    LoginDTO,
+    LogoutDTO,
+    RefreshSessionDTO,
+    ResetPasswordDTO,
+)
 from app.auth.service import AuthService
 from app.users.models import User
 
@@ -30,7 +37,9 @@ async def refresh_tokens(
     data: RefreshTokensRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    return await service.refresh_session(RefreshSessionDTO(refresh_token=data.refresh_token))
+    return await service.refresh_session(
+        RefreshSessionDTO(refresh_token=data.refresh_token)
+    )
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -54,7 +63,9 @@ async def reset_password(
     data: ResetPasswordRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    await service.reset_password(ResetPasswordDTO(token=data.token, new_password=data.new_password))
+    await service.reset_password(
+        ResetPasswordDTO(token=data.token, new_password=data.new_password)
+    )
 
 
 @router.post(
@@ -66,4 +77,9 @@ async def change_password(
     current_user: User = Depends(get_current_user),
     service: AuthService = Depends(get_auth_service),
 ):
-    await service.change_password(current_user, ChangePasswordDTO(old_password=data.old_password, new_password=data.new_password))
+    await service.change_password(
+        current_user,
+        ChangePasswordDTO(
+            old_password=data.old_password, new_password=data.new_password
+        ),
+    )

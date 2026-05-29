@@ -55,9 +55,7 @@ class Order(Base):
 
     def confirm(self):
         if self.status != OrderStatus.CREATED:
-            raise ValueError(
-                "Only created orders can be confirmed"
-            )
+            raise ValueError("Only created orders can be confirmed")
 
         self.status = OrderStatus.CONFIRMED
 
@@ -66,25 +64,19 @@ class Order(Base):
             OrderStatus.CREATED,
             OrderStatus.CONFIRMED,
         }:
-            raise ValueError(
-                "Cannot cancel this order"
-            )
+            raise ValueError("Cannot cancel this order")
 
         self.status = OrderStatus.CANCELLED
 
     def complete(self):
         if self.status != OrderStatus.CONFIRMED:
-            raise ValueError(
-                "Only confirmed orders can be completed"
-            )
+            raise ValueError("Only confirmed orders can be completed")
 
         self.status = OrderStatus.COMPLETED
 
     def add_item(self, product_id: int, quantity: int) -> "OrderItem":
         if self.status != OrderStatus.CREATED:
-            raise ValueError(
-                "Items can only be added to created orders"
-            )
+            raise ValueError("Items can only be added to created orders")
 
         item = OrderItem.create(product_id=product_id, quantity=quantity)
         item.order = self
@@ -93,13 +85,14 @@ class Order(Base):
     def remove_item(self, product_id: int) -> None:
         if self.status != OrderStatus.CREATED:
             raise ValueError("Items can only be removed from created orders")
-        
+
         for item in self.items:
             if item.product_id == product_id:
                 self.items.remove(item)
                 return
-        
+
         raise ValueError("Item not found in order")
+
 
 class OrderItem(Base):
     __tablename__ = "order_items"

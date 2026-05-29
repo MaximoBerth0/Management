@@ -4,9 +4,7 @@ from app.database.session import get_script_session
 from app.rbac.models.main_model import Permission
 from app.rbac.repositories.permission_repo import PermissionRepository
 
-ALL_PERMISSIONS = set(
-    SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS
-)
+ALL_PERMISSIONS = set(SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS)
 
 
 async def seed_permissions() -> None:

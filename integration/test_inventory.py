@@ -1,7 +1,7 @@
 import pytest
+from app.core.security.passwords import hash_password
 from app.rbac.models.main_model import Role
 from app.users.models import User
-from app.core.security.passwords import hash_password
 
 
 @pytest.mark.asyncio
@@ -24,11 +24,7 @@ async def test_create_product_without_permission(client, db_session):
     await db_session.commit()
 
     response = await client.post(
-        "/auth/login",
-        json={
-            "email": "test@test.com",
-            "password": "fj8f835jfefue9df"
-        }
+        "/auth/login", json={"email": "test@test.com", "password": "fj8f835jfefue9df"}
     )
 
     assert response.status_code == 200, response.json()
@@ -38,13 +34,7 @@ async def test_create_product_without_permission(client, db_session):
     response = await client.post(
         "inventory/products",
         headers={"Authorization": f"Bearer {token}"},
-        json={
-            "name": "new_product",
-            "sku": "SKU-123"
-        }
+        json={"name": "new_product", "sku": "SKU-123"},
     )
 
     assert response.status_code == 403
-
-
-

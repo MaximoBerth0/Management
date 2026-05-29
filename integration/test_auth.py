@@ -1,11 +1,11 @@
 import pytest
-from app.users.service import UserService
-from app.users.schemas.command import CreateUserCommand
-from app.auth.service import AuthService
-from app.users.repository import UserRepository
-from app.auth.repositories.refresh_token import RefreshTokenRepository
 from app.auth.repositories.password_reset import PasswordResetTokenRepository
+from app.auth.repositories.refresh_token import RefreshTokenRepository
+from app.auth.service import AuthService
 from app.mail.mailer import Mailer
+from app.users.repository import UserRepository
+from app.users.schemas.command import CreateUserCommand
+from app.users.service import UserService
 
 
 @pytest.mark.anyio
@@ -51,16 +51,12 @@ async def test_refresh_token_rotation(client, db_session):
         json={
             "email": "test@test.com",
             "username": "testuser",
-            "password": "fj8f835jfefue9df"
-        }
+            "password": "fj8f835jfefue9df",
+        },
     )
 
     login_response = await client.post(
-        "/auth/login",
-        json={
-            "email": "test@test.com",
-            "password": "fj8f835jfefue9df"
-        }
+        "/auth/login", json={"email": "test@test.com", "password": "fj8f835jfefue9df"}
     )
 
     assert login_response.status_code == 200
@@ -69,8 +65,7 @@ async def test_refresh_token_rotation(client, db_session):
     refresh_token_1 = tokens["refresh_token"]
 
     refresh_response = await client.post(
-        "/auth/refresh",
-        json={"refresh_token": refresh_token_1}
+        "/auth/refresh", json={"refresh_token": refresh_token_1}
     )
 
     assert refresh_response.status_code == 200, refresh_response.json()
@@ -79,6 +74,3 @@ async def test_refresh_token_rotation(client, db_session):
     refresh_token_2 = new_tokens["refresh_token"]
 
     assert refresh_token_1 != refresh_token_2
-
-
-

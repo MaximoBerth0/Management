@@ -12,20 +12,18 @@ async def release_reservation()
 async def fulfill_reservation()  
 """
 
+
 class ReservationRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
     async def reserve_stock(
-        self,
-        stock_id: int,
-        order_item_id: int,
-        quantity: int
+        self, stock_id: int, order_item_id: int, quantity: int
     ) -> StockReservation:
         stmt = (
             select(InventoryStock)
             .where(InventoryStock.id == stock_id)
-            .with_for_update()  
+            .with_for_update()
         )
         result = await self.db.execute(stmt)
         stock = result.scalar_one_or_none()
@@ -47,8 +45,8 @@ class ReservationRepository:
         self.db.add(reservation)
 
         return reservation
-    
-    async def release_reservation(self, reservation_id:int) -> StockReservation:
+
+    async def release_reservation(self, reservation_id: int) -> StockReservation:
         reservation = await self.db.get(StockReservation, reservation_id)
         if not reservation:
             raise ValueError("Reservation not found")

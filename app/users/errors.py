@@ -1,6 +1,7 @@
 from app.core.global_errors import AppError
 
-class UserError(AppError):    
+
+class UserError(AppError):
     def __init__(
         self,
         message: str,
@@ -10,7 +11,7 @@ class UserError(AppError):
         super().__init__(message, status_code, error_code)
 
 
-class UserNotFound(UserError):    
+class UserNotFound(UserError):
     def __init__(self, message: str = "User not found"):
         super().__init__(
             message=message,
@@ -19,7 +20,7 @@ class UserNotFound(UserError):
         )
 
 
-class UserAlreadyExists(UserError):    
+class UserAlreadyExists(UserError):
     def __init__(self, message: str = "User already exists"):
         super().__init__(
             message=message,
@@ -28,7 +29,7 @@ class UserAlreadyExists(UserError):
         )
 
 
-class UserInactive(UserError):    
+class UserInactive(UserError):
     def __init__(self, message: str = "User account is inactive"):
         super().__init__(
             message=message,

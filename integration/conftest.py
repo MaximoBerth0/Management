@@ -10,14 +10,12 @@ os.environ["CELERY_BROKER_URL"] = "redis://localhost:6379/0"
 os.environ["CELERY_RESULT_BACKEND"] = "redis://localhost:6379/0"
 
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.pool import StaticPool
-
-from app.main import app
 from app.database.base import Base
 from app.database.session import get_session
-
+from app.main import app
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 # async engine
 
@@ -37,6 +35,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 # session fixture
 
+
 @pytest_asyncio.fixture(scope="function")
 async def db_session():
 
@@ -55,6 +54,7 @@ async def db_session():
 
 # async client
 
+
 @pytest_asyncio.fixture
 async def client(db_session):
 
@@ -65,11 +65,7 @@ async def client(db_session):
 
     transport = ASGITransport(app=app)
 
-    async with AsyncClient(
-        transport=transport,
-        base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
     app.dependency_overrides.clear()
-

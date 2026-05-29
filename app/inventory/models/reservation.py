@@ -44,12 +44,13 @@ class StockReservation(Base):
         default=lambda: datetime.now(timezone.utc),
     )
 
-
     order_item: Mapped["OrderItem"] = relationship(back_populates="reservation")
     stock: Mapped["InventoryStock"] = relationship(back_populates="reservations")
 
     @classmethod
-    def create(cls, order_item_id: int, stock_id: int, quantity: int) -> "StockReservation":
+    def create(
+        cls, order_item_id: int, stock_id: int, quantity: int
+    ) -> "StockReservation":
         if quantity <= 0:
             raise ValueError("Quantity must be greater than zero")
         return cls(

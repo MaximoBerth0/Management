@@ -2,7 +2,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-
     # App
     APP_NAME: str = "Management"
     ENV: str = "local"  # local | staging | prod
@@ -20,16 +19,16 @@ class Settings(BaseSettings):
     DB_ECHO: bool = False
 
     # Connection Timeouts (asyncpg specific)
-    DB_CONNECT_TIMEOUT: int = 10      # Timeout to establish connection
-    DB_COMMAND_TIMEOUT: int = 60      # Timeout for individual queries
-    DB_STATEMENT_TIMEOUT: int = 30000 # PostgreSQL statement timeout (ms)
+    DB_CONNECT_TIMEOUT: int = 10  # Timeout to establish connection
+    DB_COMMAND_TIMEOUT: int = 60  # Timeout for individual queries
+    DB_STATEMENT_TIMEOUT: int = 30000  # PostgreSQL statement timeout (ms)
 
     # Security /Auth
     SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15     
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    PASSWORD_HASH_SCHEME: str = "argon2"   # > security/passwords.py
+    PASSWORD_HASH_SCHEME: str = "argon2"  # > security/passwords.py
 
     # Server
     UVICORN_WORKERS: int = 1
@@ -37,9 +36,9 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         case_sensitive=True,
-        env_file=".env", 
-        env_file_encoding="utf-8",  
+        env_file=".env",
+        env_file_encoding="utf-8",
     )
 
-settings = Settings() # type: ignore
 
+settings = Settings()  # type: ignore

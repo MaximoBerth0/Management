@@ -10,28 +10,33 @@ class StockRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-# inventory 
+    # inventory
 
     async def get_stock(self, stock_id: int) -> InventoryStock | None:
         stmt = select(InventoryStock).where(InventoryStock.id == stock_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_stock_by_location_and_product(self, product_id: int, location_id: int) -> InventoryStock | None:
+    async def get_stock_by_location_and_product(
+        self, product_id: int, location_id: int
+    ) -> InventoryStock | None:
         stmt = select(InventoryStock).where(
             InventoryStock.product_id == product_id,
             InventoryStock.location_id == location_id,
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-    
-    async def get_available_stock_by_product(self, product_id: int) -> InventoryStock | None:
+
+    async def get_available_stock_by_product(
+        self, product_id: int
+    ) -> InventoryStock | None:
         stmt = select(InventoryStock).where(InventoryStock.product_id == product_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    
-    async def initialize_stock(self, location_id: int, product_id: int, quantity: int, reorder_point: int) -> InventoryStock:
+    async def initialize_stock(
+        self, location_id: int, product_id: int, quantity: int, reorder_point: int
+    ) -> InventoryStock:
         stock = InventoryStock(
             location_id=location_id,
             product_id=product_id,
@@ -53,8 +58,10 @@ class StockRepository:
         await self.db.commit()
         await self.db.refresh(movement)
         return movement
-    
-    async def list_stock_movements(self, stock_id: int, limit: int = 100) -> list[StockMovement]:
+
+    async def list_stock_movements(
+        self, stock_id: int, limit: int = 100
+    ) -> list[StockMovement]:
         stmt = (
             select(StockMovement)
             .where(StockMovement.stock_id == stock_id)
@@ -68,32 +75,31 @@ class StockRepository:
         self,
         location_id: Optional[int] = None,
         product_id: Optional[int] = None,
-        low_stock: Optional[bool] = None
+        low_stock: Optional[bool] = None,
     ) -> list[InventoryStock]:
-    
+
         stmt = select(InventoryStock)
-    
+
         if location_id:
             stmt = stmt.where(InventoryStock.location_id == location_id)
         if product_id:
             stmt = stmt.where(InventoryStock.product_id == product_id)
         if low_stock:
             stmt = stmt.where(InventoryStock.quantity < InventoryStock.reorder_point)
-    
-    # load relationships with selecinload to avoid N+1 
+
+        # load relationships with selecinload to avoid N+1
         stmt = stmt.options(
-            selectinload(InventoryStock.product),
-            selectinload(InventoryStock.location)
-         )
-    
+            selectinload(InventoryStock.product), selectinload(InventoryStock.location)
+        )
+
         stmt = stmt.order_by(InventoryStock.product_id, InventoryStock.location_id)
-    
+
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def get_available_stock(self, stock_id: int) -> int | None:
-        stmt = select(
-            InventoryStock.quantity - InventoryStock.reserved_quantity
-        ).where(InventoryStock.id == stock_id)
+        stmt = select(InventoryStock.quantity - InventoryStock.reserved_quantity).where(
+            InventoryStock.id == stock_id
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

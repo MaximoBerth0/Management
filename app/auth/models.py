@@ -45,9 +45,7 @@ class RefreshToken(Base):
         nullable=False,
     )
 
-    user: Mapped["User"] = relationship(
-        back_populates="refresh_tokens"
-    )
+    user: Mapped["User"] = relationship(back_populates="refresh_tokens")
 
 
 class PasswordResetToken(Base):
@@ -85,4 +83,3 @@ class PasswordResetToken(Base):
     )
 
     user: Mapped["User"] = relationship()
-

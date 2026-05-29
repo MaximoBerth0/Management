@@ -37,7 +37,7 @@ class RoleRepository:
         return role
 
     async def get_or_create(self, name: str, **kwargs) -> Role:
-        """ this is for bootstraps"""
+        """this is for bootstraps"""
         role = await self.get_by_name(name)
         if role:
             return role
@@ -46,7 +46,7 @@ class RoleRepository:
     async def delete(self, role: Role) -> None:
         await self.db.delete(role)
 
-# associations
+    # associations
 
     async def user_has_role(self, user_id: int, role_id: int) -> bool:
         stmt = (
@@ -69,12 +69,9 @@ class RoleRepository:
         await self.db.execute(stmt)
 
     async def remove_role_from_user(self, user_id: int, role_id: int) -> None:
-        stmt = (
-            delete(user_roles)
-            .where(
-                user_roles.c.user_id == user_id,
-                user_roles.c.role_id == role_id,
-            )
+        stmt = delete(user_roles).where(
+            user_roles.c.user_id == user_id,
+            user_roles.c.role_id == role_id,
         )
         await self.db.execute(stmt)
 
@@ -98,34 +95,25 @@ class RoleRepository:
         )
         await self.db.execute(stmt)
 
-    async def remove_permission_from_role(self, role_id: int, permission_id: int) -> None:
-        stmt = (
-            delete(role_permissions)
-            .where(
-                role_permissions.c.role_id == role_id,
-                role_permissions.c.permission_id == permission_id,
-            )
+    async def remove_permission_from_role(
+        self, role_id: int, permission_id: int
+    ) -> None:
+        stmt = delete(role_permissions).where(
+            role_permissions.c.role_id == role_id,
+            role_permissions.c.permission_id == permission_id,
         )
         await self.db.execute(stmt)
 
-# used by ensure_permission() avoiding N+1 queries
+    # used by ensure_permission() avoiding N+1 queries
     async def get_user_with_roles_and_permissions(
-            self,
-            user_id: int,
+        self,
+        user_id: int,
     ):
         stmt = (
             select(User)
             .where(User.id == user_id)
-            .options(
-                selectinload(User.roles)
-                .selectinload(Role.permissions)
-            )
+            .options(selectinload(User.roles).selectinload(Role.permissions))
         )
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-
-
-
-
-

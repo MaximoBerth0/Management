@@ -2,13 +2,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.exceptions import TokenExpired, TokenInvalid
 from app.auth.repositories.password_reset import PasswordResetTokenRepository
 from app.auth.repositories.refresh_token import RefreshTokenRepository
 from app.auth.service import AuthService
 from app.core.security.tokens import verify_access_token
 from app.database.session import get_session
 from app.mail.mailer import Mailer
-from app.auth.errors import TokenExpired, TokenInvalid
 from app.users.models import User
 from app.users.repository import UserRepository
 

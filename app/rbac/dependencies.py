@@ -1,12 +1,12 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user
 from app.database.session import get_session
+from app.rbac.errors import PermissionDenied
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
 from app.rbac.service import RBACService
-from app.auth.dependencies import get_current_user
-from app.rbac.errors import PermissionDenied
 
 
 def get_rbac_service(
@@ -21,7 +21,7 @@ def get_rbac_service(
 def require_permission(permission_code: str):
 
     async def dependency(
-        current_user = Depends(get_current_user),
+        current_user=Depends(get_current_user),
         rbac_service: RBACService = Depends(get_rbac_service),
     ):
         try:
@@ -36,6 +36,3 @@ def require_permission(permission_code: str):
             )
 
     return dependency
-
-
-

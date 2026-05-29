@@ -1,6 +1,7 @@
 import pytest
-from app.users.service import UserService
 from app.users.schemas.command import CreateUserCommand
+from app.users.service import UserService
+
 
 @pytest.mark.anyio
 async def test_create_user_success(db_session):

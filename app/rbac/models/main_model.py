@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database.base import Base
-from app.rbac.models.intermediate import user_roles, role_permissions
-
-from typing import TYPE_CHECKING
+from app.rbac.models.intermediate import role_permissions, user_roles
 
 if TYPE_CHECKING:
     from app.users.models import User
+
 
 class Permission(Base):
     __tablename__ = "permissions"

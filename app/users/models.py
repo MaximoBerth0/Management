@@ -4,10 +4,10 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.database.base import Base
 from app.auth.models import RefreshToken
-from app.rbac.models.main_model import Role
+from app.database.base import Base
 from app.rbac.models.intermediate import user_roles
+from app.rbac.models.main_model import Role
 
 
 class User(Base):
@@ -68,8 +68,7 @@ class User(Base):
         nullable=True,
     )
 
-
-    #relationships 
+    # relationships
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",

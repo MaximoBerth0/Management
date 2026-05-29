@@ -38,9 +38,9 @@ class PermissionRepository:
         await self.db.delete(permission)
 
     async def user_has_permission(
-            self,
-            user_id: int,
-            permission_id: int,
+        self,
+        user_id: int,
+        permission_id: int,
     ) -> bool:
         stmt = (
             select(role_permissions.c.role_id)
@@ -57,5 +57,3 @@ class PermissionRepository:
 
         result = await self.db.scalar(stmt)
         return result is not None
-
-

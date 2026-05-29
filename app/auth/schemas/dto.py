@@ -2,8 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
 
-
 # input
+
 
 class LoginDTO(BaseModel):
     email: EmailStr
@@ -33,6 +33,7 @@ class ChangePasswordDTO(BaseModel):
 
 
 # output
+
 
 class TokenResponseDTO(BaseModel):
     access_token: str

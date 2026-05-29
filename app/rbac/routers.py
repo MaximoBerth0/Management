@@ -1,15 +1,21 @@
 from fastapi import APIRouter, Depends, status
 
-from app.rbac.dependencies import get_rbac_service
+from app.rbac.dependencies import get_rbac_service, require_permission
 from app.rbac.schemas.api import (
-    RoleCreateRequest,
-    RoleUpdateRequest,
     AddPermissionToRoleRequest,
     RemovePermissionFromRoleRequest,
+    RoleCreateRequest,
+    RoleUpdateRequest,
 )
-from app.rbac.schemas.dto import RoleCreateDTO, RoleUpdateDTO, AddPermissionToRoleDTO, AssignRoleToUserDTO, RemovePermissionFromRoleDTO, RemoveRoleFromUserDTO
+from app.rbac.schemas.dto import (
+    AddPermissionToRoleDTO,
+    AssignRoleToUserDTO,
+    RemovePermissionFromRoleDTO,
+    RemoveRoleFromUserDTO,
+    RoleCreateDTO,
+    RoleUpdateDTO,
+)
 from app.rbac.service import RBACService
-from app.rbac.dependencies import require_permission
 
 router = APIRouter(
     prefix="/rbac",
@@ -17,6 +23,7 @@ router = APIRouter(
 )
 
 # roles
+
 
 @router.post(
     "/roles",
@@ -28,8 +35,8 @@ async def create_role(
     service: RBACService = Depends(get_rbac_service),
 ):
     dto = RoleCreateDTO(
-        name = data.name,
-        description = data.description,
+        name=data.name,
+        description=data.description,
     )
     return await service.create_role(dto)
 
@@ -51,6 +58,7 @@ async def update_role(
 
 
 # Role-Permission
+
 
 @router.post(
     "/roles/{role_id}/permissions",
@@ -88,7 +96,8 @@ async def remove_permission_from_role(
     )
 
 
-#==== ROLE-USER ====
+# ==== ROLE-USER ====
+
 
 @router.post(
     "/users/{user_id}/roles/{role_id}",

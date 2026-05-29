@@ -29,7 +29,9 @@ class OrderRepository:
 
     # OrderItem
 
-    async def append_item(self, order_id: int, product_id: int, quantity: int) -> Order | None:
+    async def append_item(
+        self, order_id: int, product_id: int, quantity: int
+    ) -> Order | None:
         order = await self.get_order(order_id)
         if order is None:
             return None
@@ -49,4 +51,3 @@ class OrderRepository:
         order.remove_item(product_id)
         await self.db.commit()
         return order
-

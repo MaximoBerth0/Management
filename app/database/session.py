@@ -21,13 +21,14 @@ engine: AsyncEngine = create_async_engine(
     pool_timeout=settings.DB_POOL_TIMEOUT,
     pool_recycle=settings.DB_POOL_RECYCLE,
     pool_pre_ping=settings.DB_POOL_PRE_PING,
-
     # connection timeouts (asyncpg specific)
     connect_args={
-        "timeout": settings.DB_CONNECT_TIMEOUT,        # connection timeout
-        "command_timeout": settings.DB_COMMAND_TIMEOUT, # query timeout
+        "timeout": settings.DB_CONNECT_TIMEOUT,  # connection timeout
+        "command_timeout": settings.DB_COMMAND_TIMEOUT,  # query timeout
         "server_settings": {
-            "statement_timeout": str(settings.DB_STATEMENT_TIMEOUT),  # PostgreSQL timeout
+            "statement_timeout": str(
+                settings.DB_STATEMENT_TIMEOUT
+            ),  # PostgreSQL timeout
         },
     },
 )
@@ -38,6 +39,7 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+
 
 # dependency fastAPI (transactions)
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -51,11 +53,13 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
+
 # lifecycle management
 async def startup() -> None:
     """Test database connection on startup"""
     async with engine.begin() as conn:
         await conn.execute(text("SELECT 1"))
+
 
 async def shutdown() -> None:
     """Dispose engine on shutdown"""

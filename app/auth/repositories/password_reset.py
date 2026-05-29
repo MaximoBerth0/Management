@@ -31,7 +31,6 @@ class PasswordResetTokenRepository:
             PasswordResetToken.token == token,
             PasswordResetToken.used.is_(False),
             PasswordResetToken.expires_at > datetime.now(timezone.utc),
-
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
