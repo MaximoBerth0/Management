@@ -8,7 +8,7 @@ from sqlalchemy.sql import func
 from app.database.base import Base
 
 if TYPE_CHECKING:
-    from app.users.models import User
+    from app.users.model import User
 
 
 class RefreshToken(Base):

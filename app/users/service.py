@@ -3,10 +3,9 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security.passwords import hash_password
-from app.users.errors import UserAlreadyExists, UserNotFound
-from app.users.models import User
+from app.users.exceptions import UserAlreadyExists, UserNotFound
+from app.users.model import User
 from app.users.repository import UserRepository
-from app.users.schemas.command import CreateUserCommand, UpdateUserCommand
 
 
 class UserService:
@@ -14,52 +13,28 @@ class UserService:
         self.session = session
         self.repo = UserRepository(session)
 
-    async def register_user(self, data: CreateUserCommand) -> User:
-        existing = await self.repo.get_by_email(str(data.email))
+    async def register_user(self, email: str, username: str, password: str) -> User:
+        existing = await self.repo.get_by_email(email)
         if existing:
             raise UserAlreadyExists("User with this email already exists")
-
         user = User(
-            email=str(data.email),
-            username=data.username,
-            hashed_password=hash_password(data.hashed_password),
+            email=email,
+            username=username,
+            hashed_password=hash_password(password),
             is_active=True,
         )
-
         await self.repo.create_user(user)
         return user
-
-    async def update_profile(
-        self,
-        current_user: User,
-        data: UpdateUserCommand,
-    ) -> User:
-        update_data = data.model_dump(exclude_unset=True)
-
-        if not update_data:
+    
+    async def update_profile(self, current_user: User, data: dict) -> User:
+        if not data:
             return current_user
-
-        forbidden_fields = {
-            "id",
-            "is_active",
-            "created_at",
-            "updated_at",
-        }
-
-        safe_data = {
-            field: value
-            for field, value in update_data.items()
-            if field not in forbidden_fields
-        }
-
+        forbidden_fields = {"id", "is_active", "created_at", "updated_at"}
+        safe_data = {k: v for k, v in data.items() if k not in forbidden_fields}
         if not safe_data:
             return current_user
-
-        return await self.repo.update_profile(
-            user=current_user,
-            data=safe_data,
-        )
-
+        return await self.repo.update_profile(user=current_user, data=safe_data)
+    
     async def list_users(
         self,
         skip: int = 0,

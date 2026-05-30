@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,23 +5,14 @@ from fastapi.responses import JSONResponse
 
 from app.auth.routers import router as auth_router
 from app.core.config import settings
-from app.database.session import init_db
+from app.core.global_errors import AppError
 from app.inventory.router import router as inventory_router
+from app.orders.router import router as order_router
 from app.rbac.routers import router as rbac_router
-from app.shared.exceptions.core_errors import AppError
-from app.users.routers import router as users_router
-
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    await init_db()
-    yield
-    # place for future shutdown logic (close redis, etc.)
-
+from app.users.router import router as users_router
 
 app = FastAPI(
     title=settings.APP_NAME,
-    lifespan=lifespan,
 )
 
 # Middleware
@@ -39,16 +29,13 @@ app.add_middleware(
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
-        status_code=400,
-        content={
-            "error": exc.__class__.__name__,
-            "detail": str(exc),
-        },
+        status_code=exc.status_code,
+        content={"error_code": exc.error_code, "detail": exc.message}
     )
-
 
 # Routers
 app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(rbac_router)
 app.include_router(inventory_router)
+app.include_router(order_router)

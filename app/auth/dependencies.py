@@ -9,7 +9,7 @@ from app.auth.service import AuthService
 from app.core.security.tokens import verify_access_token
 from app.database.session import get_session
 from app.mail.mailer import Mailer
-from app.users.models import User
+from app.users.model import User
 from app.users.repository import UserRepository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

@@ -9,7 +9,7 @@ from app.database.base import Base
 from app.rbac.models.intermediate import role_permissions, user_roles
 
 if TYPE_CHECKING:
-    from app.users.models import User
+    from app.users.model import User
 
 
 class Permission(Base):

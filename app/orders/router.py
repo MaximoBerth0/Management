@@ -5,7 +5,7 @@ from app.orders.dependencies import get_order_service
 from app.orders.schemas import AddItemRequest, ConfirmOrderRequest, OrderResponse
 from app.orders.service import OrderService
 from app.rbac.dependencies import require_permission
-from app.users.models import User
+from app.users.model import User
 
 """
 POST /orders                             - create order

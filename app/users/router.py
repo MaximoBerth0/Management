@@ -2,18 +2,14 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
 from app.rbac.dependencies import require_permission
-from app.users.dependencies import get_user_service
-from app.users.models import User
-from app.users.schemas.api import (
+from app.users.dependencies import provide_user_service
+from app.users.model import User
+from app.users.schemas import (
     DisableUserRequest,
     UserCreateRequest,
     UserListItemResponse,
     UserReadResponse,
     UserUpdateRequest,
-)
-from app.users.schemas.command import (
-    CreateUserCommand,
-    UpdateUserCommand,
 )
 from app.users.service import UserService
 
@@ -27,15 +23,13 @@ router = APIRouter(prefix="/users", tags=["Users"])
 )
 async def register_user(
     data: UserCreateRequest,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
 ):
-    command = CreateUserCommand(
+    return await service.register_user(
         email=data.email,
         username=data.username,
-        hashed_password=data.password,
+        password=data.password,
     )
-
-    return await service.register_user(command)
 
 
 @router.put(
@@ -44,17 +38,12 @@ async def register_user(
 )
 async def update_profile(
     data: UserUpdateRequest,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
     current_user: User = Depends(get_current_user),
 ):
-    command = UpdateUserCommand(
-        email=data.email,
-        username=data.username,
-    )
-
     return await service.update_profile(
         current_user=current_user,
-        data=command,
+        data=data.model_dump(exclude_unset=True),  # only include fields sent in the request
     )
 
 
@@ -64,7 +53,7 @@ async def update_profile(
     dependencies=[Depends(require_permission("users:view"))],
 )
 async def list_users(
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
 ):
     return await service.list_users()
 
@@ -76,7 +65,7 @@ async def list_users(
 )
 async def get_user_by_id(
     user_id: int,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
 ):
     return await service.get_user_by_id(user_id=user_id)
 
@@ -88,7 +77,7 @@ async def get_user_by_id(
 )
 async def get_user_by_email(
     email: str,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
 ):
     return await service.get_user_by_email(email=email)
 
@@ -101,7 +90,7 @@ async def get_user_by_email(
 async def disable_user(
     user_id: int,
     data: DisableUserRequest,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
     current_user: User = Depends(get_current_user),
 ):
     return await service.disable_account(
@@ -118,6 +107,6 @@ async def disable_user(
 )
 async def enable_user(
     user_id: int,
-    service: UserService = Depends(get_user_service),
+    service: UserService = Depends(provide_user_service),
 ):
     return await service.enable_account(user_id=user_id)

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from app.inventory.models.location import Location
     from app.inventory.models.product import Product
     from app.inventory.models.reservation import StockReservation
-    from app.users.models import User
+    from app.users.model import User
 
 
 class InventoryStock(Base):

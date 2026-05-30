@@ -45,7 +45,7 @@ from app.inventory.schemas import (
 )
 from app.inventory.service import InventoryService
 from app.rbac.dependencies import require_permission
-from app.users.models import User
+from app.users.model import User
 
 router = APIRouter(
     prefix="/inventory",

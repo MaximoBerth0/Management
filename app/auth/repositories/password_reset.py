@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.auth.models import PasswordResetToken
+from app.auth.model import PasswordResetToken
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 

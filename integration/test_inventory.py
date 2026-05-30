@@ -1,7 +1,7 @@
 import pytest
 from app.core.security.passwords import hash_password
 from app.rbac.models.main_model import Role
-from app.users.models import User
+from app.users.model import User
 
 
 @pytest.mark.asyncio

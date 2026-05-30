@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.rbac.models.intermediate import role_permissions, user_roles
 from app.rbac.models.main_model import Role
-from app.users.models import User
+from app.users.model import User
 
 
 class RoleRepository:
