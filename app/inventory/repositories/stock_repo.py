@@ -1,5 +1,6 @@
 from typing import Optional
 
+from app.inventory.models.reservation import StockReservation
 from app.inventory.models.stock import InventoryStock, StockMovement
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,12 +18,36 @@ class StockRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_stock_by_location_and_product(
+    async def get_stock_by_location_and_product_for_update(
         self, product_id: int, location_id: int
     ) -> InventoryStock | None:
-        stmt = select(InventoryStock).where(
-            InventoryStock.product_id == product_id,
-            InventoryStock.location_id == location_id,
+        stmt = (
+            select(InventoryStock)
+            .where(
+                InventoryStock.product_id == product_id,
+                InventoryStock.location_id == location_id,
+            )
+            .with_for_update()
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_stock_by_id_for_update(
+        self, stock_id: int
+    ) -> InventoryStock | None:
+        stmt = (
+            select(InventoryStock)
+            .where(InventoryStock.id == stock_id)
+            .with_for_update()
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_reservation_by_id(
+        self, reservation_id: int
+    ) -> StockReservation | None:
+        stmt = select(StockReservation).where(
+            StockReservation.id == reservation_id
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

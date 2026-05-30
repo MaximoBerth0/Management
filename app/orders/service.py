@@ -12,6 +12,11 @@ remove_item_from_order()
 confirm_order()
 cancel_order()
 complete_order()
+
+OrderService owns the transaction in confirm_order(), cancel_order(),
+and complete_order() because these operations span both order and
+inventory state. If any step fails, the entire operation rolls back.
+(delete this when documentation is ready)
 """
 
 
@@ -42,7 +47,7 @@ class OrderService:
         if order is None:
             raise ValueError("Order not found")
         return order
-
+    
     async def confirm_order(self, order_id: int, location_id: int) -> Order:
         async with self.db.begin():
             order = await self.order_repo.get_order(order_id)
@@ -74,7 +79,7 @@ class OrderService:
             if order.status == OrderStatus.CONFIRMED:
                 for item in order.items:
                     if item.reservation is not None:
-                        await self.inventory_service.release_reservation(
+                        await self.inventory_service.release_for_item(
                             item.reservation.id
                         )
 
@@ -89,7 +94,7 @@ class OrderService:
 
             for item in order.items:
                 if item.reservation is not None:
-                    await self.inventory_service.fulfill_reservation(
+                    await self.inventory_service.fulfill_for_item(
                         item.reservation.id
                     )
 

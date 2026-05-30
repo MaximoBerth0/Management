@@ -23,14 +23,34 @@ STOCK:
 
 RESERVATION:
   reserve_for_item()
-  release_reservation()
-  fulfill_reservation()
+  release_for_item()
+  fulfill_for_item()
 
 """
 
 from typing import Optional
 
-from app.inventory.models.enums import StockMovementType
+from app.inventory.exceptions import (
+    CategoryAlreadyExists,
+    CategoryDescriptionIsRequired,
+    CategoryNameIsRequired,
+    CategoryNotFound,
+    InsufficientStock,
+    InvalidLocation,
+    InvalidProductOrLocation,
+    InvalidQuantityStock,
+    InvalidReservationStatus,
+    NoParametersProvide,
+    ProductAlreadyExits,
+    ProductNameIsRequired,
+    ProductNotFound,
+    ReservationNotFound,
+    SKUIsRequired,
+    StockNegative,
+    StockNotFound,
+)
+from app.inventory.models.enums import ReservationStatus, StockMovementType
+from app.inventory.models.reservation import StockReservation
 from app.inventory.models.stock import InventoryStock, StockMovement
 from app.inventory.repositories.category_repo import CategoryRepository
 from app.inventory.repositories.location_repo import LocationRepository
@@ -58,6 +78,8 @@ class InventoryService:
 
     async def get_product(self, product_id: int):
         result = self.product_repo.get_product(product_id)
+        if result is None:
+            return ProductNotFound()
         return result
 
     async def list_products(self):
@@ -66,10 +88,10 @@ class InventoryService:
 
     async def create_product(self, name: str, sku: str, category_id: int):
         if not name or not name.strip():
-            raise ValueError("product name is required")
+            raise ProductNameIsRequired()
 
         if not sku or not sku.strip():
-            raise ValueError("SKU is required")
+            raise SKUIsRequired()
 
         # normalize
         name = name.strip()
@@ -77,11 +99,11 @@ class InventoryService:
 
         existing = await self.product_repo.get_by_sku(sku)
         if existing:
-            raise ValueError(f"product with SKU '{sku}' already exists")
+            raise ProductAlreadyExits()
 
         category_exists = await self.category_repo.get_category(category_id)
         if category_exists:
-            raise ValueError("category does not exist")
+            raise CategoryAlreadyExists()
 
         return await self.product_repo.create_product(name, sku, category_id)
 
@@ -92,25 +114,25 @@ class InventoryService:
         sku: str | None = None,
     ):
         if name is None and sku is None:
-            raise ValueError("At least one field must be provided for update")
+            raise NoParametersProvide()
 
         if name is not None:
             name = name.strip()
             if not name:
-                raise ValueError("Product name cannot be empty")
+                raise ProductNameIsRequired()
 
         if sku is not None:
             sku = sku.strip().upper()
             if not sku:
-                raise ValueError("SKU cannot be empty")
+                raise SKUIsRequired()
 
             existing = await self.product_repo.get_by_sku(sku)
             if existing and existing.id != product_id:
-                raise ValueError(f"Product with SKU '{sku}' already exists")
+                raise ProductAlreadyExits()
 
         product = await self.product_repo.update_product(product_id, name, sku)
         if not product:
-            raise ValueError(f"Product with ID {product_id} not found")
+            raise ProductNotFound()
 
         return product
 
@@ -126,17 +148,17 @@ class InventoryService:
 
     async def create_category(self, name: str, description: str):
         if not name or not name.strip():
-            raise ValueError("category name is required")
+            raise CategoryNameIsRequired()
 
         if not description or not description.strip():
-            raise ValueError("category description is required")
+            raise CategoryDescriptionIsRequired()
 
         name = name.strip()
         description = description.strip()
 
         existing = await self.category_repo.get_by_name(name)
         if existing:
-            raise ValueError(f"category '{name}' already exists")
+            raise CategoryAlreadyExists()
 
         return await self.category_repo.create_category(name, description)
 
@@ -146,11 +168,9 @@ class InventoryService:
     async def add_product_to_category(self, product_id: int, category_id: int):
         category = await self.category_repo.get_category(category_id)
         if not category:
-            raise ValueError(f"Category with ID {category_id} not found")
+            raise CategoryNotFound()
 
         product = await self.product_repo.get_product(product_id)
-        if not product:
-            raise ValueError(f"Product with ID {product_id} not found")
 
         if product not in category.products:
             category.products.append(product)
@@ -161,11 +181,9 @@ class InventoryService:
     async def remove_product_from_category(self, product_id: int, category_id: int):
         category = await self.category_repo.get_category(category_id)
         if not category:
-            raise ValueError(f"Category with ID {category_id} not found")
+            raise CategoryNotFound()
 
         product = await self.product_repo.get_product(product_id)
-        if not product:
-            raise ValueError(f"Product with ID {product_id} not found")
 
         return await self.category_repo.remove_product(category, product)
 
@@ -184,25 +202,23 @@ class InventoryService:
 
         location = await self.location_repo.get_location(location_id)
         if not location:
-            raise ValueError("invalid location id")
+            raise InvalidLocation()
 
-        product = await self.product_repo.get_product(product_id)
-        if not product:
-            raise ValueError("invalid product id")
+        await self.product_repo.get_product(product_id)
 
         if quantity <= 0:
-            raise ValueError("quantity must be > 0")
+            raise InvalidQuantityStock()
 
         return await self.stock_repo.initialize_stock(
             location_id, product_id, quantity, reorder_point
         )
 
     async def add_stock(self, product_id, location_id, quantity, user_id):
-        stock = await self.stock_repo.get_stock_by_location_and_product(
+        stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id, location_id
         )
         if not stock:
-            raise ValueError("Invalid product or location id")
+            raise InvalidProductOrLocation()
 
         previous_quantity = stock.quantity
 
@@ -223,14 +239,14 @@ class InventoryService:
         return movement
 
     async def remove_stock(self, product_id, location_id, quantity, user_id):
-        stock = await self.stock_repo.get_stock_by_location_and_product(
+        stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id, location_id
         )
         if not stock:
-            raise ValueError("Invalid product or location id")
+            raise InvalidProductOrLocation()
 
         if stock.quantity < quantity:
-            raise ValueError("stock cannot be negative")
+            raise StockNegative()
 
         previous_quantity = stock.quantity
 
@@ -251,14 +267,14 @@ class InventoryService:
         return movement
 
     async def adjust_stock(self, product_id, location_id, quantity, user_id):
-        stock = await self.stock_repo.get_stock_by_location_and_product(
+        stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id, location_id
         )
         if not stock:
-            raise ValueError("Invalid product or location id")
+            raise InvalidProductOrLocation()
 
         if quantity < 0:
-            raise ValueError("stock cannot be negative")
+            raise StockNegative()
 
         previous_quantity = stock.quantity
         stock.quantity = quantity
@@ -280,7 +296,7 @@ class InventoryService:
     async def list_stock_movements(self, stock_id: int, limit: int = 100):
         stock = await self.stock_repo.get_stock(stock_id)
         if not stock:
-            raise ValueError(f"Stock with ID {stock_id} not found")
+            raise StockNotFound()
 
         return await self.stock_repo.list_stock_movements(stock_id, limit)
 
@@ -303,27 +319,64 @@ class InventoryService:
         product_id: int,
         location_id: int,
         quantity: int,
-    ):
+    ) -> StockReservation:
         if quantity <= 0:
-            raise ValueError("quantity must be > 0")
+            raise InvalidQuantityStock()
 
-        stock = await self.stock_repo.get_stock_by_location_and_product(
+        stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id=product_id,
             location_id=location_id,
         )
         if not stock:
-            raise ValueError(
-                f"no stock for product {product_id} at location {location_id}"
-            )
+            raise StockNotFound()
 
-        return await self.reservation_repo.reserve_stock(
-            stock_id=stock.id,
+        available = stock.quantity - stock.reserved_quantity
+        if available < quantity:
+            raise InsufficientStock()
+
+        stock.reserved_quantity += quantity
+
+        return await self.reservation_repo.create_reservation(
             order_item_id=order_item_id,
+            stock_id=stock.id,
             quantity=quantity,
         )
 
-    async def release_reservation(self, reservation_id: int):
-        return await self.reservation_repo.release_reservation(reservation_id)
+    async def release_for_item(self, reservation_id: int) -> StockReservation:
+        reservation = await self.stock_repo.get_reservation_by_id(reservation_id)
+        if not reservation:
+            raise ReservationNotFound()
 
-    async def fulfill_reservation(self, reservation_id: int):
-        return await self.reservation_repo.fulfill_reservation(reservation_id)
+        if reservation.status != ReservationStatus.RESERVED:
+            raise InvalidReservationStatus()
+
+        stock = await self.stock_repo.get_stock_by_id_for_update(
+            reservation.stock_id
+        )
+        if not stock:
+            raise StockNotFound()
+
+        stock.reserved_quantity -= reservation.quantity
+        reservation.status = ReservationStatus.RELEASED
+
+        return reservation
+
+    async def fulfill_for_item(self, reservation_id: int) -> StockReservation:
+        reservation = await self.stock_repo.get_reservation_by_id(reservation_id)
+        if not reservation:
+            raise ReservationNotFound()
+
+        if reservation.status != ReservationStatus.RESERVED:
+            raise InvalidReservationStatus()
+
+        stock = await self.stock_repo.get_stock_by_id_for_update(
+            reservation.stock_id
+        )
+        if not stock:
+            raise StockNotFound()
+
+        stock.quantity -= reservation.quantity
+        stock.reserved_quantity -= reservation.quantity
+        reservation.status = ReservationStatus.FULFILLED
+
+        return reservation
