@@ -1,21 +1,29 @@
 from fastapi import APIRouter, Depends, status
 
 from app.rbac.dependencies import get_rbac_service, require_permission
-from app.rbac.schemas.api import (
+from app.rbac.models.role import Role
+from app.rbac.schemas import (
     AddPermissionToRoleRequest,
     RemovePermissionFromRoleRequest,
     RoleCreateRequest,
+    RoleResponse,
     RoleUpdateRequest,
 )
-from app.rbac.schemas.dto import (
-    AddPermissionToRoleDTO,
-    AssignRoleToUserDTO,
-    RemovePermissionFromRoleDTO,
-    RemoveRoleFromUserDTO,
-    RoleCreateDTO,
-    RoleUpdateDTO,
-)
 from app.rbac.service import RBACService
+
+"""
+POST   /rbac/roles                                      - create role
+PATCH  /rbac/roles/{role_id}                            - update role
+GET    /rbac/roles                                      - list roles
+
+# role-permission
+POST   /rbac/roles/{role_id}/permissions               - assign permission to role
+DELETE /rbac/roles/{role_id}/permissions               - remove permission from role
+
+# role-user
+POST   /rbac/users/{user_id}/roles/{role_id}           - assign role to user
+DELETE /rbac/users/{user_id}/roles/{role_id}           - remove role from user
+"""
 
 router = APIRouter(
     prefix="/rbac",
@@ -27,6 +35,7 @@ router = APIRouter(
 
 @router.post(
     "/roles",
+    response_model=RoleResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_permission("role:create"))],
 )
@@ -34,27 +43,38 @@ async def create_role(
     data: RoleCreateRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
-    dto = RoleCreateDTO(
+    return await service.create_role(
         name=data.name,
         description=data.description,
     )
-    return await service.create_role(dto)
 
 
 @router.patch(
     "/roles/{role_id}",
+    response_model=RoleResponse,
     dependencies=[Depends(require_permission("role:update"))],
 )
 async def update_role(
-    role_id: int,
+    role_id,
     data: RoleUpdateRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
-    dto = RoleUpdateDTO(
+    return await service.update_role(
+        role_id,
         name=data.name,
         description=data.description,
     )
-    return await service.update_role(role_id, dto)
+
+
+@router.get(
+    "/roles",
+    response_model=list[RoleResponse],
+    dependencies=[Depends(require_permission("role:list"))],
+)
+async def list_roles(
+    service: RBACService = Depends(get_rbac_service),
+) -> list[Role]:
+    return await service.list_roles()
 
 
 # Role-Permission
@@ -69,11 +89,10 @@ async def assign_permission_to_role(
     data: AddPermissionToRoleRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
-    dto = AddPermissionToRoleDTO(
+    return await service.add_permission_to_role(
+        role_id=role_id,
         permission_id=data.permission_id,
     )
-
-    return await service.add_permission_to_role(role_id, dto)
 
 
 @router.delete(
@@ -86,13 +105,9 @@ async def remove_permission_from_role(
     data: RemovePermissionFromRoleRequest,
     service: RBACService = Depends(get_rbac_service),
 ) -> None:
-    dto = RemovePermissionFromRoleDTO(
-        permission_id=data.permission_id,
-    )
-
     await service.remove_permission_from_role(
         role_id=role_id,
-        data=dto,
+        permission_id=data.permission_id,
     )
 
 
@@ -109,12 +124,10 @@ async def assign_role_to_user(
     role_id: int,
     service: RBACService = Depends(get_rbac_service),
 ):
-    dto = AssignRoleToUserDTO(
+    return await service.assign_role_to_user(
         user_id=user_id,
         role_id=role_id,
     )
-
-    return await service.assign_role_to_user(dto)
 
 
 @router.delete(
@@ -127,9 +140,7 @@ async def remove_role_from_user(
     role_id: int,
     service: RBACService = Depends(get_rbac_service),
 ) -> None:
-    dto = RemoveRoleFromUserDTO(
+    await service.remove_role_from_user(
         user_id=user_id,
         role_id=role_id,
     )
-
-    await service.remove_role_from_user(dto)

@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-# role request
+# request
 
 
 class RoleCreateRequest(BaseModel):
@@ -15,9 +15,6 @@ class RoleUpdateRequest(BaseModel):
     description: Optional[str] = Field(default=None, max_length=255)
 
 
-# permission request
-
-
 class AddPermissionToRoleRequest(BaseModel):
     permission_id: int
 
@@ -26,15 +23,18 @@ class RemovePermissionFromRoleRequest(BaseModel):
     permission_id: int
 
 
-# response model
-
+# response
 
 class PermissionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
 
 
 class RoleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     description: Optional[str]
@@ -42,5 +42,7 @@ class RoleResponse(BaseModel):
 
 
 class UserRoleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     user_id: int
     role_id: int

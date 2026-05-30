@@ -2,8 +2,9 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.rbac.models.intermediate import role_permissions, user_roles
-from app.rbac.models.main_model import Role
+from app.rbac.models.role import Role
+from app.rbac.models.role_permission import role_permissions
+from app.rbac.models.user_role import user_roles
 from app.users.model import User
 
 

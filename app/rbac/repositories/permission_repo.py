@@ -1,8 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.rbac.models.intermediate import role_permissions, user_roles
-from app.rbac.models.main_model import Permission
+from app.rbac.models.permission import Permission
+from app.rbac.models.role_permission import role_permissions
+from app.rbac.models.user_role import user_roles
 
 
 class PermissionRepository:

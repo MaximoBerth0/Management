@@ -1,4 +1,4 @@
-from app.rbac.errors import (
+from app.rbac.exceptions import (
     PermissionAlreadyAssigned,
     PermissionDenied,
     PermissionNotFound,
@@ -8,18 +8,9 @@ from app.rbac.errors import (
     RolePermissionNotFound,
     UserRoleNotFound,
 )
-from app.rbac.models.main_model import Role
+from app.rbac.models.role import Role
 from app.rbac.repositories.permission_repo import PermissionRepository
 from app.rbac.repositories.role_repo import RoleRepository
-from app.rbac.schemas.dto import (
-    AddPermissionToRoleDTO,
-    AssignRoleToUserDTO,
-    RemovePermissionFromRoleDTO,
-    RemoveRoleFromUserDTO,
-    RoleCreateDTO,
-    RoleResponseDTO,
-    RoleUpdateDTO,
-)
 
 
 class RBACService:
@@ -32,73 +23,78 @@ class RBACService:
         self.permission_repo = permission_repo
 
     # Roles
-    async def create_role(self, data: RoleCreateDTO) -> RoleResponseDTO:
-        if await self.role_repo.get_by_name(data.name):
+    async def create_role(self, name: str, description: str | None = None) -> Role:
+        if await self.role_repo.get_by_name(name):
             raise RoleAlreadyExists()
 
-        role = Role(name=data.name, description=data.description)
+        role = Role(name=name, description=description)
         await self.role_repo.create(role)
-        return RoleResponseDTO.model_validate(role)
+        return role
 
-    async def update_role(self, role_id: int, data: RoleUpdateDTO) -> RoleResponseDTO:
+    async def update_role(
+        self,
+        role_id: int,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> Role:
         role = await self.role_repo.get_by_id(role_id)
         if not role:
             raise RoleNotFound()
 
-        if data.name:
-            existing = await self.role_repo.get_by_name(data.name)
+        if name:
+            existing = await self.role_repo.get_by_name(name)
             if existing and existing.id != role_id:
                 raise RoleAlreadyExists()
-            role.name = data.name
+            role.name = name
 
-        if data.description is not None:
-            role.description = data.description
+        if description is not None:
+            role.description = description
 
-        return RoleResponseDTO.model_validate(role)
+        return role
 
-    async def list_roles(self) -> list[RoleResponseDTO]:
+    async def list_roles(self) -> list[Role]:
         roles = await self.role_repo.get_all()
-        return [RoleResponseDTO.model_validate(r) for r in roles]
+        return roles
 
     # Role-User
-    async def assign_role_to_user(self, data: AssignRoleToUserDTO):
-        role = await self.role_repo.get_by_id(data.role_id)
-        if not role:
-            raise RoleNotFound()
-
-        if await self.role_repo.user_has_role(data.user_id, data.role_id):
-            raise RoleAlreadyAssignedToUser()
-
-        await self.role_repo.add_role_to_user(data.user_id, data.role_id)
-
-    async def remove_role_from_user(self, data: RemoveRoleFromUserDTO) -> None:
-        if not await self.role_repo.user_has_role(data.user_id, data.role_id):
-            raise UserRoleNotFound()
-
-        await self.role_repo.remove_role_from_user(data.user_id, data.role_id)
-
-    # Role-Permission
-    async def add_permission_to_role(self, role_id: int, data: AddPermissionToRoleDTO):
+    async def assign_role_to_user(self, user_id: int , role_id: int):
         role = await self.role_repo.get_by_id(role_id)
         if not role:
             raise RoleNotFound()
 
-        permission = await self.permission_repo.get_by_id(data.permission_id)
+        if await self.role_repo.user_has_role(user_id, role_id):
+            raise RoleAlreadyAssignedToUser()
+
+        await self.role_repo.add_role_to_user(user_id, role_id)
+
+    async def remove_role_from_user(self, user_id, role_id) -> None:
+        if not await self.role_repo.user_has_role(user_id, role_id):
+            raise UserRoleNotFound()
+
+        await self.role_repo.remove_role_from_user(user_id, role_id)
+
+    # Role-Permission
+    async def add_permission_to_role(self, role_id: int, permission_id: int):
+        role = await self.role_repo.get_by_id(role_id)
+        if not role:
+            raise RoleNotFound()
+
+        permission = await self.permission_repo.get_by_id(permission_id)
         if not permission:
             raise PermissionNotFound()
 
-        if await self.role_repo.role_has_permission(role_id, data.permission_id):
+        if await self.role_repo.role_has_permission(role_id, permission_id):
             raise PermissionAlreadyAssigned()
 
-        await self.role_repo.add_permission_to_role(role_id, data.permission_id)
+        await self.role_repo.add_permission_to_role(role_id, permission_id)
 
     async def remove_permission_from_role(
-        self, role_id: int, data: RemovePermissionFromRoleDTO
-    ) -> None:
-        if not await self.role_repo.role_has_permission(role_id, data.permission_id):
+        self, role_id: int, permission_id: int) -> None:
+
+        if not await self.role_repo.role_has_permission(role_id, permission_id):
             raise RolePermissionNotFound()
 
-        await self.role_repo.remove_permission_from_role(role_id, data.permission_id)
+        await self.role_repo.remove_permission_from_role(role_id, permission_id)
 
     # permission checks
     async def ensure_permission(self, user_id: int, permission_code: str) -> None:
