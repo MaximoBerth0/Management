@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.inventory.service import InventoryService
+from app.orders.exceptions import OrderIsNotPending, OrderNotFound
 from app.orders.models.enums import OrderStatus
 from app.orders.models.order import Order
 from app.orders.repository import OrderRepository
@@ -39,25 +40,22 @@ class OrderService:
     ) -> Order:
         order = await self.order_repo.append_item(order_id, product_id, quantity)
         if order is None:
-            raise ValueError("Order not found")
+            raise OrderNotFound()
         return order
 
     async def remove_item_from_order(self, order_id: int, product_id: int) -> Order:
         order = await self.order_repo.remove_item(order_id, product_id)
         if order is None:
-            raise ValueError("Order not found")
+            raise OrderNotFound()
         return order
     
     async def confirm_order(self, order_id: int, location_id: int) -> Order:
         async with self.db.begin():
             order = await self.order_repo.get_order(order_id)
             if order is None:
-                raise ValueError("Order not found")
+                raise OrderNotFound()
             if order.status != OrderStatus.CREATED:
-                raise ValueError(
-                    f"Order is not pending, current status: {order.status}"
-                )
-
+                raise OrderIsNotPending()
             for item in order.items:
                 await self.inventory_service.reserve_for_item(
                     order_item_id=item.id,
@@ -74,7 +72,7 @@ class OrderService:
         async with self.db.begin():
             order = await self.order_repo.get_order(order_id)
             if order is None:
-                raise ValueError("Order not found")
+                raise OrderNotFound()
 
             if order.status == OrderStatus.CONFIRMED:
                 for item in order.items:
@@ -90,7 +88,7 @@ class OrderService:
         async with self.db.begin():
             order = await self.order_repo.get_order(order_id)
             if order is None:
-                raise ValueError("Order not found")
+                raise OrderNotFound()
 
             for item in order.items:
                 if item.reservation is not None:

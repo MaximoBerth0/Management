@@ -22,6 +22,7 @@ dependencies = [
 
   "python-jose[cryptography]",
   "passlib[argon2]",
+  "python-json-logger",
 ]
 
 [project.optional-dependencies]
