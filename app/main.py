@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.global_errors import AppError
 from app.inventory.router import router as inventory_router
 from app.observability.logging import setup_logging
+from app.observability.request_id import RequestIdMiddleware
 from app.orders.router import router as order_router
 from app.rbac.routers import router as rbac_router
 from app.users.router import router as users_router
@@ -24,9 +25,9 @@ app = FastAPI(
     openapi_url=None if settings.ENV == "prod" else "/openapi.json",
 )
 
-# Middleware
-app.add_middleware(
-    CORSMiddleware,
+# middleware
+app.add_middleware(RequestIdMiddleware)
+app.add_middleware(CORSMiddleware,
     allow_origins=settings.CORS_ALLOW_ORIGINS,
     allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
     allow_methods=settings.CORS_ALLOW_METHODS,

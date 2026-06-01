@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
@@ -13,6 +15,8 @@ from app.users.schemas import (
 )
 from app.users.service import UserService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
@@ -25,11 +29,14 @@ async def register_user(
     data: UserCreateRequest,
     service: UserService = Depends(provide_user_service),
 ):
-    return await service.register_user(
+    logger.info("register endpoint called", extra={"email": data.email})
+    user = await service.register_user(
         email=data.email,
         username=data.username,
         password=data.password,
     )
+    logger.info("register endpoint succeeded", extra={"user_id": str(user.id)})
+    return user
 
 
 @router.put(
@@ -41,10 +48,13 @@ async def update_profile(
     service: UserService = Depends(provide_user_service),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.update_profile(
+    logger.info("update endpoint called", extra={"user_id": current_user.id})
+    updated_user = await service.update_profile(
         current_user=current_user,
         data=data.model_dump(exclude_unset=True),  # only include fields sent in the request
     )
+    logger.info("update endpoint suceeded", extra={"user_id": current_user.id})
+    return updated_user 
 
 
 @router.get(
@@ -93,11 +103,14 @@ async def disable_user(
     service: UserService = Depends(provide_user_service),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.disable_account(
+    logger.info("disable_user endpoint called", extra={"user_id": current_user.id})
+    disable_user = await service.disable_account(
         user_id=user_id,
         disabled_by_user_id=current_user.id,
         reason=data.reason,
     )
+    logger.info("disable_user endpoint suceeded", extra={"user_id": current_user.id})
+    return disable_user
 
 
 @router.patch(
@@ -109,4 +122,8 @@ async def enable_user(
     user_id: int,
     service: UserService = Depends(provide_user_service),
 ):
-    return await service.enable_account(user_id=user_id)
+    logger.info("enable_user endpoint called")
+    disable_user = await service.enable_account(user_id=user_id)
+
+    logger.info("enable_user endpoint suceeded")
+    return disable_user

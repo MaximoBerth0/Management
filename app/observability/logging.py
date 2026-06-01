@@ -10,10 +10,15 @@ def setup_logging() -> None:
     config = {
         "version": 1,
         "disable_existing_loggers": False,
+        "filters": {
+            "request_id": {
+                "()": "app.observability.request_id.RequestIdFilter",
+            },
+        },
         "formatters": {
             "json": {
                 "()": "pythonjsonlogger.json.JsonFormatter",
-                "fmt": "%(asctime)s %(name)s %(levelname)s %(message)s",
+                "fmt": "%(asctime)s %(name)s %(levelname)s %(request_id)s %(message)s",
                 "rename_fields": {
                     "asctime": "timestamp",
                     "levelname": "level",
@@ -21,7 +26,7 @@ def setup_logging() -> None:
                 },
             },
             "plain": {
-                "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
+                "format": "%(asctime)s %(name)s %(levelname)s [%(request_id)s] %(message)s",
             },
         },
         "handlers": {
@@ -29,6 +34,7 @@ def setup_logging() -> None:
                 "class": "logging.StreamHandler",
                 "stream": "ext://sys.stdout",
                 "formatter": "json" if settings.ENV == "prod" else "plain",
+                "filters": ["request_id"],
             },
         },
         "root": {
