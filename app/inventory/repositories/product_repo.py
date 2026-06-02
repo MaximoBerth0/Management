@@ -25,7 +25,7 @@ class ProductRepository:
 
     async def create_product(
         self, name: str, sku: str, category_id: int
-    ) -> Product | None:
+    ) -> Product:
         product = Product(name=name, sku=sku, category_id=category_id)
         self.db.add(product)
         await self.db.commit()

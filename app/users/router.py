@@ -53,7 +53,7 @@ async def update_profile(
         current_user=current_user,
         data=data.model_dump(exclude_unset=True),  # only include fields sent in the request
     )
-    logger.info("update endpoint suceeded", extra={"user_id": current_user.id})
+    logger.info("update endpoint succeeded", extra={"user_id": current_user.id})
     return updated_user 
 
 
@@ -109,7 +109,7 @@ async def disable_user(
         disabled_by_user_id=current_user.id,
         reason=data.reason,
     )
-    logger.info("disable_user endpoint suceeded", extra={"user_id": current_user.id})
+    logger.info("disable_user endpoint succeeded", extra={"user_id": current_user.id})
     return disable_user
 
 
@@ -125,5 +125,5 @@ async def enable_user(
     logger.info("enable_user endpoint called")
     disable_user = await service.enable_account(user_id=user_id)
 
-    logger.info("enable_user endpoint suceeded")
+    logger.info("enable_user endpoint succeeded")
     return disable_user

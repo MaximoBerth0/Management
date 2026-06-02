@@ -20,7 +20,7 @@ GET    /inventory/stock/movements                      - list stock movements
 GET    /inventory/stock?location_id&product_id&low_stock    - get current stock levels
 
 """
-
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -46,6 +46,8 @@ from app.inventory.schemas import (
 from app.inventory.service import InventoryService
 from app.rbac.dependencies import require_permission
 from app.users.model import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/inventory",
@@ -88,11 +90,19 @@ async def create_product(
     payload: ProductCreate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.create_product(
+    logger.info("create_product endpoint called", extra={
+        "name": payload.name,
+        "sku": payload.sku,
+        "category_id": payload.category_id,
+    })
+    result = await service.create_product(
         name=payload.name,
         sku=payload.sku,
         category_id=payload.category_id,
     )
+
+    logger.info("create_product endpoint succeeded", extra={"product_id": result.id})
+    return result
 
 
 @router.patch(
@@ -105,11 +115,15 @@ async def update_product(
     payload: ProductUpdate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.update_product(
+    logger.info("update_product endpoint called", extra={"product_id": id})
+    result = await service.update_product(
         product_id=id,
         name=payload.name,
         sku=payload.sku,
     )
+
+    logger.info("update_product endpoint succeeded", extra={"product_id": id})
+    return result
 
 
 @router.delete(
@@ -121,8 +135,9 @@ async def delete_product(
     id: int,
     service: InventoryService = Depends(provide_inventory_service),
 ):
+    logger.info("delete_product endpoint called", extra={"product_id": id})
     await service.deactivate_product(id)
-
+    logger.info("delete_product endpoint succeeded", extra={"product_id": id})
 
 @router.post(
     "/products/{id}/activate",
@@ -133,7 +148,10 @@ async def activate_product(
     id: int,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.activate_product(id)
+    logger.info("activate_product endpoint called", extra={"product_id": id})
+    result = await service.activate_product(id)
+    logger.info("activate_product endpoint succeeded", extra={"product_id": id})
+    return result
 
 
 # categories
@@ -148,9 +166,12 @@ async def create_category(
     payload: CategoryCreate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.create_category(
+    logger.info("create_category endpoint called", extra={"name": payload.name})
+    result = await service.create_category(
         name=payload.name, description=payload.description
     )
+    logger.info("create_category endpoint succeeded", extra={"category_id": result.id})
+    return result
 
 
 @router.delete(
@@ -161,7 +182,9 @@ async def create_category(
 async def delete_category(
     id: int, service: InventoryService = Depends(provide_inventory_service)
 ):
+    logger.info("delete_category endpoint called", extra={"category_id": id})
     await service.delete_category(id)
+    logger.info("delete_category endpoint succeeded", extra={"category_id": id})
 
 
 @router.post(
@@ -174,7 +197,9 @@ async def add_product_to_category(
     payload: AddProductToCategory,
     service: InventoryService = Depends(provide_inventory_service),
 ):
+    logger.info("add_product_to_category endpoint called", extra={"category_id": category_id, "product_id": payload.product_id})
     await service.add_product_to_category(payload.product_id, category_id)
+    logger.info("add_product_to_category endpoint succeeded", extra={"category_id": category_id, "product_id": payload.product_id})
 
 
 @router.delete(
@@ -187,7 +212,9 @@ async def remove_product_from_category(
     payload: RemoveProducFromCategory,
     service: InventoryService = Depends(provide_inventory_service),
 ):
+    logger.info("remove_product_from_category endpoint called", extra={"category_id": category_id, "product_id": payload.product_id})
     await service.remove_product_from_category(payload.product_id, category_id)
+    logger.info("remove_product_from_category endpoint succeeded", extra={"category_id": category_id, "product_id": payload.product_id})
 
 
 # stock
@@ -203,12 +230,19 @@ async def create_stock(
     payload: StockInitialize,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.initialize_stock(
+    logger.info("create_stock endpoint called", extra={
+        "product_id": payload.product_id,
+        "location_id": payload.location_id,
+        "quantity": payload.quantity,
+    })
+    result = await service.initialize_stock(
         location_id=payload.location_id,
         product_id=payload.product_id,
         quantity=payload.quantity,
         reorder_point=payload.reorder_point,
     )
+    logger.info("create_stock endpoint succeeded", extra={"stock_id": result.id})
+    return result
 
 
 @router.post(
@@ -221,12 +255,20 @@ async def add_stock(
     current_user: User = Depends(get_current_user),
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.add_stock(
+    logger.info("add_stock endpoint called", extra={
+        "product_id": payload.product_id,
+        "location_id": payload.location_id,
+        "quantity": payload.quantity,
+        "user_id": current_user.id,
+    })
+    result = await service.add_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
+    logger.info("add_stock endpoint succeeded", extra={"movement_id": result.id})
+    return result
 
 
 @router.post(
@@ -239,12 +281,20 @@ async def remove_stock(
     current_user: User = Depends(get_current_user),
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.remove_stock(
+    logger.info("remove_stock endpoint called", extra={
+        "product_id": payload.product_id,
+        "location_id": payload.location_id,
+        "quantity": payload.quantity,
+        "user_id": current_user.id,
+    })
+    result = await service.remove_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
+    logger.info("remove_stock endpoint succeeded", extra={"movement_id": result.id})
+    return result
 
 
 @router.post(
@@ -257,12 +307,20 @@ async def adjust_stock(
     current_user: User = Depends(get_current_user),
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    return await service.adjust_stock(
+    logger.info("adjust_stock endpoint called", extra={
+        "product_id": payload.product_id,
+        "location_id": payload.location_id,
+        "quantity": payload.quantity,
+        "user_id": current_user.id,
+    })
+    result = await service.adjust_stock(
         product_id=payload.product_id,
         location_id=payload.location_id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
+    logger.info("adjust_stock endpoint succeeded", extra={"movement_id": result.id})
+    return result
 
 
 @router.get(
@@ -294,8 +352,14 @@ async def get_stock_levels(
     low_stock: Optional[bool] = Query(None),
     service: InventoryService = Depends(provide_inventory_service),
 ):
+    logger.info("get_stock_levels endpoint called", extra={
+        "location_id": location_id,
+        "product_id": product_id,
+        "low_stock": low_stock,
+    })
     stocks = await service.get_stock_levels(
         location_id=location_id, product_id=product_id, low_stock=low_stock
     )
 
+    logger.info("get_stock_levels endpoint succeeded", extra={"total": len(stocks)})
     return StockListResponse(items=list(stocks), total=len(stocks))

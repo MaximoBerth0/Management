@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
 from app.auth.exceptions import (
@@ -22,6 +23,7 @@ from app.mail.mailer import Mailer
 from app.users.model import User
 from app.users.repository import UserRepository
 
+logger = logging.getLogger(__name__)
 
 class AuthService:
     def __init__(
@@ -41,7 +43,8 @@ class AuthService:
         user = await self.user_repo.get_by_email(email)
 
         if not user or not verify_password(password, user.hashed_password):
-            raise InvalidCredentials("Credentials not valid.")
+            logger.warning("login: invalid credentials", extra={"email": email})
+            raise InvalidCredentials()
 
         access_token = create_access_token(user.id)
 
@@ -56,6 +59,7 @@ class AuthService:
             expires_at=expires_at,
         )
 
+        logger.info("user logged in", extra={"user_id": str(user.id)})
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
@@ -65,17 +69,21 @@ class AuthService:
         token = await self.refresh_repo.get_active(refresh_token)
 
         if not token:
+            logger.warning("logout: token is inactive")
             raise TokenInvalid("token is inactive")
 
         await self.refresh_repo.revoke(token.id)
+        logger.info("user logged out", extra={"user_id": str(token.user_id)})
 
     async def refresh_session(self, refresh_token: str) -> TokenResponse:
         token = await self.refresh_repo.get_active(refresh_token)
 
         if not token:
+            logger.warning("refresh_session: invalid refresh token")
             raise TokenExpired("Invalid refresh token.")
 
         if token.expires_at < datetime.now(timezone.utc):
+            logger.warning("refresh_session: refresh token expired", extra={"user_id": str(token.user_id)})
             raise TokenExpired("Invalid refresh token.")
 
         await self.refresh_repo.revoke(token.id)
@@ -93,6 +101,7 @@ class AuthService:
 
         access_token = create_access_token(token.user_id)
 
+        logger.info("session refreshed", extra={"user_id": str(token.user_id)})
         return TokenResponse(
             access_token=access_token,
             refresh_token=new_refresh_token,
@@ -102,8 +111,9 @@ class AuthService:
         user = await self.user_repo.get_by_email(email)
 
         if not user:
-            return 
-        
+            logger.info("forgot_password: no user for email", extra={"email": email})
+            return
+
         await self.reset_repo.invalidate_all_for_user(user.id)
 
         token = generate_reset_token()
@@ -116,6 +126,7 @@ class AuthService:
         )
 
         await self.mailer.send_reset_email(user.email, token)
+        logger.info("password reset email sent", extra={"user_id": str(user.id)})
 
 
     async def reset_password(self, token: str, new_password: str) -> None:
@@ -123,14 +134,17 @@ class AuthService:
         reset = await self.reset_repo.get_valid(token)
 
         if not reset:
+            logger.warning("reset_password: invalid reset token")
             raise TokenInvalid("Invalid reset token")
 
         if reset.expires_at < datetime.now(timezone.utc):
+            logger.warning("reset_password: reset token expired", extra={"user_id": str(reset.user_id)})
             raise TokenExpired("Reset token expired")
 
         user = await self.user_repo.get_by_id(int(reset.user_id))
 
         if not user:
+            logger.warning("reset_password: user not found", extra={"user_id": str(reset.user_id)})
             raise TokenInvalid("Invalid reset token")
 
         user.hashed_password = hash_password(new_password)
@@ -138,15 +152,18 @@ class AuthService:
 
         await self.reset_repo.invalidate(token)
         await self.refresh_repo.revoke_all_for_user(int(reset.user_id))
+        logger.info("password reset", extra={"user_id": str(user.id)})
 
 
     async def change_password(
         self, current_user: User, old_password: str, new_password: str
     ) -> None:
         if not verify_password(old_password, current_user.hashed_password):
+            logger.warning("change_password: invalid old password", extra={"user_id": str(current_user.id)})
             raise InvalidCredentials("Invalid password")
 
         current_user.hashed_password = hash_password(new_password)
         await self.user_repo.save_user(current_user)
 
         await self.refresh_repo.revoke_all_for_user(int(current_user.id))
+        logger.info("password changed", extra={"user_id": str(current_user.id)})
