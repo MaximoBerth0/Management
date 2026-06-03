@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+
+from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
 from app.orders.dependencies import get_order_service
@@ -18,10 +20,11 @@ PATCH /orders/{id}/cancel                - cancel order
 PATCH /orders/{id}/complete              - complete order
 """
 
-router = APIRouter(prefix="orders/", tags=["ORDERS"])
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/orders", tags=["ORDERS"])
 
 # orders
-
 
 @router.post(
     "/",
@@ -33,7 +36,9 @@ async def create_order(
     current_user: User = Depends(get_current_user),
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
+    logger.info("create_order endpoint called", extra={"user_id": current_user.id})
     order = await service.create_order(user_id=current_user.id)
+    logger.info("create_order endpoint succeeded", extra={"order_id": order.id})
     return order
 
 
@@ -48,14 +53,16 @@ async def add_item_to_order(
     payload: AddItemRequest,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
-    try:
-        order = await service.add_item_to_order(
-            order_id=id,
-            product_id=payload.product_id,
-            quantity=payload.quantity,
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    logger.info(
+        "add_item_to_order endpoint called",
+        extra={"order_id": id, "product_id": payload.product_id},
+    )
+    order = await service.add_item_to_order(
+        order_id=id,
+        product_id=payload.product_id,
+        quantity=payload.quantity,
+    )
+    logger.info("add_item_to_order endpoint succeeded", extra={"order_id": id})
     return order
 
 
@@ -69,13 +76,15 @@ async def remove_item_from_order(
     product_id: int,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
-    try:
-        order = await service.remove_item_from_order(
-            order_id=order_id,
-            product_id=product_id,
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    logger.info(
+        "remove_item_from_order endpoint called",
+        extra={"order_id": order_id, "product_id": product_id},
+    )
+    order = await service.remove_item_from_order(
+        order_id=order_id,
+        product_id=product_id,
+    )
+    logger.info("remove_item_from_order endpoint succeeded", extra={"order_id": order_id})
     return order
 
 
@@ -92,13 +101,15 @@ async def confirm_order(
     payload: ConfirmOrderRequest,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
-    try:
-        order = await service.confirm_order(
-            order_id=id,
-            location_id=payload.location_id,
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    logger.info(
+        "confirm_order endpoint called",
+        extra={"order_id": id, "location_id": payload.location_id},
+    )
+    order = await service.confirm_order(
+        order_id=id,
+        location_id=payload.location_id,
+    )
+    logger.info("confirm_order endpoint succeeded", extra={"order_id": id})
     return order
 
 
@@ -111,10 +122,9 @@ async def cancel_order(
     id: int,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
-    try:
-        order = await service.cancel_order(order_id=id)
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    logger.info("cancel_order endpoint called", extra={"order_id": id})
+    order = await service.cancel_order(order_id=id)
+    logger.info("cancel_order endpoint succeeded", extra={"order_id": id})
     return order
 
 
@@ -127,8 +137,7 @@ async def complete_order(
     id: int,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
-    try:
-        order = await service.complete_order(order_id=id)
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    logger.info("complete_order endpoint called", extra={"order_id": id})
+    order = await service.complete_order(order_id=id)
+    logger.info("complete_order endpoint succeeded", extra={"order_id": id})
     return order

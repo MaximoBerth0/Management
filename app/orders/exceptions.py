@@ -19,12 +19,30 @@ class OrderNotFound(OrderError):
             error_code="ORDER_NOT_FOUND",
         )
 
-class OrderIsNotPending(OrderError):
-    def __init__(self, message: str = "Order status should be pending"):
+class InvalidOrderStatus(OrderError):
+    def __init__(self, message: str = "Order status is incorrect"):
         super().__init__(
             message=message,
             status_code=409,
-            error_code="ORDER_IS_NOT_PENDING",
+            error_code="INVALID_ORDER_STATUS",
+        )
+
+
+class OrderItemNotFound(OrderError):
+    def __init__(self, message: str = "Item not found in order"):
+        super().__init__(
+            message=message,
+            status_code=404,
+            error_code="ORDER_ITEM_NOT_FOUND",
+        )
+
+
+class InvalidQuantity(OrderError):
+    def __init__(self, message: str = "Quantity must be greater than zero"):
+        super().__init__(
+            message=message,
+            status_code=422,
+            error_code="INVALID_QUANTITY",
         )
 
         
