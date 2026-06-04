@@ -23,6 +23,7 @@ dependencies = [
   "python-jose[cryptography]",
   "passlib[argon2]",
   "python-json-logger",
+  "boto3 (>=1.43.23,<2.0.0)",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,7 @@ dev = [
   "pytest",
   "pytest-asyncio",
   "httpx",
+  "aiosqlite",
   "ruff",
 ]
 

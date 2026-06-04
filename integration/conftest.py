@@ -1,13 +1,16 @@
 import os
 
+# Set test configuration before importing anything that reads settings.
+# These override any values from a local .env so tests stay self-contained.
+os.environ["ENV"] = "test"
+os.environ["DEBUG"] = "true"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
-os.environ["SECRET_KEY"] = "devsecret13059"
+os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-characters-long"
 os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
 os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
-os.environ["REDIS_URL"] = "redis://localhost:6379/0"
-os.environ["CELERY_BROKER_URL"] = "redis://localhost:6379/0"
-os.environ["CELERY_RESULT_BACKEND"] = "redis://localhost:6379/0"
+os.environ["CORS_ALLOW_ORIGINS"] = '["http://test"]'
+
 
 import pytest_asyncio
 from app.database.base import Base

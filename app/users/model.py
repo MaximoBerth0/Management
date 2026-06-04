@@ -6,8 +6,8 @@ from sqlalchemy.sql import func
 
 from app.auth.model import RefreshToken
 from app.database.base import Base
-from app.rbac.models.intermediate import user_roles
-from app.rbac.models.main_model import Role
+from app.rbac.models.role import Role
+from app.rbac.models.user_role import user_roles
 
 
 class User(Base):
