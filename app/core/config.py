@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     APP_NAME: str = "Management"
     ENV: str = "prod"
     DEBUG: bool = False
+    AWS_REGION: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    SENDER_EMAIL: str
+    APP_BASE_URL: str
 
     # Database (Postgres)
     DATABASE_URL: str

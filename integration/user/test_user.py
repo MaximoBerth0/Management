@@ -1,24 +1,11 @@
 # user testing
 
 """
-import pytest
-from app.users.schemas.command import CreateUserCommand
-from app.users.service import UserService
+base for testing 
 
-
-@pytest.mark.anyio
-async def test_create_user_success(db_session):
-    service = UserService(db_session)
-
-    data = CreateUserCommand(
-        email="test@example.com",
-        username="testuser",
-        password="123456",
-    )
-
-    user = await service.register_user(data)
-
-    assert user.id is not None
-    assert user.email == "test@example.com"
-    assert user.is_active is True
+1. Happy path - the normal expected behavior
+2. Validation errors - bad input, missing fields
+3. Auth/permission errors - unauthorized, forbidden
+4. Edge cases - duplicates, not found, etc.
 """
+

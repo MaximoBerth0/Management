@@ -1,66 +1,20 @@
 # Management API
 
-A modular, async backend built with **FastAPI**, focused on **backoffice systems for businesses and companies**.
-
-Designed to support real-world business workflows such as user management, roles and permissions, inventory, orders, and internal operations, following a **clean layered architecture** with a strong separation of concerns.
-
-The project is infrastructure-ready, with support for **Docker**, **PostgreSQL**, and **Redis**, and is developed incrementally with new modules added over time.
-
+Inventory management system for orders, reservations, authentication, and role-permission for administrators, employees, and customers. Focused on back-office systems for businesses and companies.
 
 ---
 
-## Architecture
+### [future images]
 
-The project follows a modular, layered, and decoupled architecture:
+--- 
 
-- **Schemas**: data validation and serialization (Pydantic)
-- **Models**: ORM models (SQLAlchemy 2.0)
-- **Repositories**: data access layer
-- **Services**: business logic
-- **Routers**: HTTP endpoints (FastAPI)
+## Overview
 
-Each module is isolated and designed for long-term scalability.
+Managing inventory, orders, and reservations across disconnected tools leads to stock inconsistencies, fulfillment errors, and poor visibility. As operations scale, these problems compound fast.
 
----
+**Management API** provides a centralized back-office backend that handles the full lifecycle of inventory and orders in a single system, keeping stock levels, reservations, and order states consistent at all times. Access is governed by a role-based model with three distinct roles — administrators, employees, and customers — ensuring each actor can only do what their role allows.
 
-## Key characteristics
-
-- Async-first architecture
-- SQLAlchemy 2.0 (typed, async ORM)
-- Testing (pytest) with sqlite-in-memory
-- Modular structure for incremental growth
-- Docker-based development environment
-- PostgreSQL as primary datastore
-- Redis for background jobs and caching
-
----
-
-## Main modules
-
-### Authentication & Authorization
-- Login / logout
-- Refresh tokens
-- Password hashing and verification
-- JWT-based authentication
-- Role-based access control (RBAC)
-
-### Users
-- User creation and management
-- Enable / disable accounts
-- Admin-level operations
-- Profile updates
-
-### Inventory
-- Product and category management
-- Stock tracking and adjustments
-- Stock movement history (audit)
-- Warehouse / location support
-- RBAC-controlled operations
-
-### Planned modules
-- Orders & logistics
-- Human resources
-- Reporting & exports
+Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed for reliability and performance as your business grows.
 
 ---
 
@@ -75,6 +29,23 @@ Each module is isolated and designed for long-term scalability.
 - Passlib (argon2)
 - Pytest
 - Docker & Docker Compose
+
+---
+
+## Technical Features
+
+- Async-first architecture
+- SQLAlchemy 2.0 (typed, async ORM)
+- JWT authentication with token rotation
+- Email-based password reset flow
+- Role-based access control with configurable roles and permissions via constants
+- Integration testing (pytest) with SQLite in-memory
+- Modular structure for incremental growth
+- Docker-based development environment
+- PostgreSQL as primary datastore
+
+### Deployment on Amazon Web Services
+
 
 ---
 

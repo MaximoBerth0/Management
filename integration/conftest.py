@@ -11,6 +11,9 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
 os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
 os.environ["CORS_ALLOW_ORIGINS"] = '["http://test"]'
 
+from app.core.config import get_settings
+
+get_settings.cache_clear()
 
 import pytest_asyncio
 from app.database.base import Base
