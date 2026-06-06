@@ -11,7 +11,7 @@ import os
 # environment variables — must be set before any app import
 os.environ["ENV"] = "test"
 os.environ["DEBUG"] = "true"
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
+os.environ["DATABASE_URL"] = "postgresql+asyncpg://user:password@localhost:5432/test_db"
 os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-characters-long"
 os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
@@ -67,11 +67,7 @@ from app.users.model import User
 
 # engine + session factory
 
-engine = create_async_engine(
-    "sqlite+aiosqlite://",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+engine = create_async_engine(os.environ["DATABASE_URL"])
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

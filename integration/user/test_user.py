@@ -80,6 +80,7 @@ async def test_register_user_missing_fields(client):
     )
     assert response.status_code == 422
 
+
 # PUT users/me 
 
 async def test_update_profile(client, employee_user, auth_headers):
@@ -90,6 +91,7 @@ async def test_update_profile(client, employee_user, auth_headers):
     )
     assert response.status_code == 200
     assert response.json()["username"] == "updated_name"
+
 
 # GET users/{user_id}
 

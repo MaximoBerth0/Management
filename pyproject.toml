@@ -1,45 +1,36 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "management"
 version = "0.1.0"
-requires-python = ">=3.10"
+description = ""
+authors = []
+packages = [{include = "app"}]
 
-dependencies = [
-  "fastapi",
-  "uvicorn",
-  "gunicorn",
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+fastapi = "*"
+uvicorn = "*"
+gunicorn = "*"
+sqlalchemy = {extras = ["asyncio"], version = "*"}
+asyncpg = "*"
+alembic = "*"
+pydantic = "*"
+pydantic-settings = "*"
+email-validator = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["argon2"], version = "*"}
+python-json-logger = "*"
+boto3 = ">=1.43.23,<2.0.0"
 
-  "sqlalchemy[asyncio]",
-  "asyncpg",
-  "alembic",
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+httpx = "*"
+aiosqlite = "*"
+ruff = "*"
 
-  "pydantic",
-  "pydantic-settings",
-  "email-validator",
-
-  "python-jose[cryptography]",
-  "passlib[argon2]",
-  "python-json-logger",
-  "boto3 (>=1.43.23,<2.0.0)",
-]
-
-[project.optional-dependencies]
-dev = [
-  "pytest",
-  "pytest-asyncio",
-  "httpx",
-  "aiosqlite",
-  "ruff",
-]
-
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["app*"]
-exclude = ["alembic*"]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 88
@@ -51,5 +42,3 @@ ignore = ["E501"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-
-
