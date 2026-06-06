@@ -1,3 +1,11 @@
+"""
+docker compose up test-db
+pytest integration/ -v
+docker compose down test-db
+"""
+
+
+
 import os
 
 # environment variables — must be set before any app import
