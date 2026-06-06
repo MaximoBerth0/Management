@@ -111,7 +111,7 @@ class OrderItem(Base):
     )
     product_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("products.id"),
+        ForeignKey("inventory_products.id"),
         nullable=False,
         index=True,
     )
