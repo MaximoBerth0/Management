@@ -80,6 +80,16 @@ async def test_register_user_missing_fields(client):
     )
     assert response.status_code == 422
 
+# PUT users/me 
+
+async def test_update_profile(client, employee_user, auth_headers):
+    response = await client.put(
+        "/users/me",
+        json={"username": "updated_name"},
+        headers=auth_headers(employee_user),
+    )
+    assert response.status_code == 200
+    assert response.json()["username"] == "updated_name"
 
 # GET users/{user_id}
 
@@ -107,6 +117,32 @@ async def test_get_user_by_id_forbidden(client, client_user, auth_headers):
     assert response.status_code == 403
 
 
+# GET users/email/{email}
+
+async def test_get_user_by_email(client, admin_user, client_user, auth_headers):
+    response = await client.get(
+        f"/users/email/{client_user.email}", headers=auth_headers(admin_user)
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == client_user.id
+    assert body["email"] == client_user.email
+
+
+async def test_get_user_by_email_not_found(client, admin_user, auth_headers):
+    response = await client.get(
+        "/users/email/no@gmail.com", headers=auth_headers(admin_user)
+    )
+    assert response.status_code == 404
+
+
+async def test_get_user_by_email_forbidden(client, client_user, auth_headers):
+    response = await client.get(
+        f"/users/email/{client_user.email}", headers=auth_headers(client_user)
+    )
+    assert response.status_code == 403
+
+
 # GET users/list
 
 async def test_list_users(client, admin_user, auth_headers):
@@ -115,4 +151,34 @@ async def test_list_users(client, admin_user, auth_headers):
 
 async def test_list_users_forbidden(client, client_user, auth_headers):
     response = await client.get("/users/list", headers=auth_headers(client_user))
+    assert response.status_code == 403
+
+
+# PATCH users/{user_id}/enable
+
+async def test_enable_user(client, employee_user, admin_user, auth_headers):
+    response = await client.patch(f"/users/{employee_user.id}/enable", headers=auth_headers(admin_user))
+    assert response.status_code == 200
+
+async def test_enable_user_forbidden(client, client_user, auth_headers):
+    response = await client.patch(
+        f"/users/{client_user.id}/enable", headers=auth_headers(client_user)
+    )
+    assert response.status_code == 403
+
+
+# PATCH users/{user_id}/disable
+
+async def test_disable_user(client, employee_user, admin_user, auth_headers):
+    response = await client.patch(
+        f"/users/{employee_user.id}/disable-account",
+        json={"reason": "Policy violation"},
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 200
+
+async def test_disable_user_forbidden(client, client_user, auth_headers):
+    response = await client.patch(
+        f"/users/{client_user.id}/disable-account", headers=auth_headers(client_user)
+    )
     assert response.status_code == 403
