@@ -1,10 +1,8 @@
 """
-docker compose up test-db
+docker compose -f docker-compose-test.yml up -d test-db
 pytest integration/ -v
-docker compose down test-db
+docker compose -f docker-compose-test.yml down test-db
 """
-
-
 
 import os
 
@@ -30,29 +28,24 @@ get_settings.cache_clear()
 
 # model imports — so Base.metadata knows about every table
 import app.auth.model
-import app.users.model
+import app.inventory.models.category
+import app.inventory.models.location
+import app.inventory.models.product
+import app.inventory.models.reservation
+import app.inventory.models.stock
+import app.orders.models.order
 import app.rbac.models.permission
 import app.rbac.models.role
 import app.rbac.models.role_permission
 import app.rbac.models.user_role
-import app.inventory.models.category
-import app.inventory.models.location
-import app.inventory.models.product
-import app.inventory.models.stock
-import app.inventory.models.reservation
-import app.orders.models.order
-
+import app.users.model
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
-
-from app.core.constants.system_permissions import SYSTEM_PERMISSIONS
 from app.core.constants.inventory_permissions import INVENTORY_PERMISSIONS
 from app.core.constants.order_permissions import ORDER_PERMISSIONS
-from app.core.constants.user_permissions import USER_PERMISSIONS
+from app.core.constants.system_permissions import SYSTEM_PERMISSIONS
 from app.core.constants.system_roles import SYSTEM_ROLES
+from app.core.constants.user_permissions import USER_PERMISSIONS
 from app.core.security.passwords import hash_password
 from app.core.security.tokens import create_access_token
 from app.database.base import Base
@@ -63,11 +56,18 @@ from app.rbac.models.role import Role
 from app.rbac.models.role_permission import role_permissions
 from app.rbac.models.user_role import user_roles
 from app.users.model import User
-
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 # engine + session factory
+#
+# NullPool: pytest-asyncio runs each test on a fresh event loop, but pooled
+# asyncpg connections are bound to the loop that created them. Reusing a pooled
+# connection on a later test's loop raises "attached to a different loop", so we
+# disable pooling and open a new connection per test.
 
-engine = create_async_engine(os.environ["DATABASE_URL"])
+engine = create_async_engine(os.environ["DATABASE_URL"], poolclass=NullPool)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
