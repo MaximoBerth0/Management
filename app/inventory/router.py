@@ -91,7 +91,7 @@ async def create_product(
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("create_product endpoint called", extra={
-        "name": payload.name,
+        "product_name": payload.name,
         "sku": payload.sku,
         "category_id": payload.category_id,
     })
@@ -139,6 +139,7 @@ async def delete_product(
     await service.deactivate_product(id)
     logger.info("delete_product endpoint succeeded", extra={"product_id": id})
 
+
 @router.post(
     "/products/{id}/activate",
     response_model=ProductResponse,
@@ -166,7 +167,7 @@ async def create_category(
     payload: CategoryCreate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    logger.info("create_category endpoint called", extra={"name": payload.name})
+    logger.info("create_category endpoint called", extra={"category_name": payload.name})
     result = await service.create_category(
         name=payload.name, description=payload.description
     )

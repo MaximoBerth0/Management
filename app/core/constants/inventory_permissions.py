@@ -1,17 +1,17 @@
 INVENTORY_PERMISSIONS = [
     # products
-    "products:view",
-    "products:create",
-    "products:update",
-    "products:activate",
-    "products:deactivate",
+    "product:view",
+    "product:create",
+    "product:update",
+    "product:activate",
+    "product:deactivate",
     # categories
-    "category:create",
+    "category:create",  # also gates adding a product to a category
     "category:delete",  # delete category
-    "category:add",
     "category:remove",  # remove a PRODUCT from category
     # stock
-    "stock:createstock:in",
+    "stock:create",
+    "stock:in",
     "stock:out",
     "stock:adjust",
     "stock:view",

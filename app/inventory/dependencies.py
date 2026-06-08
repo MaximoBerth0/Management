@@ -14,7 +14,6 @@ def provide_inventory_service(
     db: AsyncSession = Depends(get_session),
 ) -> InventoryService:
     return InventoryService(
-        db=db,
         stock_repo=StockRepository(db),
         product_repo=ProductRepository(db),
         category_repo=CategoryRepository(db),

@@ -9,10 +9,20 @@ SYSTEM_ROLES = {
     + USER_PERMISSIONS
     + ORDER_PERMISSIONS,
     "employee": [
-        "products:view",
+        "product:view",
+        "product:create",
+        "product:update",
+        "category:create",
+        "category:remove",
         "stock:in",
         "stock:out",
-        "reservations:view",
+        "stock:adjust",
+        "stock:view",
+        "order:create",
+        "order:remove",
+        "order:confirm",
+        "order:cancel",
+        "order:complete",
     ],
     "client": [],
 }

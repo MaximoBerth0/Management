@@ -78,14 +78,14 @@ class InventoryService:
     # product
 
     async def get_product(self, product_id: int):
-        result = self.product_repo.get_product(product_id)
+        result = await self.product_repo.get_product(product_id)
         if result is None:
             logger.warning("get_product: product not found", extra={"product_id":product_id})
-            return ProductNotFound()
+            raise ProductNotFound()
         return result
 
     async def list_products(self):
-        result = self.product_repo.list_products()
+        result = await self.product_repo.list_products()
         return result
 
     async def create_product(self, name: str, sku: str, category_id: int):
@@ -107,9 +107,9 @@ class InventoryService:
             raise ProductAlreadyExits()
 
         category_exists = await self.category_repo.get_category(category_id)
-        if category_exists:
-            logger.warning("create_product: category already exists", extra={"category_id": category_id})
-            raise CategoryAlreadyExists()
+        if not category_exists:
+            logger.warning("create_product: category not found", extra={"category_id": category_id})
+            raise CategoryNotFound()
 
         product = await self.product_repo.create_product(name, sku, category_id)
         logger.info("create_product: product created", extra={"product_id": product.id, "sku": sku})
@@ -171,11 +171,11 @@ class InventoryService:
 
         existing = await self.category_repo.get_by_name(name)
         if existing:
-            logger.warning("create_category: name already exists", extra={"name": name})
+            logger.warning("create_category: name already exists", extra={"category_name": name})
             raise CategoryAlreadyExists()
 
         category = await self.category_repo.create_category(name, description)
-        logger.info("create_category: category created", extra={"category_id": category.id, "name": name})
+        logger.info("create_category: category created", extra={"category_id": category.id, "category_name": name})
         return category
 
     async def delete_category(self, category_id: int):
