@@ -18,7 +18,11 @@ class RoleRepository:
         return list(result.all())
 
     async def get_by_id(self, role_id: int) -> Role | None:
-        stmt = select(Role).where(Role.id == role_id)
+        stmt = (
+            select(Role)
+            .where(Role.id == role_id)
+            .options(selectinload(Role.permissions))
+        )
         result = await self.db.scalars(stmt)
         return result.first()
 
@@ -35,6 +39,9 @@ class RoleRepository:
     async def create(self, role: Role) -> Role:
         self.db.add(role)
         await self.db.flush()
+        # load the (empty) permissions collection so response serialization
+        # doesn't trigger a lazy load outside the async greenlet context
+        await self.db.refresh(role, ["permissions"])
         return role
 
     async def get_or_create(self, name: str, **kwargs) -> Role:

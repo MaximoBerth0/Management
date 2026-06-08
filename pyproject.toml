@@ -20,6 +20,10 @@ python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["argon2"], version = "*"}
 python-json-logger = "*"
 boto3 = ">=1.43.23,<2.0.0"
+pytest = "^9.0.3"
+pytest-asyncio = "^1.4.0"
+httpx = "^0.28.1"
+aiosqlite = "^0.22.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

@@ -37,7 +37,7 @@ router = APIRouter(
     "/roles",
     response_model=RoleResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_permission("role:create"))],
+    dependencies=[Depends(require_permission("roles:create"))],
 )
 async def create_role(
     data: RoleCreateRequest,
@@ -52,10 +52,10 @@ async def create_role(
 @router.patch(
     "/roles/{role_id}",
     response_model=RoleResponse,
-    dependencies=[Depends(require_permission("role:update"))],
+    dependencies=[Depends(require_permission("roles:update"))],
 )
 async def update_role(
-    role_id,
+    role_id: int,
     data: RoleUpdateRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
@@ -69,7 +69,7 @@ async def update_role(
 @router.get(
     "/roles",
     response_model=list[RoleResponse],
-    dependencies=[Depends(require_permission("role:list"))],
+    dependencies=[Depends(require_permission("roles:view"))],
 )
 async def list_roles(
     service: RBACService = Depends(get_rbac_service),
@@ -83,6 +83,7 @@ async def list_roles(
 @router.post(
     "/roles/{role_id}/permissions",
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("role:assign_permission"))],
 )
 async def assign_permission_to_role(
     role_id: int,
