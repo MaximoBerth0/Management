@@ -181,8 +181,7 @@ async def test_update_role_description_too_long(client, admin_user, auth_headers
     assert response.status_code == 422
 
 
-# update role edge cases - 404 not found, 409 duplicate
-
+# update role edge cases - 404 not found, 409 duplicate 
 async def test_update_role_not_found(client, admin_user, auth_headers):
     response = await client.patch(
         "/rbac/roles/999999",
