@@ -213,4 +213,90 @@ async def test_update_product_duplicate_sku(client, admin_user, auth_headers):
     )
     assert response.status_code == 409
 
+# DELETE /inventory/products/{id}  (deactivate)
 
+
+async def test_deactivate_product(client, admin_user, auth_headers):
+    category_id = await _create_category(client, admin_user, auth_headers, "tools")
+    product_id = await _create_product(
+        client, admin_user, auth_headers, "widget", "SKU-1", category_id
+    )
+
+    response = await client.delete(
+        f"/inventory/products/{product_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 204
+
+    # product is now inactive
+    response = await client.get(
+        f"/inventory/products/{product_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 200
+    assert response.json()["is_active"] is False
+
+
+async def test_deactivate_product_forbidden(client, admin_user, client_user, auth_headers):
+    category_id = await _create_category(client, admin_user, auth_headers, "tools")
+    product_id = await _create_product(
+        client, admin_user, auth_headers, "widget", "SKU-1", category_id
+    )
+
+    response = await client.delete(
+        f"/inventory/products/{product_id}",
+        headers=auth_headers(client_user),
+    )
+    assert response.status_code == 403
+
+
+async def test_deactivate_product_not_found(client, admin_user, auth_headers):
+    response = await client.delete(
+        "/inventory/products/999999",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 404
+
+# POST /inventory/products/{id}/activate
+
+
+async def test_activate_product(client, admin_user, auth_headers):
+    category_id = await _create_category(client, admin_user, auth_headers, "tools")
+    product_id = await _create_product(
+        client, admin_user, auth_headers, "widget", "SKU-1", category_id
+    )
+
+    # deactivate first so activation is observable
+    response = await client.delete(
+        f"/inventory/products/{product_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 204
+
+    response = await client.post(
+        f"/inventory/products/{product_id}/activate",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 200
+    assert response.json()["is_active"] is True
+
+
+async def test_activate_product_forbidden(client, admin_user, client_user, auth_headers):
+    category_id = await _create_category(client, admin_user, auth_headers, "tools")
+    product_id = await _create_product(
+        client, admin_user, auth_headers, "widget", "SKU-1", category_id
+    )
+
+    response = await client.post(
+        f"/inventory/products/{product_id}/activate",
+        headers=auth_headers(client_user),
+    )
+    assert response.status_code == 403
+
+
+async def test_activate_product_not_found(client, admin_user, auth_headers):
+    response = await client.post(
+        "/inventory/products/999999/activate",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 404

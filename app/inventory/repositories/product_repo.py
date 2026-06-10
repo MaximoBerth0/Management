@@ -67,6 +67,11 @@ class ProductRepository:
 
         product.is_active = True
 
+        await self.db.commit()
+        await self.db.refresh(product)
+
+        return product
+
     async def deactivate_product(self, product_id: int) -> Product | None:
         stmt = select(Product).where(Product.id == product_id)
         result = await self.db.execute(stmt)

@@ -148,12 +148,22 @@ class InventoryService:
         return product
 
     async def activate_product(self, product_id: int):
-        activate = self.product_repo.activate_product(product_id)
-        return activate
+        product = await self.product_repo.activate_product(product_id)
+        if not product:
+            logger.warning("activate_product: product not found", extra={"product_id": product_id})
+            raise ProductNotFound()
 
-    async def deactivate_product(self, product_id):
-        deactivate = self.product_repo.deactivate_product(product_id)
-        return deactivate
+        logger.info("activate_product: product activated", extra={"product_id": product_id})
+        return product
+
+    async def deactivate_product(self, product_id: int):
+        product = await self.product_repo.deactivate_product(product_id)
+        if not product:
+            logger.warning("deactivate_product: product not found", extra={"product_id": product_id})
+            raise ProductNotFound()
+
+        logger.info("deactivate_product: product deactivated", extra={"product_id": product_id})
+        return product
 
     # category
 
