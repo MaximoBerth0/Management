@@ -2,7 +2,8 @@ import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from jose import ExpiredSignatureError, JWTError, jwt
+import jwt
+from jwt import ExpiredSignatureError, PyJWTError
 
 from app.auth.exceptions import TokenExpired, TokenInvalid
 from app.core.config import settings
@@ -57,7 +58,7 @@ def decode_token(token: str) -> dict:
         )
     except ExpiredSignatureError:
         raise TokenExpired("expired token")
-    except JWTError:
+    except PyJWTError:
         raise TokenInvalid("invalid token")
 
 

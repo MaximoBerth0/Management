@@ -25,8 +25,8 @@ Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed 
 - PostgreSQL
 - Alembic
 - Pydantic v2
-- python-jose (JWT)
-- Passlib (argon2)
+- PyJWT
+- Argon2-CFFI
 - Pytest
 - Docker & Docker Compose
 
