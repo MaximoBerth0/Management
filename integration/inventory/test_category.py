@@ -88,3 +88,128 @@ async def test_delete_category_not_found(client, admin_user, auth_headers):
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404
+
+
+# POST inventory/categories/{category_id}/products
+
+async def test_add_product_to_cateogory(client, employee_user, auth_headers):
+    response = await client.post(
+        "/inventory/categories",
+        headers=auth_headers(employee_user),
+        json={"name": "category", "description": "cateogry_description"},
+    )
+    assert response.status_code == 201
+    category_id = response.json()["id"]
+
+    response = await client.post(
+        "/inventory/products",
+        headers=auth_headers(employee_user),
+        json={"name": "widget", "sku": "SKU-1", "category_id": category_id},
+    )
+    assert response.status_code == 201
+    product_id = response.json()["id"]
+
+    response = await client.post(
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 200
+
+
+async def test_add_product_to_category_forbidden(
+    client, employee_user, client_user, auth_headers
+):
+    response = await client.post(
+        "/inventory/categories",
+        headers=auth_headers(employee_user),
+        json={"name": "category", "description": "cateogry_description"},
+    )
+    assert response.status_code == 201
+    category_id = response.json()["id"]
+
+    response = await client.post(
+        "/inventory/products",
+        headers=auth_headers(employee_user),
+        json={"name": "widget", "sku": "SKU-1", "category_id": category_id},
+    )
+    assert response.status_code == 201
+    product_id = response.json()["id"]
+
+    response = await client.post(
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(client_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 403
+
+
+# DELETE inventory/categories/{category_id}/products
+
+
+async def test_remove_product_from_category(client, employee_user, auth_headers):
+    response = await client.post(
+        "/inventory/categories",
+        headers=auth_headers(employee_user),
+        json={"name": "category", "description": "cateogry_description"},
+    )
+    assert response.status_code == 201
+    category_id = response.json()["id"]
+
+    response = await client.post(
+        "/inventory/products",
+        headers=auth_headers(employee_user),
+        json={"name": "widget", "sku": "SKU-1", "category_id": category_id},
+    )
+    assert response.status_code == 201
+    product_id = response.json()["id"]
+
+    response = await client.post(
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 200
+
+    response = await client.request(
+        "DELETE",
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 204
+
+
+async def test_remove_product_from_category_forbidden(
+    client, employee_user, client_user, auth_headers
+):
+    response = await client.post(
+        "/inventory/categories",
+        headers=auth_headers(employee_user),
+        json={"name": "category", "description": "cateogry_description"},
+    )
+    assert response.status_code == 201
+    category_id = response.json()["id"]
+
+    response = await client.post(
+        "/inventory/products",
+        headers=auth_headers(employee_user),
+        json={"name": "widget", "sku": "SKU-1", "category_id": category_id},
+    )
+    assert response.status_code == 201
+    product_id = response.json()["id"]
+
+    response = await client.post(
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 200
+
+    response = await client.request(
+        "DELETE",
+        f"/inventory/categories/{category_id}/products",
+        headers=auth_headers(client_user),
+        json={"product_id": product_id},
+    )
+    assert response.status_code == 403

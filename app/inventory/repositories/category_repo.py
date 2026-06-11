@@ -2,6 +2,7 @@ from app.inventory.models.category import Category
 from app.inventory.models.product import Product
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 class CategoryRepository:
@@ -9,7 +10,11 @@ class CategoryRepository:
         self.db = db
 
     async def get_category(self, category_id: int) -> Category | None:
-        stmt = select(Category).where(Category.id == category_id)
+        stmt = (
+            select(Category)
+            .where(Category.id == category_id)
+            .options(selectinload(Category.product))
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 

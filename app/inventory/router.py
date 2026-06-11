@@ -190,7 +190,7 @@ async def delete_category(
 
 
 @router.post(
-    "categories/{category_id}/products",
+    "/categories/{category_id}/products",
     response_model=CategoryResponse,
     dependencies=[Depends(require_permission("category:create"))],
 )
@@ -200,8 +200,9 @@ async def add_product_to_category(
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("add_product_to_category endpoint called", extra={"category_id": category_id, "product_id": payload.product_id})
-    await service.add_product_to_category(payload.product_id, category_id)
+    category = await service.add_product_to_category(payload.product_id, category_id)
     logger.info("add_product_to_category endpoint succeeded", extra={"category_id": category_id, "product_id": payload.product_id})
+    return category
 
 
 @router.delete(

@@ -19,7 +19,7 @@ async def _create_category(client, admin_user, auth_headers, name, description="
         headers=auth_headers(admin_user),
         json={"name": name, "description": description},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     return response.json()["id"]
 
 async def _create_product(client, admin_user, auth_headers, name, sku, category_id):
