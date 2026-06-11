@@ -189,7 +189,11 @@ class InventoryService:
         return category
 
     async def delete_category(self, category_id: int):
-        return await self.category_repo.delete_category(category_id)
+        deleted = await self.category_repo.delete_category(category_id)
+        if not deleted:
+            logger.warning("delete_category: category not found", extra={"category_id": category_id})
+            raise CategoryNotFound()
+        logger.info("delete_category: category deleted", extra={"category_id": category_id})
 
     async def add_product_to_category(self, product_id: int, category_id: int):
         category = await self.category_repo.get_category(category_id)

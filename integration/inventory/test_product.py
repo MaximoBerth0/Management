@@ -300,3 +300,5 @@ async def test_activate_product_not_found(client, admin_user, auth_headers):
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404
+
+

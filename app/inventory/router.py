@@ -160,6 +160,7 @@ async def activate_product(
 
 @router.post(
     "/categories",
+    status_code=status.HTTP_201_CREATED,
     response_model=CategoryResponse,
     dependencies=[Depends(require_permission("category:create"))],
 )
