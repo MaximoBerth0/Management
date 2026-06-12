@@ -223,3 +223,61 @@ def auth_headers():
         return {"Authorization": f"Bearer {token}"}
 
     return _build
+
+
+# entity builders — request the fixture, then call it inline with the acting
+# user, e.g. `await make_product(admin_user, sku="SKU-2")`. They go through the
+# API so the same permission/validation path the tests exercise is used.
+
+@pytest.fixture
+def make_category(client, auth_headers):
+    async def _make(user: User, name: str = "tools", description: str = "cat") -> int:
+        response = await client.post(
+            "/inventory/categories",
+            headers=auth_headers(user),
+            json={"name": name, "description": description},
+        )
+        assert response.status_code == 201
+        return response.json()["id"]
+
+    return _make
+
+
+@pytest.fixture
+def make_product(client, auth_headers, make_category):
+    async def _make(
+        user: User,
+        name: str = "widget",
+        sku: str = "SKU-1",
+        category_id: int | None = None,
+    ) -> int:
+        if category_id is None:
+            category_id = await make_category(user)
+        response = await client.post(
+            "/inventory/products",
+            headers=auth_headers(user),
+            json={"name": name, "sku": sku, "category_id": category_id},
+        )
+        assert response.status_code == 201
+        return response.json()["id"]
+
+    return _make
+
+
+@pytest.fixture
+def make_location(client, auth_headers):
+    async def _make(
+        user: User,
+        name: str = "warehouse",
+        city: str = "metropolis",
+        address: str = "123 st",
+    ) -> int:
+        response = await client.post(
+            "/inventory/locations",
+            headers=auth_headers(user),
+            json={"name": name, "city": city, "address": address},
+        )
+        assert response.status_code == 201
+        return response.json()["id"]
+
+    return _make

@@ -18,6 +18,7 @@ SYSTEM_ROLES = {
         "stock:out",
         "stock:adjust",
         "stock:view",
+        "location:list",
         "order:create",
         "order:remove",
         "order:confirm",

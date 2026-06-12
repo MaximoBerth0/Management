@@ -43,6 +43,10 @@ from app.inventory.exceptions import (
     InvalidProductOrLocation,
     InvalidQuantityStock,
     InvalidReservationStatus,
+    LocationAddressIsRequired,
+    LocationAlreadyExists,
+    LocationCityIsRequired,
+    LocationNameIsRequired,
     NoParametersProvide,
     ProductAlreadyExits,
     ProductNameIsRequired,
@@ -380,6 +384,32 @@ class InventoryService:
     async def get_location_list(self):
         result = await self.location_repo.list_locations()
         return result
+
+    async def create_location(self, name: str, city: str, address: str):
+        if not name or not name.strip():
+            logger.warning("create_location: called with empty name")
+            raise LocationNameIsRequired()
+
+        if not city or not city.strip():
+            logger.warning("create_location: called with empty city")
+            raise LocationCityIsRequired()
+
+        if not address or not address.strip():
+            logger.warning("create_location: called with empty address")
+            raise LocationAddressIsRequired()
+
+        name = name.strip()
+        city = city.strip()
+        address = address.strip()
+
+        existing = await self.location_repo.get_by_name(name)
+        if existing:
+            logger.warning("create_location: name already exists", extra={"location_name": name})
+            raise LocationAlreadyExists()
+
+        location = await self.location_repo.create_location(name, city, address)
+        logger.info("create_location: location created", extra={"location_id": location.id, "location_name": name})
+        return location
 
     # reservation
 

@@ -84,6 +84,38 @@ class CategoryDescriptionIsRequired(InventoryError):
             error_code="CATEGORY_DESCRIPTION_IS_REQUIRED",
         )
 
+class LocationNameIsRequired(InventoryError):
+    def __init__(self, message: str = "Location name is required"):
+        super().__init__(
+            message=message,
+            status_code=400,
+            error_code="LOCATION_NAME_IS_REQUIRED",
+        )
+
+class LocationCityIsRequired(InventoryError):
+    def __init__(self, message: str = "Location city is required"):
+        super().__init__(
+            message=message,
+            status_code=400,
+            error_code="LOCATION_CITY_IS_REQUIRED",
+        )
+
+class LocationAddressIsRequired(InventoryError):
+    def __init__(self, message: str = "Location address is required"):
+        super().__init__(
+            message=message,
+            status_code=400,
+            error_code="LOCATION_ADDRESS_IS_REQUIRED",
+        )
+
+class LocationAlreadyExists(InventoryError):
+    def __init__(self, message: str = "Location already exists"):
+        super().__init__(
+            message=message,
+            status_code=409,
+            error_code="LOCATION_ALREADY_EXISTS",
+        )
+
 class InvalidLocation(InventoryError):
     def __init__(self, message: str = "location id cannot be empty"):
         super().__init__(

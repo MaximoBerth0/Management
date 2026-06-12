@@ -20,6 +20,7 @@ GET    /inventory/stock/movements                      - list stock movements
 GET    /inventory/stock?location_id&product_id&low_stock    - get current stock levels
 
 GET    /inventory/locations                            - list locations
+POST   /inventory/locations                            - create location
 
 """
 import logging
@@ -33,7 +34,9 @@ from app.inventory.schemas import (
     AddProductToCategory,
     CategoryCreate,
     CategoryResponse,
+    LocationCreate,
     LocationListResponse,
+    LocationResponse,
     ProductCreate,
     ProductListItemResponse,
     ProductResponse,
@@ -387,3 +390,21 @@ async def get_location_list(
 
     logger.info("get_location_list endpoint succeeded", extra={"total": len(locations)})
     return LocationListResponse(items=list(locations), total=len(locations))
+
+
+@router.post(
+    "/locations",
+    status_code=status.HTTP_201_CREATED,
+    response_model=LocationResponse,
+    dependencies=[Depends(require_permission("location:create"))],
+)
+async def create_location(
+    payload: LocationCreate,
+    service: InventoryService = Depends(provide_inventory_service),
+):
+    logger.info("create_location endpoint called", extra={"location_name": payload.name})
+    result = await service.create_location(
+        name=payload.name, city=payload.city, address=payload.address
+    )
+    logger.info("create_location endpoint succeeded", extra={"location_id": result.id})
+    return result

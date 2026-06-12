@@ -37,6 +37,12 @@ class RemoveProducFromCategory(BaseModel):
     product_id: int
 
 
+class LocationCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    city: str = Field(..., min_length=1, max_length=255)
+    address: str = Field(..., min_length=1, max_length=255)
+
+
 class StockInitialize(BaseModel):
     location_id: int = Field()
     product_id: int = Field()
@@ -107,6 +113,7 @@ class StockMovementListResponse(BaseModel):
 class LocationResponse(ORMModel):
     id: int
     name: str
+    city: str
     address: str
 
 
