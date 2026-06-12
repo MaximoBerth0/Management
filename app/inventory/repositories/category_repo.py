@@ -13,7 +13,7 @@ class CategoryRepository:
         stmt = (
             select(Category)
             .where(Category.id == category_id)
-            .options(selectinload(Category.product))
+            .options(selectinload(Category.products))
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
