@@ -12,3 +12,8 @@ class LocationRepository:
         stmt = select(Location).where(Location.id == location_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def list_locations(self) -> list[Location]:
+        stmt = select(Location).order_by(Location.id)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())

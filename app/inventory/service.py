@@ -21,6 +21,9 @@ STOCK:
   list_stock_movements()
   get_stock_levels()
 
+LOCATION:
+  get_location_list()
+
 RESERVATION:
   reserve_for_item()
   release_for_item()
@@ -371,6 +374,12 @@ class InventoryService:
         return await self.stock_repo.get_stock_levels(
             location_id=location_id, product_id=product_id, low_stock=low_stock
         )
+
+    # location
+
+    async def get_location_list(self):
+        result = await self.location_repo.list_locations()
+        return result
 
     # reservation
 

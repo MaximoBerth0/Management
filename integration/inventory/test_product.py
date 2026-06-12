@@ -1,5 +1,5 @@
 """
-the product module test evaluates the following:
+the product file test evaluates the following:
 
 - Happy path      - normal expected behavior
 - Validation      - bad input, missing fields

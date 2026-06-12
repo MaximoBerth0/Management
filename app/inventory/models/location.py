@@ -16,6 +16,7 @@ class Location(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    city: Mapped[str] = mapped_column(String(255), nullable=False)
     address: Mapped[str] = mapped_column(String(255))
 
     stocks: Mapped[list["InventoryStock"]] = relationship(back_populates="location")

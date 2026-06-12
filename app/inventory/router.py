@@ -19,6 +19,8 @@ POST   /inventory/stock/adjust                         - adjust stock
 GET    /inventory/stock/movements                      - list stock movements
 GET    /inventory/stock?location_id&product_id&low_stock    - get current stock levels
 
+GET    /inventory/locations                            - list locations
+
 """
 import logging
 from typing import Optional
@@ -31,6 +33,7 @@ from app.inventory.schemas import (
     AddProductToCategory,
     CategoryCreate,
     CategoryResponse,
+    LocationListResponse,
     ProductCreate,
     ProductListItemResponse,
     ProductResponse,
@@ -366,3 +369,21 @@ async def get_stock_levels(
 
     logger.info("get_stock_levels endpoint succeeded", extra={"total": len(stocks)})
     return StockListResponse(items=list(stocks), total=len(stocks))
+
+
+# location
+
+
+@router.get(
+    "/locations",
+    response_model=LocationListResponse,
+    dependencies=[Depends(require_permission("location:list"))],
+)
+async def get_location_list(
+    service: InventoryService = Depends(provide_inventory_service),
+):
+    logger.info("get_location_list endpoint called")
+    locations = await service.get_location_list()
+
+    logger.info("get_location_list endpoint succeeded", extra={"total": len(locations)})
+    return LocationListResponse(items=list(locations), total=len(locations))

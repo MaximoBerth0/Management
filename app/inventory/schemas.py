@@ -104,6 +104,17 @@ class StockMovementListResponse(BaseModel):
     total: int
 
 
+class LocationResponse(ORMModel):
+    id: int
+    name: str
+    address: str
+
+
+class LocationListResponse(BaseModel):
+    items: List[LocationResponse]
+    total: int
+
+
 class StockListResponse(BaseModel):
     items: List[StockResponse]
     total: int
