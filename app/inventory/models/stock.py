@@ -42,9 +42,7 @@ class InventoryStock(Base):
 
     location: Mapped["Location"] = relationship(back_populates="stocks")
     product: Mapped["Product"] = relationship(back_populates="stocks")
-    movements: Mapped[list["StockMovement"]] = relationship(
-        back_populates="stock", cascade="all, delete-orphan"
-    )
+    movements: Mapped[list["StockMovement"]] = relationship(back_populates="stock")
     reservations: Mapped[list["StockReservation"]] = relationship(
         back_populates="stock"
     )

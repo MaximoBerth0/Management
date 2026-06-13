@@ -57,8 +57,13 @@ from app.rbac.models.role_permission import role_permissions
 from app.rbac.models.user_role import user_roles
 from app.users.model import User
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine,
+    async_sessionmaker
+)
+
 
 # engine + session factory
 #
@@ -74,21 +79,32 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-# db_session - creates all tables before each test, drops them after
+# db_session 
+# One connection per test. The schema is created and committed, then a single
+# OUTER transaction is opened and rolled back at the end.
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session():
     async with engine.connect() as conn:
-        async with conn.begin():
-            await conn.run_sync(Base.metadata.create_all)
+        # create schema and commit it so it survives the outer-transaction rollback
+        await conn.run_sync(Base.metadata.create_all)
+        await conn.commit()
 
-    async with AsyncSessionLocal() as session:
+        outer = await conn.begin()
+
+        session = AsyncSession(
+            bind=conn,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
+        )
+
         yield session
-        await session.rollback()
 
-    async with engine.connect() as conn:
-        async with conn.begin():
-            await conn.run_sync(Base.metadata.drop_all)
+        await session.close()
+        await outer.rollback()        # discard everything the test wrote
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.commit()
+
 
 
 # seeded — inserts all permissions and roles from constants into test DB
@@ -146,7 +162,6 @@ async def client(db_session):
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
-
 
 # Internal helpers (not fixtures)
 

@@ -26,7 +26,7 @@ POST   /inventory/locations                            - create location
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.auth.dependencies import get_current_user
 from app.inventory.dependencies import provide_inventory_service
@@ -342,12 +342,9 @@ async def list_movements(
     limit: int = Query(100, ge=1, le=1000),
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    try:
-        movements = await service.list_stock_movements(stock_id=stock_id, limit=limit)
-        return StockMovementListResponse(items=list(movements), total=len(movements))
+    movements = await service.list_stock_movements(stock_id=stock_id, limit=limit)
+    return StockMovementListResponse(items=list(movements), total=len(movements))
 
-    except ValueError as error:
-        raise HTTPException(status_code=404, detail=str(error))
 
 
 @router.get(

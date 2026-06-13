@@ -284,3 +284,109 @@ async def test_adjust_stock_invalid_quantity(client, employee_user, admin_user, 
     )
 
     assert response.status_code == 400
+
+# GET /inventory/movements
+
+
+async def test_list_movements(client, employee_user, admin_user, make_stock, auth_headers):
+    stock = await make_stock(admin_user, quantity=10)
+    payload = {
+        "location_id": stock["location_id"],
+        "product_id": stock["product_id"],
+    }
+
+    # three movements: in, out, adjust (initialize_stock does not log a movement)
+    await client.post("/inventory/in", headers=auth_headers(employee_user), json={**payload, "quantity": 5})
+    await client.post("/inventory/out", headers=auth_headers(employee_user), json={**payload, "quantity": 3})
+    await client.post("/inventory/adjust", headers=auth_headers(employee_user), json={**payload, "quantity": 20})
+
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+        params={"stock_id": stock["stock_id"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 3
+    assert len(body["items"]) == 3
+    assert all(item["stock_id"] == stock["stock_id"] for item in body["items"])
+    assert {item["movement_type"] for item in body["items"]} == {"in", "out", "adjust"}
+
+
+async def test_list_movements_empty(client, employee_user, admin_user, make_stock, auth_headers):
+    # a freshly initialized stock has no recorded movements
+    stock = await make_stock(admin_user, quantity=10)
+
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+        params={"stock_id": stock["stock_id"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 0
+    assert body["items"] == []
+
+
+async def test_list_movements_respects_limit(client, employee_user, admin_user, make_stock, auth_headers):
+    stock = await make_stock(admin_user, quantity=10)
+    payload = {
+        "location_id": stock["location_id"],
+        "product_id": stock["product_id"],
+    }
+    for _ in range(3):
+        await client.post("/inventory/in", headers=auth_headers(employee_user), json={**payload, "quantity": 1})
+
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+        params={"stock_id": stock["stock_id"], "limit": 2},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 2
+
+
+async def test_list_movements_forbidden(client, client_user, admin_user, make_stock, auth_headers):
+    stock = await make_stock(admin_user, quantity=10)
+
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(client_user),
+        params={"stock_id": stock["stock_id"]},
+    )
+
+    assert response.status_code == 403
+
+
+async def test_list_movements_missing_stock_id(client, employee_user, auth_headers):
+    # stock_id is a required query param -> schema validation (422)
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+    )
+
+    assert response.status_code == 422
+
+
+async def test_list_movements_invalid_stock_id(client, employee_user, auth_headers):
+    # stock_id must be > 0 -> schema validation (422)
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+        params={"stock_id": 0},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_list_movements_stock_not_found(client, employee_user, auth_headers):
+    response = await client.get(
+        "/inventory/movements",
+        headers=auth_headers(employee_user),
+        params={"stock_id": 999999},
+    )
+
+    assert response.status_code == 404

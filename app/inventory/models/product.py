@@ -37,7 +37,4 @@ class Product(Base):
         secondary=product_category,
         back_populates="products",
     )
-    stocks: Mapped[list["InventoryStock"]] = relationship(
-        back_populates="product",
-        cascade="all, delete-orphan",
-    )
+    stocks: Mapped[list["InventoryStock"]] = relationship(back_populates="product")

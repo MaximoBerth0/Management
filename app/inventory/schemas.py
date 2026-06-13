@@ -13,44 +13,44 @@ class ORMModel(BaseModel):
 # request
 
 
-class ProductCreate(BaseModel):
+class ProductCreate(ORMModel):
     name: str = Field(..., min_length=1, max_length=255)
     sku: str = Field(..., min_length=1, max_length=100)
     category_id: int = Field(..., gt=0)
 
 
-class ProductUpdate(BaseModel):
+class ProductUpdate(ORMModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     sku: str | None = Field(None, min_length=1, max_length=100)
 
 
-class CategoryCreate(BaseModel):
+class CategoryCreate(ORMModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: str = Field(..., min_length=1, max_length=255)
 
 
-class AddProductToCategory(BaseModel):
+class AddProductToCategory(ORMModel):
     product_id: int
 
 
-class RemoveProducFromCategory(BaseModel):
+class RemoveProducFromCategory(ORMModel):
     product_id: int
 
 
-class LocationCreate(BaseModel):
+class LocationCreate(ORMModel):
     name: str = Field(..., min_length=1, max_length=255)
     city: str = Field(..., min_length=1, max_length=255)
     address: str = Field(..., min_length=1, max_length=255)
 
 
-class StockInitialize(BaseModel):
+class StockInitialize(ORMModel):
     location_id: int = Field()
     product_id: int = Field()
     quantity: int = Field()
     reorder_point: int = Field()
 
 
-class StockTransaction(BaseModel):
+class StockTransaction(ORMModel):
     product_id: int = Field()
     location_id: int = Field()
     quantity: int = Field()
@@ -84,7 +84,7 @@ class CategoryResponse(ORMModel):
     description: str
 
 
-class StockMovementResponse(BaseModel):
+class StockMovementResponse(ORMModel):
     id: int
     stock_id: int
     movement_type: StockMovementType
@@ -95,7 +95,7 @@ class StockMovementResponse(BaseModel):
     created_at: datetime
 
 
-class StockResponse(BaseModel):
+class StockResponse(ORMModel):
     id: int
     location_id: int
     product_id: int
@@ -105,7 +105,7 @@ class StockResponse(BaseModel):
     updated_at: datetime
 
 
-class StockMovementListResponse(BaseModel):
+class StockMovementListResponse(ORMModel):
     items: List[StockMovementResponse]
     total: int
 
@@ -117,11 +117,11 @@ class LocationResponse(ORMModel):
     address: str
 
 
-class LocationListResponse(BaseModel):
+class LocationListResponse(ORMModel):
     items: List[LocationResponse]
     total: int
 
 
-class StockListResponse(BaseModel):
+class StockListResponse(ORMModel):
     items: List[StockResponse]
     total: int
