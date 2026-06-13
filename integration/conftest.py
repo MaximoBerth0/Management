@@ -281,3 +281,38 @@ def make_location(client, auth_headers):
         return response.json()["id"]
 
     return _make
+
+
+@pytest.fixture
+def make_stock(client, auth_headers, make_product, make_location):
+    async def _make(
+        user: User,
+        product_id: int | None = None,
+        location_id: int | None = None,
+        quantity: int = 10,
+        reorder_point: int = 2,
+    ) -> dict:
+        if product_id is None:
+            product_id = await make_product(user)
+        if location_id is None:
+            location_id = await make_location(user)
+        response = await client.post(
+            "/inventory/new",
+            headers=auth_headers(user),
+            json={
+                "location_id": location_id,
+                "product_id": product_id,
+                "quantity": quantity,
+                "reorder_point": reorder_point,
+            },
+        )
+        assert response.status_code == 201
+        body = response.json()
+        return {
+            "stock_id": body["id"],
+            "product_id": product_id,
+            "location_id": location_id,
+            "quantity": body["quantity"],
+        }
+
+    return _make

@@ -263,6 +263,10 @@ class InventoryService:
         return stock_creation
 
     async def add_stock(self, product_id, location_id, quantity, user_id):
+        if quantity <= 0:
+            logger.warning("add_stock: 0 or negative quantity", extra={"quantity": quantity})
+            raise InvalidQuantityStock()
+
         stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id, location_id
         )
@@ -293,6 +297,10 @@ class InventoryService:
         return movement
 
     async def remove_stock(self, product_id, location_id, quantity, user_id):
+        if quantity <= 0:
+            logger.warning("remove_stock: 0 or negative quantity", extra={"quantity": quantity})
+            raise InvalidQuantityStock()
+
         stock = await self.stock_repo.get_stock_by_location_and_product_for_update(
             product_id, location_id
         )
