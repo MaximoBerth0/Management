@@ -43,6 +43,12 @@ class LocationCreate(ORMModel):
     address: str = Field(..., min_length=1, max_length=255)
 
 
+class LocationUpdate(ORMModel):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    city: str | None = Field(None, min_length=1, max_length=255)
+    address: str | None = Field(None, min_length=1, max_length=255)
+
+
 class StockInitialize(ORMModel):
     location_id: int = Field()
     product_id: int = Field()

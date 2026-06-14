@@ -160,3 +160,161 @@ async def test_create_location_blank_name(client, admin_user, auth_headers):
         json={"name": "   ", "city": "metropolis", "address": "123 st"},
     )
     assert response.status_code == 400
+
+
+# GET /inventory/locations/{id}
+
+
+async def test_get_location(client, admin_user, auth_headers):
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.get(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == location_id
+    assert body["name"] == "warehouse"
+
+
+async def test_get_location_not_found(client, admin_user, auth_headers):
+    response = await client.get(
+        "/inventory/locations/99999",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 404
+
+
+async def test_get_location_employee_allowed(client, admin_user, employee_user, auth_headers):
+    # employees have location:view
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.get(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(employee_user),
+    )
+    assert response.status_code == 200
+
+
+async def test_get_location_forbidden(client, admin_user, client_user, auth_headers):
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.get(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(client_user),
+    )
+    assert response.status_code == 403
+
+
+# PATCH /inventory/locations/{id}
+
+
+async def test_update_location(client, admin_user, auth_headers):
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.patch(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(admin_user),
+        json={"city": "gotham", "address": "5 New Rd"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == location_id
+    assert body["name"] == "warehouse"  # unchanged
+    assert body["city"] == "gotham"
+    assert body["address"] == "5 New Rd"
+
+
+async def test_update_location_no_fields(client, admin_user, auth_headers):
+    # empty payload -> service rejects with 400 (no parameters)
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.patch(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(admin_user),
+        json={},
+    )
+    assert response.status_code == 400
+
+
+async def test_update_location_duplicate_name(client, admin_user, auth_headers):
+    await _create_location(client, admin_user, auth_headers, "warehouse")
+    other_id = await _create_location(client, admin_user, auth_headers, "depot")
+
+    response = await client.patch(
+        f"/inventory/locations/{other_id}",
+        headers=auth_headers(admin_user),
+        json={"name": "warehouse"},
+    )
+    assert response.status_code == 409
+
+
+async def test_update_location_not_found(client, admin_user, auth_headers):
+    response = await client.patch(
+        "/inventory/locations/99999",
+        headers=auth_headers(admin_user),
+        json={"city": "gotham"},
+    )
+    assert response.status_code == 404
+
+
+async def test_update_location_forbidden_employee(client, admin_user, employee_user, auth_headers):
+    # employees can view but not update
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.patch(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(employee_user),
+        json={"city": "gotham"},
+    )
+    assert response.status_code == 403
+
+
+# DELETE /inventory/locations/{id}
+
+
+async def test_delete_location(client, admin_user, auth_headers):
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.delete(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 204
+
+    # confirm it is gone
+    follow_up = await client.get(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(admin_user),
+    )
+    assert follow_up.status_code == 404
+
+
+async def test_delete_location_not_found(client, admin_user, auth_headers):
+    response = await client.delete(
+        "/inventory/locations/99999",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_location_with_stock(client, admin_user, make_stock, auth_headers):
+    # a location that still holds stock cannot be deleted
+    stock = await make_stock(admin_user, quantity=10)
+
+    response = await client.delete(
+        f"/inventory/locations/{stock['location_id']}",
+        headers=auth_headers(admin_user),
+    )
+    assert response.status_code == 409
+
+
+async def test_delete_location_forbidden_employee(client, admin_user, employee_user, auth_headers):
+    location_id = await _create_location(client, admin_user, auth_headers, "warehouse")
+
+    response = await client.delete(
+        f"/inventory/locations/{location_id}",
+        headers=auth_headers(employee_user),
+    )
+    assert response.status_code == 403

@@ -29,3 +29,34 @@ class LocationRepository:
         await self.db.commit()
         await self.db.refresh(location)
         return location
+
+    async def update_location(
+        self,
+        location_id: int,
+        name: str | None = None,
+        city: str | None = None,
+        address: str | None = None,
+    ) -> Location | None:
+        location = await self.get_location(location_id)
+        if not location:
+            return None
+
+        if name is not None:
+            location.name = name
+        if city is not None:
+            location.city = city
+        if address is not None:
+            location.address = address
+
+        await self.db.commit()
+        await self.db.refresh(location)
+        return location
+
+    async def delete_location(self, location_id: int) -> bool:
+        location = await self.get_location(location_id)
+        if not location:
+            return False
+
+        await self.db.delete(location)
+        await self.db.commit()
+        return True

@@ -390,3 +390,68 @@ async def test_list_movements_stock_not_found(client, employee_user, auth_header
     )
 
     assert response.status_code == 404
+
+# GET inventory/stock
+
+
+async def test_get_stock_level(client, admin_user, employee_user, make_stock, auth_headers):
+    stock = await make_stock(admin_user, quantity=10)
+
+    response = await client.get(
+        "/inventory/stock",
+        headers=auth_headers(employee_user),
+        params={"product_id": stock["product_id"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 1
+    item = body["items"][0]
+    assert item["id"] == stock["stock_id"]
+    assert item["product_id"] == stock["product_id"]
+    assert item["location_id"] == stock["location_id"]
+    assert item["quantity"] == 10
+
+
+
+async def test_get_stock_level_forbidden(client, admin_user, client_user, make_stock, auth_headers):
+    stock = await make_stock(admin_user, quantity=10)
+
+    response = await client.get(
+        "/inventory/stock",
+        headers=auth_headers(client_user),
+        params={"product_id": stock["product_id"]},
+    )
+
+    assert response.status_code == 403
+
+
+async def test_get_stock_level_reorder_point(client, admin_user, make_stock, auth_headers):
+    # get_stock_levels should report the current quantity along with the
+    # reorder_point established when the stock was created
+    stock = await make_stock(admin_user, quantity=10, reorder_point=5)
+
+    response = await client.post(
+        "/inventory/out",
+        headers=auth_headers(admin_user),
+        json={
+            "location_id": stock["location_id"],
+            "product_id": stock["product_id"],
+            "quantity": 6,
+        },
+    )
+    assert response.status_code == 200
+
+    response = await client.get(
+        "/inventory/stock",
+        headers=auth_headers(admin_user),
+        params={"product_id": stock["product_id"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 1
+    item = body["items"][0]
+    assert item["id"] == stock["stock_id"]
+    assert item["quantity"] == 4  # current quantity after removal
+    assert item["reorder_point"] == 5  # unchanged from creation

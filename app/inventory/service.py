@@ -46,7 +46,9 @@ from app.inventory.exceptions import (
     LocationAddressIsRequired,
     LocationAlreadyExists,
     LocationCityIsRequired,
+    LocationHasStock,
     LocationNameIsRequired,
+    LocationNotFound,
     NoParametersProvide,
     ProductAlreadyExits,
     ProductNameIsRequired,
@@ -380,11 +382,10 @@ class InventoryService:
         self,
         location_id: Optional[int] = None,
         product_id: Optional[int] = None,
-        low_stock: Optional[bool] = None,
     ) -> list[InventoryStock]:
 
         return await self.stock_repo.get_stock_levels(
-            location_id=location_id, product_id=product_id, low_stock=low_stock
+            location_id=location_id, product_id=product_id
         )
 
     # location
@@ -392,6 +393,13 @@ class InventoryService:
     async def get_location_list(self):
         result = await self.location_repo.list_locations()
         return result
+
+    async def get_location(self, location_id: int):
+        location = await self.location_repo.get_location(location_id)
+        if location is None:
+            logger.warning("get_location: location not found", extra={"location_id": location_id})
+            raise LocationNotFound()
+        return location
 
     async def create_location(self, name: str, city: str, address: str):
         if not name or not name.strip():
@@ -418,6 +426,57 @@ class InventoryService:
         location = await self.location_repo.create_location(name, city, address)
         logger.info("create_location: location created", extra={"location_id": location.id, "location_name": name})
         return location
+
+    async def update_location(
+        self,
+        location_id: int,
+        name: str | None = None,
+        city: str | None = None,
+        address: str | None = None,
+    ):
+        if name is None and city is None and address is None:
+            logger.warning("update_location: called with no parameters")
+            raise NoParametersProvide()
+
+        if name is not None:
+            name = name.strip()
+            if not name:
+                raise LocationNameIsRequired()
+            existing = await self.location_repo.get_by_name(name)
+            if existing and existing.id != location_id:
+                logger.warning("update_location: name already taken", extra={"location_name": name, "location_id": existing.id})
+                raise LocationAlreadyExists()
+
+        if city is not None:
+            city = city.strip()
+            if not city:
+                raise LocationCityIsRequired()
+
+        if address is not None:
+            address = address.strip()
+            if not address:
+                raise LocationAddressIsRequired()
+
+        location = await self.location_repo.update_location(location_id, name, city, address)
+        if not location:
+            logger.warning("update_location: location not found", extra={"location_id": location_id})
+            raise LocationNotFound()
+
+        logger.info("update_location: location updated", extra={"location_id": location_id})
+        return location
+
+    async def delete_location(self, location_id: int):
+        location = await self.location_repo.get_location(location_id)
+        if not location:
+            logger.warning("delete_location: location not found", extra={"location_id": location_id})
+            raise LocationNotFound()
+
+        if await self.stock_repo.location_has_stock(location_id):
+            logger.warning("delete_location: location still has stock", extra={"location_id": location_id})
+            raise LocationHasStock()
+
+        await self.location_repo.delete_location(location_id)
+        logger.info("delete_location: location deleted", extra={"location_id": location_id})
 
     # reservation
 

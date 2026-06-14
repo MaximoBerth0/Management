@@ -46,7 +46,7 @@ Manages products, categories, physical locations, and per-location stock with a 
 | `products` | Many-to-many backref |
 
 ### Location — [location.py](../app/inventory/models/location.py)
-Minimal model: `id`, `name`, `address`, plus a backref to its stocks. There is no create/update/delete API for locations in this module — only `get_location` is exposed by the repository.
+Model: `id`, `name`, `city`, `address`, plus a backref to its stocks. Locations have a full CRUD API (list, get, create, update, delete). `name` is treated as a logical unique key. A location that still has `InventoryStock` rows cannot be deleted (`LocationHasStock`, 409).
 
 ### InventoryStock — [stock.py](../app/inventory/models/stock.py)
 | Field | Notes |
@@ -54,7 +54,7 @@ Minimal model: `id`, `name`, `address`, plus a backref to its stocks. There is n
 | `location_id`, `product_id` | FKs; the pair is treated as a logical unique key (looked up via `get_stock_by_location_and_product`) |
 | `quantity` | Current on-hand quantity |
 | `reserved_quantity` | Reserved by orders module — not modified here |
-| `reorder_point` | Threshold for `low_stock` queries (`quantity < reorder_point`) |
+| `reorder_point` | Restock threshold captured at creation; surfaced in stock-level responses |
 
 ### StockMovement — [stock.py](../app/inventory/models/stock.py)
 Append-only audit row. Carries `movement_type` (`IN` / `OUT` / `ADJUST`), the delta `quantity`, both `previous_quantity` and `new_quantity`, and `created_by` (FK → `users.id`). For `ADJUST`, `quantity` stores the absolute difference between the new and old value.
@@ -91,7 +91,7 @@ Each repository wraps an `AsyncSession` and does pure data access — no validat
 `get_category`, `get_by_name`, `list_categories`, `create_category`, `save_category`, `remove_product` (removes a product from `category.products`), `delete_category` (hard delete).
 
 ### LocationRepository
-`get_location` only — location CRUD lives outside this module.
+`get_location`, `list_locations`, `get_by_name`, `create_location`, `update_location`, `delete_location`. `StockRepository.location_has_stock` backs the delete guard.
 
 ### StockRepository
 | Method | Notes |
@@ -102,7 +102,7 @@ Each repository wraps an `AsyncSession` and does pure data access — no validat
 | `update_quantity_stock(stock)` | Just commits — caller mutates `stock.quantity` first |
 | `create_movement(movement)` | Append-only insert |
 | `list_stock_movements` | Filters by `stock_id`, orders `created_at DESC`, defaults to `limit=100` |
-| `get_stock_levels` | Optional filters: `location_id`, `product_id`, `low_stock` (`quantity < reorder_point`). Uses `selectinload(product, location)` to avoid N+1 |
+| `get_stock_levels` | Optional filters: `location_id`, `product_id`. Returns current `quantity` and `reorder_point` per row. Uses `selectinload(product, location)` to avoid N+1 |
 
 A docstring at the bottom of [stock_repo.py](../app/inventory/repositories/stock_repo.py) reserves slots for `get_available_stock`, `reserve_stock`, `release_reservation`, `fulfill_reservation` — these will be driven by the orders module.
 
@@ -177,7 +177,18 @@ All endpoints under `/inventory` prefix. Every route requires a permission via `
 | `POST /inventory/out` | `stock:out` |
 | `POST /inventory/adjust` | `stock:adjust` |
 | `GET /inventory/movements?stock_id&limit` | `stock:view` |
-| `GET /inventory/stock?location_id&product_id&low_stock` | `stock:view` |
+| `GET /inventory/stock?location_id&product_id` | `stock:view` |
+
+### Locations
+| Endpoint | Permission |
+|---|---|
+| `GET /inventory/locations` | `location:list` |
+| `GET /inventory/locations/{id}` | `location:view` |
+| `POST /inventory/locations` | `location:create` |
+| `PATCH /inventory/locations/{id}` | `location:update` |
+| `DELETE /inventory/locations/{id}` | `location:delete` (409 if the location still has stock) |
+
+`location:list` and `location:view` are granted to both admin and employee; create/update/delete are admin-only.
 
 ---
 

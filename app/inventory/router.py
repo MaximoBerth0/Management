@@ -17,10 +17,13 @@ POST   /inventory/stock/in                             - add stock
 POST   /inventory/stock/out                            - remove stock
 POST   /inventory/stock/adjust                         - adjust stock
 GET    /inventory/stock/movements                      - list stock movements
-GET    /inventory/stock?location_id&product_id&low_stock    - get current stock levels
+GET    /inventory/stock?location_id&product_id    - get current stock levels
 
 GET    /inventory/locations                            - list locations
 POST   /inventory/locations                            - create location
+GET    /inventory/locations/{id}                       - get location
+PATCH  /inventory/locations/{id}                       - update location
+DELETE /inventory/locations/{id}                       - delete location
 
 """
 import logging
@@ -37,6 +40,7 @@ from app.inventory.schemas import (
     LocationCreate,
     LocationListResponse,
     LocationResponse,
+    LocationUpdate,
     ProductCreate,
     ProductListItemResponse,
     ProductResponse,
@@ -355,16 +359,14 @@ async def list_movements(
 async def get_stock_levels(
     location_id: Optional[int] = Query(None, gt=0),
     product_id: Optional[int] = Query(None, gt=0),
-    low_stock: Optional[bool] = Query(None),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("get_stock_levels endpoint called", extra={
         "location_id": location_id,
         "product_id": product_id,
-        "low_stock": low_stock,
     })
     stocks = await service.get_stock_levels(
-        location_id=location_id, product_id=product_id, low_stock=low_stock
+        location_id=location_id, product_id=product_id
     )
 
     logger.info("get_stock_levels endpoint succeeded", extra={"total": len(stocks)})
@@ -405,3 +407,51 @@ async def create_location(
     )
     logger.info("create_location endpoint succeeded", extra={"location_id": result.id})
     return result
+
+
+@router.get(
+    "/locations/{id}",
+    response_model=LocationResponse,
+    dependencies=[Depends(require_permission("location:view"))],
+)
+async def get_location(
+    id: int,
+    service: InventoryService = Depends(provide_inventory_service),
+):
+    logger.info("get_location endpoint called", extra={"location_id": id})
+    return await service.get_location(id)
+
+
+@router.patch(
+    "/locations/{id}",
+    response_model=LocationResponse,
+    dependencies=[Depends(require_permission("location:update"))],
+)
+async def update_location(
+    id: int,
+    payload: LocationUpdate,
+    service: InventoryService = Depends(provide_inventory_service),
+):
+    logger.info("update_location endpoint called", extra={"location_id": id})
+    result = await service.update_location(
+        location_id=id,
+        name=payload.name,
+        city=payload.city,
+        address=payload.address,
+    )
+    logger.info("update_location endpoint succeeded", extra={"location_id": id})
+    return result
+
+
+@router.delete(
+    "/locations/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("location:delete"))],
+)
+async def delete_location(
+    id: int,
+    service: InventoryService = Depends(provide_inventory_service),
+):
+    logger.info("delete_location endpoint called", extra={"location_id": id})
+    await service.delete_location(id)
+    logger.info("delete_location endpoint succeeded", extra={"location_id": id})

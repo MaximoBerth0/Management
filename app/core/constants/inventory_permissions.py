@@ -17,5 +17,8 @@ INVENTORY_PERMISSIONS = [
     "stock:view",
     # location
     "location:list",
+    "location:view",
     "location:create",
+    "location:update",
+    "location:delete",
 ]

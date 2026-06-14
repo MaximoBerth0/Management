@@ -116,6 +116,22 @@ class LocationAlreadyExists(InventoryError):
             error_code="LOCATION_ALREADY_EXISTS",
         )
 
+class LocationNotFound(InventoryError):
+    def __init__(self, message: str = "Location not found"):
+        super().__init__(
+            message=message,
+            status_code=404,
+            error_code="LOCATION_NOT_FOUND",
+        )
+
+class LocationHasStock(InventoryError):
+    def __init__(self, message: str = "Location still has stock and cannot be deleted"):
+        super().__init__(
+            message=message,
+            status_code=409,
+            error_code="LOCATION_HAS_STOCK",
+        )
+
 class InvalidLocation(InventoryError):
     def __init__(self, message: str = "location id cannot be empty"):
         super().__init__(

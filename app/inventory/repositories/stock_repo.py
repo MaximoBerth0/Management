@@ -18,6 +18,13 @@ class StockRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def location_has_stock(self, location_id: int) -> bool:
+        stmt = select(InventoryStock.id).where(
+            InventoryStock.location_id == location_id
+        ).limit(1)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none() is not None
+
     async def get_stock_by_location_and_product_for_update(
         self, product_id: int, location_id: int
     ) -> InventoryStock | None:
@@ -100,7 +107,6 @@ class StockRepository:
         self,
         location_id: Optional[int] = None,
         product_id: Optional[int] = None,
-        low_stock: Optional[bool] = None,
     ) -> list[InventoryStock]:
 
         stmt = select(InventoryStock)
@@ -109,8 +115,6 @@ class StockRepository:
             stmt = stmt.where(InventoryStock.location_id == location_id)
         if product_id:
             stmt = stmt.where(InventoryStock.product_id == product_id)
-        if low_stock:
-            stmt = stmt.where(InventoryStock.quantity < InventoryStock.reorder_point)
 
         # load relationships with selecinload to avoid N+1
         stmt = stmt.options(
