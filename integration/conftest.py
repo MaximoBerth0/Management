@@ -331,3 +331,41 @@ def make_stock(client, auth_headers, make_product, make_location):
         }
 
     return _make
+
+
+@pytest.fixture
+def make_order(client, auth_headers):
+    async def _make(user: User) -> int:
+        response = await client.post(
+            "/orders/",
+            headers=auth_headers(user),
+        )
+        assert response.status_code == 201
+        return response.json()["id"]
+    return _make
+
+
+@pytest.fixture
+def make_order_item(client, auth_headers, make_order, make_product):
+    async def _make(
+        user: User,
+        order_id: int | None = None,
+        product_id: int | None = None,
+        quantity: int = 1,
+    ) -> dict:
+        if order_id is None:
+            order_id = await make_order(user)
+        if product_id is None:
+            product_id = await make_product(user)
+        response = await client.post(
+            f"/orders/{order_id}/items",
+            headers=auth_headers(user),
+            json={"product_id": product_id, "quantity": quantity},
+        )
+        assert response.status_code == 200
+        return {
+            "order_id": order_id,
+            "product_id": product_id,
+            "quantity": quantity,
+        }
+    return _make

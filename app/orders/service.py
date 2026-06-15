@@ -15,11 +15,6 @@ remove_item_from_order()
 confirm_order()
 cancel_order()
 complete_order()
-
-OrderService owns the transaction in confirm_order(), cancel_order(),
-and complete_order() because these operations span both order and
-inventory state. If any step fails, the entire operation rolls back.
-(delete this when documentation is ready)
 """
 
 logger = logging.getLogger(__name__)
@@ -45,6 +40,8 @@ class OrderService:
     async def add_item_to_order(
         self, order_id: int, product_id: int, quantity: int
     ) -> Order:
+        # validate the product exists before touching the order
+        await self.inventory_service.get_product(product_id)
         order = await self.order_repo.append_item(order_id, product_id, quantity)
         if order is None:
             logger.warning("add_item_to_order: order not found", extra={"order_id": order_id})

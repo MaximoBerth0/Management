@@ -23,6 +23,10 @@ STOCK:
 
 LOCATION:
   get_location_list()
+  get_location()
+  create_location()
+  update_location()
+  delete_location()
 
 RESERVATION:
   reserve_for_item()

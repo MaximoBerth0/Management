@@ -21,6 +21,7 @@ SYSTEM_ROLES = {
         "location:list",
         "location:view",
         "order:create",
+        "order:add",
         "order:remove",
         "order:confirm",
         "order:cancel",

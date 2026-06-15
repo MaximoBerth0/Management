@@ -82,8 +82,10 @@ class Order(Base):
     def add_item(self, product_id: int, quantity: int) -> "OrderItem":
         if self.status != OrderStatus.CREATED:
             raise InvalidOrderStatus("Items can only be added to created orders")
+        if quantity <= 0:
+            raise InvalidQuantity("Quantity must be greater than zero")
 
-        item = OrderItem.create(product_id=product_id, quantity=quantity)
+        item = OrderItem(product_id=product_id, quantity=quantity)
         item.order = self
         return item
 
@@ -131,12 +133,3 @@ class OrderItem(Base):
         back_populates="order_item",
         uselist=False,
     )
-
-    @classmethod
-    def create(cls, product_id: int, quantity: int) -> "OrderItem":
-        if quantity <= 0:
-            raise InvalidQuantity("Quantity must be greater than zero")
-        return cls(
-            product_id=product_id,
-            quantity=quantity,
-        )

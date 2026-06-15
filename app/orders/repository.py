@@ -24,8 +24,7 @@ class OrderRepository:
         order = Order.create(user_id=user_id)
         self.db.add(order)
         await self.db.commit()
-        await self.db.refresh(order)
-        return order
+        return await self.get_order(order.id)
 
     # OrderItem
 
@@ -39,8 +38,7 @@ class OrderRepository:
         item = order.add_item(product_id=product_id, quantity=quantity)
         self.db.add(item)
         await self.db.commit()
-        await self.db.refresh(order, attribute_names=["items"])
-        return order
+        return await self.get_order(order_id)
 
     async def remove_item(self, order_id: int, product_id: int) -> Order | None:
         order = await self.get_order(order_id)
