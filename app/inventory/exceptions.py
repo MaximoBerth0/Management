@@ -172,6 +172,17 @@ class StockNotFound(InventoryError):
             error_code="STOCK_NOT_FOUND",
         )
 
+class StockAlreadyExists(InventoryError):
+    def __init__(
+        self,
+        message: str = "Stock already initialized here, use stock-in to add quantity",
+    ):
+        super().__init__(
+            message=message,
+            status_code=409,
+            error_code="STOCK_ALREADY_EXISTS",
+        )
+
 class InsufficientStock(InventoryError):
     def __init__(self, message: str = "Insufficient available stock"):
         super().__init__(

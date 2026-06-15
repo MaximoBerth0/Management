@@ -17,7 +17,10 @@ POST   /inventory/stock/in                             - add stock
 POST   /inventory/stock/out                            - remove stock
 POST   /inventory/stock/adjust                         - adjust stock
 GET    /inventory/stock/movements                      - list stock movements
-GET    /inventory/stock?location_id&product_id    - get current stock levels
+GET    /inventory/stock?product_id                      - get current stock levels
+
+(stock endpoints operate on the current branch, resolved from the
+ X-Location-Id header via get_current_location)
 
 GET    /inventory/locations                            - list locations
 POST   /inventory/locations                            - create location
@@ -32,7 +35,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, status
 
 from app.auth.dependencies import get_current_user
-from app.inventory.dependencies import provide_inventory_service
+from app.inventory.dependencies import get_current_location, provide_inventory_service
+from app.inventory.models.location import Location
 from app.inventory.schemas import (
     AddProductToCategory,
     CategoryCreate,
@@ -241,15 +245,16 @@ async def remove_product_from_category(
 )
 async def create_stock(
     payload: StockInitialize,
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("create_stock endpoint called", extra={
         "product_id": payload.product_id,
-        "location_id": payload.location_id,
+        "location_id": location.id,
         "quantity": payload.quantity,
     })
     result = await service.initialize_stock(
-        location_id=payload.location_id,
+        location_id=location.id,
         product_id=payload.product_id,
         quantity=payload.quantity,
         reorder_point=payload.reorder_point,
@@ -266,17 +271,18 @@ async def create_stock(
 async def add_stock(
     payload: StockTransaction,
     current_user: User = Depends(get_current_user),
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("add_stock endpoint called", extra={
         "product_id": payload.product_id,
-        "location_id": payload.location_id,
+        "location_id": location.id,
         "quantity": payload.quantity,
         "user_id": current_user.id,
     })
     result = await service.add_stock(
         product_id=payload.product_id,
-        location_id=payload.location_id,
+        location_id=location.id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
@@ -292,17 +298,18 @@ async def add_stock(
 async def remove_stock(
     payload: StockTransaction,
     current_user: User = Depends(get_current_user),
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("remove_stock endpoint called", extra={
         "product_id": payload.product_id,
-        "location_id": payload.location_id,
+        "location_id": location.id,
         "quantity": payload.quantity,
         "user_id": current_user.id,
     })
     result = await service.remove_stock(
         product_id=payload.product_id,
-        location_id=payload.location_id,
+        location_id=location.id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
@@ -318,17 +325,18 @@ async def remove_stock(
 async def adjust_stock(
     payload: StockTransaction,
     current_user: User = Depends(get_current_user),
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("adjust_stock endpoint called", extra={
         "product_id": payload.product_id,
-        "location_id": payload.location_id,
+        "location_id": location.id,
         "quantity": payload.quantity,
         "user_id": current_user.id,
     })
     result = await service.adjust_stock(
         product_id=payload.product_id,
-        location_id=payload.location_id,
+        location_id=location.id,
         quantity=payload.quantity,
         user_id=current_user.id,
     )
@@ -344,9 +352,12 @@ async def adjust_stock(
 async def list_movements(
     stock_id: int = Query(..., gt=0),
     limit: int = Query(100, ge=1, le=1000),
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
-    movements = await service.list_stock_movements(stock_id=stock_id, limit=limit)
+    movements = await service.list_stock_movements(
+        stock_id=stock_id, location_id=location.id, limit=limit
+    )
     return StockMovementListResponse(items=list(movements), total=len(movements))
 
 
@@ -357,16 +368,16 @@ async def list_movements(
     dependencies=[Depends(require_permission("stock:view"))],
 )
 async def get_stock_levels(
-    location_id: Optional[int] = Query(None, gt=0),
     product_id: Optional[int] = Query(None, gt=0),
+    location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("get_stock_levels endpoint called", extra={
-        "location_id": location_id,
+        "location_id": location.id,
         "product_id": product_id,
     })
     stocks = await service.get_stock_levels(
-        location_id=location_id, product_id=product_id
+        location_id=location.id, product_id=product_id
     )
 
     logger.info("get_stock_levels endpoint succeeded", extra={"total": len(stocks)})

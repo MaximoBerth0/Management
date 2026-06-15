@@ -230,12 +230,17 @@ async def plain_user(db_session):
     user = await _make_user(db_session, email="plain@test.com", username="plain")
     return user
 
-# auth_headers - request this fixture, then call it inline: auth_headers(user)
+# auth_headers - request this fixture, then call it inline: auth_headers(user).
+# Pass location_id to also attach the X-Location-Id header that the stock
+# endpoints resolve via get_current_location.
 @pytest.fixture
 def auth_headers():
-    def _build(user: User) -> dict:
+    def _build(user: User, location_id: int | None = None) -> dict:
         token = create_access_token(user.id)
-        return {"Authorization": f"Bearer {token}"}
+        headers = {"Authorization": f"Bearer {token}"}
+        if location_id is not None:
+            headers["X-Location-Id"] = str(location_id)
+        return headers
 
     return _build
 
@@ -313,9 +318,8 @@ def make_stock(client, auth_headers, make_product, make_location):
             location_id = await make_location(user)
         response = await client.post(
             "/inventory/new",
-            headers=auth_headers(user),
+            headers=auth_headers(user, location_id=location_id),
             json={
-                "location_id": location_id,
                 "product_id": product_id,
                 "quantity": quantity,
                 "reorder_point": reorder_point,

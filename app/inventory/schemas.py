@@ -50,7 +50,6 @@ class LocationUpdate(ORMModel):
 
 
 class StockInitialize(ORMModel):
-    location_id: int = Field()
     product_id: int = Field()
     quantity: int = Field()
     reorder_point: int = Field()
@@ -58,7 +57,6 @@ class StockInitialize(ORMModel):
 
 class StockTransaction(ORMModel):
     product_id: int = Field()
-    location_id: int = Field()
     quantity: int = Field()
     reason: Optional[str] = Field(None, max_length=500)
 

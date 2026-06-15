@@ -3,7 +3,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum as SAEnum, ForeignKey, Integer, func
+from sqlalchemy import (
+    DateTime,
+    Enum as SAEnum,
+    ForeignKey,
+    Integer,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -18,6 +25,11 @@ if TYPE_CHECKING:
 
 class InventoryStock(Base):
     __tablename__ = "inventory_stock"
+    __table_args__ = (
+        UniqueConstraint(
+            "product_id", "location_id", name="uq_stock_product_location"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     location_id: Mapped[int] = mapped_column(

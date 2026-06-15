@@ -59,6 +59,7 @@ from app.inventory.exceptions import (
     ProductNotFound,
     ReservationNotFound,
     SKUIsRequired,
+    StockAlreadyExists,
     StockNegative,
     StockNotFound,
 )
@@ -258,6 +259,16 @@ class InventoryService:
             logger.warning("initialize_stock: 0 or negative quantity", extra={"quantity": quantity})
             raise InvalidQuantityStock()
 
+        existing = await self.stock_repo.get_stock_by_location_and_product_for_update(
+            product_id=product_id, location_id=location_id
+        )
+        if existing:
+            logger.warning(
+                "initialize_stock: stock already exists for product/location",
+                extra={"product_id": product_id, "location_id": location_id, "stock_id": existing.id},
+            )
+            raise StockAlreadyExists()
+
         stock_creation = await self.stock_repo.initialize_stock(
             location_id, product_id, quantity, reorder_point
         )
@@ -374,10 +385,18 @@ class InventoryService:
         )
         return movement
 
-    async def list_stock_movements(self, stock_id: int, limit: int = 100):
+    async def list_stock_movements(self, stock_id: int, location_id: int, limit: int = 100):
         stock = await self.stock_repo.get_stock(stock_id)
         if not stock:
             logger.warning("list_stock_movements: stock not found", extra={"stock_id": stock_id})
+            raise StockNotFound()
+
+        # guard: a branch may only read movement history for its own stock
+        if stock.location_id != location_id:
+            logger.warning(
+                "list_stock_movements: stock belongs to another location",
+                extra={"stock_id": stock_id, "stock_location_id": stock.location_id, "current_location_id": location_id},
+            )
             raise StockNotFound()
 
         return await self.stock_repo.list_stock_movements(stock_id, limit)
