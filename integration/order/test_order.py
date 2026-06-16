@@ -66,3 +66,44 @@ async def test_add_item_to_order_product_not_found(
     )
 
     assert response.status_code == 404
+
+
+async def test_remove_item_from_order(
+    client, employee_user, auth_headers, make_order, make_product
+):
+    order_id = await make_order(employee_user)
+    product_id = await make_product(employee_user)
+
+    await client.post(
+        f"/orders/{order_id}/items",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id, "quantity": 3},
+    )
+
+    response = await client.delete(
+        f"/orders/{order_id}/items/{product_id}",
+        headers=auth_headers(employee_user),
+    )
+
+    assert response.status_code == 200
+    assert all(i["product_id"] != product_id for i in response.json()["items"])
+
+
+async def test_remove_item_from_order_forbidden(
+    client, employee_user, client_user, auth_headers, make_order, make_product
+):
+    order_id = await make_order(employee_user)
+    product_id = await make_product(employee_user)
+
+    await client.post(
+        f"/orders/{order_id}/items",
+        headers=auth_headers(employee_user),
+        json={"product_id": product_id, "quantity": 3},
+    )
+
+    response = await client.delete(
+        f"/orders/{order_id}/items/{product_id}",
+        headers=auth_headers(client_user),
+    )
+
+    assert response.status_code == 403

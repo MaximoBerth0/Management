@@ -3,8 +3,10 @@ import logging
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
+from app.inventory.dependencies import get_current_location
+from app.inventory.models.location import Location
 from app.orders.dependencies import get_order_service
-from app.orders.schemas import AddItemRequest, ConfirmOrderRequest, OrderResponse
+from app.orders.schemas import AddItemRequest, OrderResponse
 from app.orders.service import OrderService
 from app.rbac.dependencies import require_permission
 from app.users.model import User
@@ -98,16 +100,16 @@ async def remove_item_from_order(
 )
 async def confirm_order(
     id: int,
-    payload: ConfirmOrderRequest,
+    location: Location = Depends(get_current_location),
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
     logger.info(
         "confirm_order endpoint called",
-        extra={"order_id": id, "location_id": payload.location_id},
+        extra={"order_id": id, "location_id": location.id},
     )
     order = await service.confirm_order(
         order_id=id,
-        location_id=payload.location_id,
+        location_id=location.id,
     )
     logger.info("confirm_order endpoint succeeded", extra={"order_id": id})
     return order

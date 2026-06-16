@@ -230,7 +230,7 @@ async def plain_user(db_session):
     user = await _make_user(db_session, email="plain@test.com", username="plain")
     return user
 
-# auth_headers - request this fixture, then call it inline: auth_headers(user).
+# auth_headers: request this fixture, then call it inline: auth_headers(user).
 # Pass location_id to also attach the X-Location-Id header that the stock
 # endpoints resolve via get_current_location.
 @pytest.fixture
@@ -245,10 +245,7 @@ def auth_headers():
     return _build
 
 
-# entity builders — request the fixture, then call it inline with the acting
-# user, e.g. `await make_product(admin_user, sku="SKU-2")`. They go through the
-# API so the same permission/validation path the tests exercise is used.
-
+# entity builders: request the fixture, then call it inline with the acting user
 @pytest.fixture
 def make_category(client, auth_headers):
     async def _make(user: User, name: str = "tools", description: str = "cat") -> int:

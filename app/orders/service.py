@@ -58,60 +58,60 @@ class OrderService:
         return order
     
     async def confirm_order(self, order_id: int, location_id: int) -> Order:
-        async with self.db.begin():
-            order = await self.order_repo.get_order(order_id)
-            if order is None:
-                logger.warning("confirm_order: order not found", extra={"order_id": order_id})
-                raise OrderNotFound()
-            if order.status != OrderStatus.CREATED:
-                logger.warning("confirm_order: wrong status order, should be CREATED", extra={"invalid_status": order.status})
-                raise InvalidOrderStatus()
-            for item in order.items:
-                await self.inventory_service.reserve_for_item(
-                    order_item_id=item.id,
-                    product_id=item.product_id,
-                    location_id=location_id,
-                    quantity=item.quantity,
-                )
+        order = await self.order_repo.get_order(order_id)
+        if order is None:
+            logger.warning("confirm_order: order not found", extra={"order_id": order_id})
+            raise OrderNotFound()
+        if order.status != OrderStatus.CREATED:
+            logger.warning("confirm_order: wrong status order, should be CREATED", extra={"invalid_status": order.status})
+            raise InvalidOrderStatus()
+        for item in order.items:
+            await self.inventory_service.reserve_for_item(
+                order_item_id=item.id,
+                product_id=item.product_id,
+                location_id=location_id,
+                quantity=item.quantity,
+            )
 
-            order.status = OrderStatus.CONFIRMED
+        order.status = OrderStatus.CONFIRMED
+        await self.db.commit()
 
         logger.info("confirm_order: order confirmed", extra={"order_id": order_id, "location_id": location_id})
         return order
 
     async def cancel_order(self, order_id: int) -> Order:
-        async with self.db.begin():
-            order = await self.order_repo.get_order(order_id)
-            if order is None:
-                logger.warning("cancel_order: order not found", extra={"order_id": order_id})
-                raise OrderNotFound()
-            
-            if order.status != OrderStatus.CONFIRMED:
-                logger.warning("cancel_order: wrong status order, should be CONFIRMED", extra={"order_id": order_id, "invalid_status": order.status})
-                raise InvalidOrderStatus()
+        order = await self.order_repo.get_order(order_id)
+        if order is None:
+            logger.warning("cancel_order: order not found", extra={"order_id": order_id})
+            raise OrderNotFound()
 
-            for item in order.items:
-                if item.reservation is not None:
-                    await self.inventory_service.release_for_item(
-                        item.reservation.id
-                    )
-            order.cancel()
-            logger.info("cancel_order: order cancelled", extra={"order_id": order_id})
-            return order
-        
+        if order.status != OrderStatus.CONFIRMED:
+            logger.warning("cancel_order: wrong status order, should be CONFIRMED", extra={"order_id": order_id, "invalid_status": order.status})
+            raise InvalidOrderStatus()
+
+        for item in order.items:
+            if item.reservation is not None:
+                await self.inventory_service.release_for_item(
+                    item.reservation.id
+                )
+        order.cancel()
+        await self.db.commit()
+        logger.info("cancel_order: order cancelled", extra={"order_id": order_id})
+        return order
+
     async def complete_order(self, order_id: int) -> Order:
-        async with self.db.begin():
-            order = await self.order_repo.get_order(order_id)
-            if order is None:
-                logger.warning("complete_order: order not found", extra={"order_id": order_id})
-                raise OrderNotFound()
+        order = await self.order_repo.get_order(order_id)
+        if order is None:
+            logger.warning("complete_order: order not found", extra={"order_id": order_id})
+            raise OrderNotFound()
 
-            for item in order.items:
-                if item.reservation is not None:
-                    await self.inventory_service.fulfill_for_item(
-                        item.reservation.id
-                    )
+        for item in order.items:
+            if item.reservation is not None:
+                await self.inventory_service.fulfill_for_item(
+                    item.reservation.id
+                )
 
-            order.complete()
-            logger.info("complete_order: order completed", extra={"order_id": order_id})
-            return order
+        order.complete()
+        await self.db.commit()
+        logger.info("complete_order: order completed", extra={"order_id": order_id})
+        return order

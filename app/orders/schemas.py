@@ -18,10 +18,6 @@ class AddItemRequest(BaseModel):
     quantity: int = Field(..., gt=0)
 
 
-class ConfirmOrderRequest(BaseModel):
-    location_id: int = Field(..., gt=0)
-
-
 # response
 
 
