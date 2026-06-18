@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import List
 
@@ -14,7 +15,7 @@ class ORMModel(BaseModel):
 
 
 class AddItemRequest(BaseModel):
-    product_id: int = Field(..., gt=0)
+    product_id: uuid.UUID
     quantity: int = Field(..., gt=0)
 
 
@@ -22,15 +23,15 @@ class AddItemRequest(BaseModel):
 
 
 class OrderItemResponse(ORMModel):
-    id: int
-    product_id: int
+    id: uuid.UUID
+    product_id: uuid.UUID
     quantity: int
     created_at: datetime
 
 
 class OrderResponse(ORMModel):
-    id: int
-    user_id: int
+    id: uuid.UUID
+    user_id: uuid.UUID
     status: OrderStatus
     created_at: datetime
     updated_at: datetime

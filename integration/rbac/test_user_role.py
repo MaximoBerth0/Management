@@ -13,6 +13,8 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`: builds the Authorization header for a user
 """
 
+import uuid
+
 
 async def _create_role(client, admin_user, auth_headers, name, description="orig"):
     """helper: create a role and return its id"""
@@ -59,7 +61,7 @@ async def test_assign_role_role_not_found(
     client, admin_user, plain_user, auth_headers
 ):
     response = await client.post(
-        f"/rbac/users/{plain_user.id}/roles/999999",
+        f"/rbac/users/{plain_user.id}/roles/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404

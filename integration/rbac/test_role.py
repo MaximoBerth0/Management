@@ -12,6 +12,8 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`: builds the Authorization header for a user
 """
 
+import uuid
+
 # POST rbac/roles
  
 async def test_create_role(client, admin_user, auth_headers):
@@ -184,7 +186,7 @@ async def test_update_role_description_too_long(client, admin_user, auth_headers
 # update role edge cases - 404 not found, 409 duplicate 
 async def test_update_role_not_found(client, admin_user, auth_headers):
     response = await client.patch(
-        "/rbac/roles/999999",
+        f"/rbac/roles/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
         json={"name": "ghost"},
     )

@@ -5,6 +5,7 @@ docker compose -f docker-compose-test.yml down test-db
 """
 
 import os
+import uuid
 
 # environment variables — must be set before any app import
 os.environ["ENV"] = "test"
@@ -57,13 +58,8 @@ from app.rbac.models.role_permission import role_permissions
 from app.rbac.models.user_role import user_roles
 from app.users.model import User
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    create_async_engine,
-    async_sessionmaker
-)
-
 
 # engine + session factory
 #
@@ -235,7 +231,7 @@ async def plain_user(db_session):
 # endpoints resolve via get_current_location.
 @pytest.fixture
 def auth_headers():
-    def _build(user: User, location_id: int | None = None) -> dict:
+    def _build(user: User, location_id: uuid.UUID | None = None) -> dict:
         token = create_access_token(user.id)
         headers = {"Authorization": f"Bearer {token}"}
         if location_id is not None:
@@ -304,8 +300,8 @@ def make_location(client, auth_headers):
 def make_stock(client, auth_headers, make_product, make_location):
     async def _make(
         user: User,
-        product_id: int | None = None,
-        location_id: int | None = None,
+        product_id: uuid.UUID | None = None,
+        location_id: uuid.UUID | None = None,
         quantity: int = 10,
         reorder_point: int = 2,
     ) -> dict:

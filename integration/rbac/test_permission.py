@@ -13,6 +13,8 @@ Fixtures and helpers come from integration/conftest.py:
 - `seeded`      : inserts all permissions/roles, returns their objects
 """
 
+import uuid
+
 
 async def _create_role(client, admin_user, auth_headers, name, description="orig"):
     """helper: create a role and return its id"""
@@ -27,7 +29,7 @@ async def _create_role(client, admin_user, auth_headers, name, description="orig
 
 def _a_permission_id(seeded):
     """helper: return the id of an arbitrary seeded permission"""
-    return next(iter(seeded["permissions"].values())).id
+    return str(next(iter(seeded["permissions"].values())).id)
 
 
 # POST rbac/roles/{role_id}/permissions
@@ -82,7 +84,7 @@ async def test_assign_permission_role_not_found(
     permission_id = _a_permission_id(seeded)
 
     response = await client.post(
-        "/rbac/roles/999999/permissions",
+        f"/rbac/roles/{uuid.uuid4()}/permissions",
         headers=auth_headers(admin_user),
         json={"permission_id": permission_id},
     )
@@ -97,7 +99,7 @@ async def test_assign_permission_permission_not_found(
     response = await client.post(
         f"/rbac/roles/{role_id}/permissions",
         headers=auth_headers(admin_user),
-        json={"permission_id": 999999},
+        json={"permission_id": str(uuid.uuid4())},
     )
     assert response.status_code == 404
 

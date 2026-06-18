@@ -1,6 +1,7 @@
+import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -12,17 +13,21 @@ from app.orders.models.order import OrderItem
 class StockReservation(Base):
     __tablename__ = "stock_reservation"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid7,
+    )
 
-    order_item_id: Mapped[int] = mapped_column(
-        Integer,
+    order_item_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
         ForeignKey("order_items.id"),
         nullable=False,
         unique=True,
     )
 
-    stock_id: Mapped[int] = mapped_column(
-        Integer,
+    stock_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
         ForeignKey("inventory_stock.id"),
         nullable=False,
         index=True,
@@ -49,7 +54,7 @@ class StockReservation(Base):
 
     @classmethod
     def create(
-        cls, order_item_id: int, stock_id: int, quantity: int
+        cls, order_item_id: uuid.UUID, stock_id: uuid.UUID, quantity: int
     ) -> "StockReservation":
         if quantity <= 0:
             raise ValueError("Quantity must be greater than zero")

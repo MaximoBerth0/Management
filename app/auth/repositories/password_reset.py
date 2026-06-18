@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -12,7 +13,7 @@ class PasswordResetTokenRepository:
 
     async def create(
         self,
-        user_id: int,
+        user_id: uuid.UUID,
         token: str,
         expires_at: datetime,
     ) -> None:
@@ -44,7 +45,7 @@ class PasswordResetTokenRepository:
         await self.db.execute(stmt)
         await self.db.commit()
 
-    async def invalidate_all_for_user(self, user_id: int) -> None:
+    async def invalidate_all_for_user(self, user_id: uuid.UUID) -> None:
         stmt = (
             update(PasswordResetToken)
             .where(

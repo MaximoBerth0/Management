@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,7 +61,7 @@ class UserService:
 
     async def get_user_by_id(
         self,
-        user_id: int,
+        user_id: uuid.UUID,
     ) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:
@@ -80,7 +81,7 @@ class UserService:
 
         return user
 
-    async def enable_account(self, user_id: int) -> User:
+    async def enable_account(self, user_id: uuid.UUID) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:
             logger.warning("enable_account: user not found", extra={"user_id": user_id})
@@ -95,7 +96,7 @@ class UserService:
         return updated_user
 
     async def disable_account(
-        self, user_id: int, disabled_by_user_id: int, reason: str
+        self, user_id: uuid.UUID, disabled_by_user_id: uuid.UUID, reason: str
     ) -> User:
         user = await self.repo.get_by_id(user_id)
         if not user:

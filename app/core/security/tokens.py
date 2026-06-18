@@ -37,7 +37,7 @@ def create_token(
     )
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: uuid.UUID) -> str:
     return create_token(
         subject=str(user_id),
         token_type="access",

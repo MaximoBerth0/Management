@@ -1,3 +1,5 @@
+import uuid
+
 from app.inventory.models.location import Location
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +10,7 @@ class LocationRepository:
         self.db = db
 
     # used by stock
-    async def get_location(self, location_id: int) -> Location | None:
+    async def get_location(self, location_id: uuid.UUID) -> Location | None:
         stmt = select(Location).where(Location.id == location_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -32,7 +34,7 @@ class LocationRepository:
 
     async def update_location(
         self,
-        location_id: int,
+        location_id: uuid.UUID,
         name: str | None = None,
         city: str | None = None,
         address: str | None = None,
@@ -52,7 +54,7 @@ class LocationRepository:
         await self.db.refresh(location)
         return location
 
-    async def delete_location(self, location_id: int) -> bool:
+    async def delete_location(self, location_id: uuid.UUID) -> bool:
         location = await self.get_location(location_id)
         if not location:
             return False

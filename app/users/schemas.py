@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -28,7 +29,7 @@ class DisableUserRequest(BaseModel):
 
 
 class UserReadResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     email: EmailStr
     username: str
     is_active: bool
@@ -36,7 +37,7 @@ class UserReadResponse(ORMModel):
 
 
 class UserListItemResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     email: EmailStr
     username: str
     is_active: bool

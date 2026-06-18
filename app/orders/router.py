@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from fastapi import APIRouter, Depends, status
 
@@ -51,7 +52,7 @@ async def create_order(
     dependencies=[Depends(require_permission("order:add"))],
 )
 async def add_item_to_order(
-    id: int,
+    id: uuid.UUID,
     payload: AddItemRequest,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
@@ -74,8 +75,8 @@ async def add_item_to_order(
     dependencies=[Depends(require_permission("order:remove"))],
 )
 async def remove_item_from_order(
-    order_id: int,
-    product_id: int,
+    order_id: uuid.UUID,
+    product_id: uuid.UUID,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
     logger.info(
@@ -99,7 +100,7 @@ async def remove_item_from_order(
     dependencies=[Depends(require_permission("order:confirm"))],
 )
 async def confirm_order(
-    id: int,
+    id: uuid.UUID,
     location: Location = Depends(get_current_location),
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
@@ -121,7 +122,7 @@ async def confirm_order(
     dependencies=[Depends(require_permission("order:cancel"))],
 )
 async def cancel_order(
-    id: int,
+    id: uuid.UUID,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
     logger.info("cancel_order endpoint called", extra={"order_id": id})
@@ -136,7 +137,7 @@ async def cancel_order(
     dependencies=[Depends(require_permission("order:complete"))],
 )
 async def complete_order(
-    id: int,
+    id: uuid.UUID,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
     logger.info("complete_order endpoint called", extra={"order_id": id})

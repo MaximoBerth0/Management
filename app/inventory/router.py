@@ -30,6 +30,7 @@ DELETE /inventory/locations/{id}                       - delete location
 
 """
 import logging
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
@@ -88,7 +89,7 @@ async def list_products(
     dependencies=[Depends(require_permission("product:view"))],
 )
 async def get_product(
-    id: int,
+    id: uuid.UUID,
     service: InventoryService = Depends(provide_inventory_service),
 ):
     return await service.get_product(id)
@@ -125,7 +126,7 @@ async def create_product(
     dependencies=[Depends(require_permission("product:update"))],
 )
 async def update_product(
-    id: int,
+    id: uuid.UUID,
     payload: ProductUpdate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
@@ -146,7 +147,7 @@ async def update_product(
     dependencies=[Depends(require_permission("product:deactivate"))],
 )
 async def delete_product(
-    id: int,
+    id: uuid.UUID,
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("delete_product endpoint called", extra={"product_id": id})
@@ -160,7 +161,7 @@ async def delete_product(
     dependencies=[Depends(require_permission("product:activate"))],
 )
 async def activate_product(
-    id: int,
+    id: uuid.UUID,
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("activate_product endpoint called", extra={"product_id": id})
@@ -196,7 +197,7 @@ async def create_category(
     dependencies=[Depends(require_permission("category:delete"))],
 )
 async def delete_category(
-    id: int, service: InventoryService = Depends(provide_inventory_service)
+    id: uuid.UUID, service: InventoryService = Depends(provide_inventory_service)
 ):
     logger.info("delete_category endpoint called", extra={"category_id": id})
     await service.delete_category(id)
@@ -209,7 +210,7 @@ async def delete_category(
     dependencies=[Depends(require_permission("category:create"))],
 )
 async def add_product_to_category(
-    category_id: int,
+    category_id: uuid.UUID,
     payload: AddProductToCategory,
     service: InventoryService = Depends(provide_inventory_service),
 ):
@@ -225,7 +226,7 @@ async def add_product_to_category(
     dependencies=[Depends(require_permission("category:remove"))],
 )
 async def remove_product_from_category(
-    category_id: int,
+    category_id: uuid.UUID,
     payload: RemoveProducFromCategory,
     service: InventoryService = Depends(provide_inventory_service),
 ):
@@ -350,7 +351,7 @@ async def adjust_stock(
     dependencies=[Depends(require_permission("stock:view"))],
 )
 async def list_movements(
-    stock_id: int = Query(..., gt=0),
+    stock_id: uuid.UUID = Query(...),
     limit: int = Query(100, ge=1, le=1000),
     location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
@@ -368,7 +369,7 @@ async def list_movements(
     dependencies=[Depends(require_permission("stock:view"))],
 )
 async def get_stock_levels(
-    product_id: Optional[int] = Query(None, gt=0),
+    product_id: Optional[uuid.UUID] = Query(None),
     location: Location = Depends(get_current_location),
     service: InventoryService = Depends(provide_inventory_service),
 ):
@@ -426,7 +427,7 @@ async def create_location(
     dependencies=[Depends(require_permission("location:view"))],
 )
 async def get_location(
-    id: int,
+    id: uuid.UUID,
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("get_location endpoint called", extra={"location_id": id})
@@ -439,7 +440,7 @@ async def get_location(
     dependencies=[Depends(require_permission("location:update"))],
 )
 async def update_location(
-    id: int,
+    id: uuid.UUID,
     payload: LocationUpdate,
     service: InventoryService = Depends(provide_inventory_service),
 ):
@@ -460,7 +461,7 @@ async def update_location(
     dependencies=[Depends(require_permission("location:delete"))],
 )
 async def delete_location(
-    id: int,
+    id: uuid.UUID,
     service: InventoryService = Depends(provide_inventory_service),
 ):
     logger.info("delete_location endpoint called", extra={"location_id": id})

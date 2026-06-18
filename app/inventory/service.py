@@ -35,6 +35,7 @@ RESERVATION:
 
 """
 import logging
+import uuid
 from typing import Optional
 
 from app.inventory.exceptions import (
@@ -91,7 +92,7 @@ class InventoryService:
 
     # product
 
-    async def get_product(self, product_id: int):
+    async def get_product(self, product_id: uuid.UUID):
         result = await self.product_repo.get_product(product_id)
         if result is None:
             logger.warning("get_product: product not found", extra={"product_id":product_id})
@@ -102,7 +103,7 @@ class InventoryService:
         result = await self.product_repo.list_products()
         return result
 
-    async def create_product(self, name: str, sku: str, category_id: int):
+    async def create_product(self, name: str, sku: str, category_id: uuid.UUID):
         if not name or not name.strip():
             logger.warning("create_product: called with empty name")
             raise ProductNameIsRequired()
@@ -131,7 +132,7 @@ class InventoryService:
 
     async def update_product(
         self,
-        product_id: int,
+        product_id: uuid.UUID,
         name: str | None = None,
         sku: str | None = None,
     ):
@@ -161,7 +162,7 @@ class InventoryService:
         logger.info("update_product: product updated", extra={"product_id": product_id})
         return product
 
-    async def activate_product(self, product_id: int):
+    async def activate_product(self, product_id: uuid.UUID):
         product = await self.product_repo.activate_product(product_id)
         if not product:
             logger.warning("activate_product: product not found", extra={"product_id": product_id})
@@ -170,7 +171,7 @@ class InventoryService:
         logger.info("activate_product: product activated", extra={"product_id": product_id})
         return product
 
-    async def deactivate_product(self, product_id: int):
+    async def deactivate_product(self, product_id: uuid.UUID):
         product = await self.product_repo.deactivate_product(product_id)
         if not product:
             logger.warning("deactivate_product: product not found", extra={"product_id": product_id})
@@ -202,14 +203,14 @@ class InventoryService:
         logger.info("create_category: category created", extra={"category_id": category.id, "category_name": name})
         return category
 
-    async def delete_category(self, category_id: int):
+    async def delete_category(self, category_id: uuid.UUID):
         deleted = await self.category_repo.delete_category(category_id)
         if not deleted:
             logger.warning("delete_category: category not found", extra={"category_id": category_id})
             raise CategoryNotFound()
         logger.info("delete_category: category deleted", extra={"category_id": category_id})
 
-    async def add_product_to_category(self, product_id: int, category_id: int):
+    async def add_product_to_category(self, product_id: uuid.UUID, category_id: uuid.UUID):
         category = await self.category_repo.get_category(category_id)
         if not category:
             logger.warning("add_product_to_category: category not found", extra={"category_id": category_id})
@@ -224,7 +225,7 @@ class InventoryService:
         logger.info("product saved in category", extra={"category_id": category_id, "product_id": product_id})
         return category
 
-    async def remove_product_from_category(self, product_id: int, category_id: int):
+    async def remove_product_from_category(self, product_id: uuid.UUID, category_id: uuid.UUID):
         category = await self.category_repo.get_category(category_id)
         if not category:
             logger.warning("remove_product_from_category: category not found", extra={"category_id": category_id})
@@ -238,10 +239,8 @@ class InventoryService:
     # stock
 
     async def initialize_stock(
-        self, location_id: int, product_id: int, quantity: int, reorder_point: int
+        self, location_id: uuid.UUID, product_id: uuid.UUID, quantity: int, reorder_point: int
     ):
-        location_id = abs(int(location_id))
-        product_id = abs(int(product_id))
         quantity = abs(int(quantity))
         reorder_point = abs(int(reorder_point))
 
@@ -385,7 +384,7 @@ class InventoryService:
         )
         return movement
 
-    async def list_stock_movements(self, stock_id: int, location_id: int, limit: int = 100):
+    async def list_stock_movements(self, stock_id: uuid.UUID, location_id: uuid.UUID, limit: int = 100):
         stock = await self.stock_repo.get_stock(stock_id)
         if not stock:
             logger.warning("list_stock_movements: stock not found", extra={"stock_id": stock_id})
@@ -403,8 +402,8 @@ class InventoryService:
 
     async def get_stock_levels(
         self,
-        location_id: Optional[int] = None,
-        product_id: Optional[int] = None,
+        location_id: Optional[uuid.UUID] = None,
+        product_id: Optional[uuid.UUID] = None,
     ) -> list[InventoryStock]:
 
         return await self.stock_repo.get_stock_levels(
@@ -417,7 +416,7 @@ class InventoryService:
         result = await self.location_repo.list_locations()
         return result
 
-    async def get_location(self, location_id: int):
+    async def get_location(self, location_id: uuid.UUID):
         location = await self.location_repo.get_location(location_id)
         if location is None:
             logger.warning("get_location: location not found", extra={"location_id": location_id})
@@ -452,7 +451,7 @@ class InventoryService:
 
     async def update_location(
         self,
-        location_id: int,
+        location_id: uuid.UUID,
         name: str | None = None,
         city: str | None = None,
         address: str | None = None,
@@ -488,7 +487,7 @@ class InventoryService:
         logger.info("update_location: location updated", extra={"location_id": location_id})
         return location
 
-    async def delete_location(self, location_id: int):
+    async def delete_location(self, location_id: uuid.UUID):
         location = await self.location_repo.get_location(location_id)
         if not location:
             logger.warning("delete_location: location not found", extra={"location_id": location_id})
@@ -505,9 +504,9 @@ class InventoryService:
 
     async def reserve_for_item(
         self,
-        order_item_id: int,
-        product_id: int,
-        location_id: int,
+        order_item_id: uuid.UUID,
+        product_id: uuid.UUID,
+        location_id: uuid.UUID,
         quantity: int,
     ) -> StockReservation:
         if quantity <= 0:
@@ -542,7 +541,7 @@ class InventoryService:
         )
         return reservation
 
-    async def release_for_item(self, reservation_id: int) -> StockReservation:
+    async def release_for_item(self, reservation_id: uuid.UUID) -> StockReservation:
         reservation = await self.stock_repo.get_reservation_by_id(reservation_id)
         if not reservation:
             logger.warning("release_for_item: reservation not found", extra={"reservation_id": reservation_id})
@@ -565,7 +564,7 @@ class InventoryService:
         logger.info("release_for_item: reservation released", extra={"reservation_id": reservation.id, "stock_id": stock.id})
         return reservation
 
-    async def fulfill_for_item(self, reservation_id: int) -> StockReservation:
+    async def fulfill_for_item(self, reservation_id: uuid.UUID) -> StockReservation:
         reservation = await self.stock_repo.get_reservation_by_id(reservation_id)
         if not reservation:
             logger.warning("fulfill_for_item: reservation not found", extra={"reservation_id": reservation_id})

@@ -1,3 +1,5 @@
+import uuid
+
 from app.rbac.exceptions import (
     PermissionAlreadyAssigned,
     PermissionDenied,
@@ -33,7 +35,7 @@ class RBACService:
 
     async def update_role(
         self,
-        role_id: int,
+        role_id: uuid.UUID,
         name: str | None = None,
         description: str | None = None,
     ) -> Role:
@@ -57,7 +59,7 @@ class RBACService:
         return roles
 
     # Role-User
-    async def assign_role_to_user(self, user_id: int , role_id: int):
+    async def assign_role_to_user(self, user_id: uuid.UUID, role_id: uuid.UUID):
         role = await self.role_repo.get_by_id(role_id)
         if not role:
             raise RoleNotFound()
@@ -74,7 +76,7 @@ class RBACService:
         await self.role_repo.remove_role_from_user(user_id, role_id)
 
     # Role-Permission
-    async def add_permission_to_role(self, role_id: int, permission_id: int):
+    async def add_permission_to_role(self, role_id: uuid.UUID, permission_id: uuid.UUID):
         role = await self.role_repo.get_by_id(role_id)
         if not role:
             raise RoleNotFound()
@@ -89,7 +91,7 @@ class RBACService:
         await self.role_repo.add_permission_to_role(role_id, permission_id)
 
     async def remove_permission_from_role(
-        self, role_id: int, permission_id: int) -> None:
+        self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
 
         if not await self.role_repo.role_has_permission(role_id, permission_id):
             raise RolePermissionNotFound()
@@ -97,7 +99,7 @@ class RBACService:
         await self.role_repo.remove_permission_from_role(role_id, permission_id)
 
     # permission checks
-    async def ensure_permission(self, user_id: int, permission_code: str) -> None:
+    async def ensure_permission(self, user_id: uuid.UUID, permission_code: str) -> None:
         user = await self.role_repo.get_user_with_roles_and_permissions(user_id)
         if not user:
             raise PermissionDenied()

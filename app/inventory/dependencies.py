@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +26,7 @@ def provide_inventory_service(
 
 
 async def get_current_location(
-    x_location_id: int | None = Header(default=None),
+    x_location_id: uuid.UUID | None = Header(default=None),
     db: AsyncSession = Depends(get_session),
 ) -> Location:
     if x_location_id is None:

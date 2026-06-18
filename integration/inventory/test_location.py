@@ -17,6 +17,9 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`  : builds the Authorization header for a user
 """
 
+import uuid
+
+
 async def _create_location(client, admin_user, auth_headers, name, city="metropolis", address="123 st"):
     """helper: create a location and return its id"""
     response = await client.post(
@@ -180,7 +183,7 @@ async def test_get_location(client, admin_user, auth_headers):
 
 async def test_get_location_not_found(client, admin_user, auth_headers):
     response = await client.get(
-        "/inventory/locations/99999",
+        f"/inventory/locations/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404
@@ -252,7 +255,7 @@ async def test_update_location_duplicate_name(client, admin_user, auth_headers):
 
 async def test_update_location_not_found(client, admin_user, auth_headers):
     response = await client.patch(
-        "/inventory/locations/99999",
+        f"/inventory/locations/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
         json={"city": "gotham"},
     )
@@ -293,7 +296,7 @@ async def test_delete_location(client, admin_user, auth_headers):
 
 async def test_delete_location_not_found(client, admin_user, auth_headers):
     response = await client.delete(
-        "/inventory/locations/99999",
+        f"/inventory/locations/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404

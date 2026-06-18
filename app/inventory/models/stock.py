@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     UniqueConstraint,
+    Uuid,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,11 +33,15 @@ class InventoryStock(Base):
         ),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    location_id: Mapped[int] = mapped_column(
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid7,
+    )
+    location_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("inventory_location.id"), nullable=False
     )
-    product_id: Mapped[int] = mapped_column(
+    product_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("inventory_products.id"), nullable=False
     )
     quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
@@ -63,19 +69,23 @@ class InventoryStock(Base):
 class StockMovement(Base):
     __tablename__ = "inventory_stock_movement"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid7,
+    )
     movement_type: Mapped[StockMovementType] = mapped_column(
         SAEnum(StockMovementType), nullable=False
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    stock_id: Mapped[int] = mapped_column(
+    stock_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("inventory_stock.id"), nullable=False
     )
 
     # audit fields
     previous_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     new_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

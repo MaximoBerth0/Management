@@ -12,6 +12,8 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`: builds the Authorization header for a user
 """
 
+import uuid
+
 
 # POST inventory/categories 
 
@@ -98,7 +100,7 @@ async def test_delete_category_forbidden(client, admin_user, client_user, auth_h
 
 async def test_delete_category_not_found(client, admin_user, auth_headers):
     response = await client.delete(
-        "/inventory/categories/999999",
+        f"/inventory/categories/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404

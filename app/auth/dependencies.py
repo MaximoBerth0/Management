@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,8 +36,16 @@ async def get_current_user(
             detail="Invalid token payload",
         )
 
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
     user_repo = UserRepository(db)
-    user = await user_repo.get_by_id(int(user_id))
+    user = await user_repo.get_by_id(user_uuid)
 
     if user is None:
         raise HTTPException(

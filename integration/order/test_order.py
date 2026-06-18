@@ -1,6 +1,8 @@
+import uuid
+
 # POST /orders
 
-async def test_create_order(client, auth_headers, employee_user): 
+async def test_create_order(client, auth_headers, employee_user):
     response = await client.post(
         "orders/",
         headers=auth_headers(employee_user)
@@ -62,7 +64,7 @@ async def test_add_item_to_order_product_not_found(
     response = await client.post(
         f"/orders/{order_id}/items",
         headers=auth_headers(employee_user),
-        json={"product_id": 999999, "quantity": 3},
+        json={"product_id": str(uuid.uuid4()), "quantity": 3},
     )
 
     assert response.status_code == 404

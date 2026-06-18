@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -17,7 +18,7 @@ class RefreshTokenRepository:
 
     async def create(
         self,
-        user_id: int,
+        user_id: uuid.UUID,
         token: str,
         expires_at: datetime,
     ) -> None:
@@ -44,7 +45,7 @@ class RefreshTokenRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def revoke(self, token_id: int) -> None:
+    async def revoke(self, token_id: uuid.UUID) -> None:
         stmt = (
             update(RefreshToken)
             .where(RefreshToken.id == token_id)
@@ -53,7 +54,7 @@ class RefreshTokenRepository:
         await self.db.execute(stmt)
         await self.db.commit()
 
-    async def revoke_all_for_user(self, user_id: int) -> None:
+    async def revoke_all_for_user(self, user_id: uuid.UUID) -> None:
         stmt = (
             update(RefreshToken)
             .where(

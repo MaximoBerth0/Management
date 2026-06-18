@@ -1,22 +1,52 @@
-FROM python:3.11.9-slim
+# builder 
+FROM python:3.14.5-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=1.8.3 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1
 
 WORKDIR /app
 
-# system deps
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# build deps needed to compile any wheels (argon2-cffi, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# dependencies
-COPY pyproject.toml .
-COPY README.md .
+RUN pip install "poetry==${POETRY_VERSION}"
 
-RUN pip install --no-cache-dir .
+COPY pyproject.toml poetry.lock ./
 
-# app code
+# install ONLY the locked runtime deps into ./.venv (no dev deps, no project root)
+RUN poetry install --only main --no-root
+
+# runtime 
+FROM python:3.11.9-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH" \
+    WEB_CONCURRENCY=4
+
+WORKDIR /app
+
+# bring over only the virtualenv — no build tools, no poetry, no apt caches
+COPY --from=builder /app/.venv /app/.venv
+
+# non-root user
+RUN useradd --create-home --uid 1000 appuser
+
 COPY app ./app
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+USER appuser
+
+EXPOSE 8000
+
+# gunicorn supervising Uvicorn workers. Worker count = WEB_CONCURRENCY.
+CMD ["gunicorn", "app.main:app", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--bind", "0.0.0.0:8000", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

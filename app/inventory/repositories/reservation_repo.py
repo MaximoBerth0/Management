@@ -1,3 +1,5 @@
+import uuid
+
 from app.inventory.models.reservation import StockReservation
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,7 +9,7 @@ class ReservationRepository:
         self.db = db
 
     async def create_reservation(
-        self, order_item_id: int, stock_id: int, quantity: int
+        self, order_item_id: uuid.UUID, stock_id: uuid.UUID, quantity: int
     ) -> StockReservation:
         reservation = StockReservation.create(
             order_item_id=order_item_id,

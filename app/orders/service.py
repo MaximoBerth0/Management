@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,7 +31,7 @@ class OrderService:
         self.order_repo = order_repo
         self.inventory_service = inventory_service
 
-    async def create_order(self, user_id: int) -> Order:
+    async def create_order(self, user_id: uuid.UUID) -> Order:
 
         result = await self.order_repo.create_order(user_id)
 
@@ -38,7 +39,7 @@ class OrderService:
         return result
 
     async def add_item_to_order(
-        self, order_id: int, product_id: int, quantity: int
+        self, order_id: uuid.UUID, product_id: uuid.UUID, quantity: int
     ) -> Order:
         # validate the product exists before touching the order
         await self.inventory_service.get_product(product_id)
@@ -49,7 +50,7 @@ class OrderService:
         logger.info("add_item_to_order: item added", extra={"order_id": order_id, "product_id": product_id})
         return order
 
-    async def remove_item_from_order(self, order_id: int, product_id: int) -> Order:
+    async def remove_item_from_order(self, order_id: uuid.UUID, product_id: uuid.UUID) -> Order:
         order = await self.order_repo.remove_item(order_id, product_id)
         if order is None:
             logger.warning("remove_item_from_order: order not found", extra={"order_id": order_id})
@@ -57,7 +58,7 @@ class OrderService:
         logger.info("remove_item_from_order: item removed", extra={"order_id": order_id, "product_id": product_id})
         return order
     
-    async def confirm_order(self, order_id: int, location_id: int) -> Order:
+    async def confirm_order(self, order_id: uuid.UUID, location_id: uuid.UUID) -> Order:
         order = await self.order_repo.get_order(order_id)
         if order is None:
             logger.warning("confirm_order: order not found", extra={"order_id": order_id})
@@ -79,7 +80,7 @@ class OrderService:
         logger.info("confirm_order: order confirmed", extra={"order_id": order_id, "location_id": location_id})
         return order
 
-    async def cancel_order(self, order_id: int) -> Order:
+    async def cancel_order(self, order_id: uuid.UUID) -> Order:
         order = await self.order_repo.get_order(order_id)
         if order is None:
             logger.warning("cancel_order: order not found", extra={"order_id": order_id})
@@ -99,7 +100,7 @@ class OrderService:
         logger.info("cancel_order: order cancelled", extra={"order_id": order_id})
         return order
 
-    async def complete_order(self, order_id: int) -> Order:
+    async def complete_order(self, order_id: uuid.UUID) -> Order:
         order = await self.order_repo.get_order(order_id)
         if order is None:
             logger.warning("complete_order: order not found", extra={"order_id": order_id})

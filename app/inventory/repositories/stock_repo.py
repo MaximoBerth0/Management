@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from app.inventory.models.reservation import StockReservation
@@ -13,12 +14,12 @@ class StockRepository:
 
     # inventory
 
-    async def get_stock(self, stock_id: int) -> InventoryStock | None:
+    async def get_stock(self, stock_id: uuid.UUID) -> InventoryStock | None:
         stmt = select(InventoryStock).where(InventoryStock.id == stock_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def location_has_stock(self, location_id: int) -> bool:
+    async def location_has_stock(self, location_id: uuid.UUID) -> bool:
         stmt = select(InventoryStock.id).where(
             InventoryStock.location_id == location_id
         ).limit(1)
@@ -26,7 +27,7 @@ class StockRepository:
         return result.scalar_one_or_none() is not None
 
     async def get_stock_by_location_and_product_for_update(
-        self, product_id: int, location_id: int
+        self, product_id: uuid.UUID, location_id: uuid.UUID
     ) -> InventoryStock | None:
         stmt = (
             select(InventoryStock)
@@ -40,7 +41,7 @@ class StockRepository:
         return result.scalar_one_or_none()
 
     async def get_stock_by_id_for_update(
-        self, stock_id: int
+        self, stock_id: uuid.UUID
     ) -> InventoryStock | None:
         stmt = (
             select(InventoryStock)
@@ -51,7 +52,7 @@ class StockRepository:
         return result.scalar_one_or_none()
 
     async def get_reservation_by_id(
-        self, reservation_id: int
+        self, reservation_id: uuid.UUID
     ) -> StockReservation | None:
         stmt = select(StockReservation).where(
             StockReservation.id == reservation_id
@@ -60,14 +61,14 @@ class StockRepository:
         return result.scalar_one_or_none()
 
     async def get_available_stock_by_product(
-        self, product_id: int
+        self, product_id: uuid.UUID
     ) -> InventoryStock | None:
         stmt = select(InventoryStock).where(InventoryStock.product_id == product_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def initialize_stock(
-        self, location_id: int, product_id: int, quantity: int, reorder_point: int
+        self, location_id: uuid.UUID, product_id: uuid.UUID, quantity: int, reorder_point: int
     ) -> InventoryStock:
         stock = InventoryStock(
             location_id=location_id,
@@ -92,7 +93,7 @@ class StockRepository:
         return movement
 
     async def list_stock_movements(
-        self, stock_id: int, limit: int = 100
+        self, stock_id: uuid.UUID, limit: int = 100
     ) -> list[StockMovement]:
         stmt = (
             select(StockMovement)
@@ -105,8 +106,8 @@ class StockRepository:
 
     async def get_stock_levels(
         self,
-        location_id: Optional[int] = None,
-        product_id: Optional[int] = None,
+        location_id: Optional[uuid.UUID] = None,
+        product_id: Optional[uuid.UUID] = None,
     ) -> list[InventoryStock]:
 
         stmt = select(InventoryStock)
@@ -126,7 +127,7 @@ class StockRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_available_stock(self, stock_id: int) -> int | None:
+    async def get_available_stock(self, stock_id: uuid.UUID) -> int | None:
         stmt = select(InventoryStock.quantity - InventoryStock.reserved_quantity).where(
             InventoryStock.id == stock_id
         )

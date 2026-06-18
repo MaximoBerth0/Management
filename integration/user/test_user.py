@@ -12,6 +12,8 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`: builds the Authorization header for a user
 """
 
+import uuid
+
 # POST /users/register
 
 async def test_register_user(client):
@@ -101,13 +103,13 @@ async def test_get_user_by_id(client, admin_user, client_user, auth_headers):
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["id"] == client_user.id
+    assert body["id"] == str(client_user.id)
     assert body["email"] == client_user.email
 
 
 async def test_get_user_by_id_not_found(client, admin_user, auth_headers):
     response = await client.get(
-        "/users/999999", headers=auth_headers(admin_user)
+        f"/users/{uuid.uuid4()}", headers=auth_headers(admin_user)
     )
     assert response.status_code == 404
 
@@ -127,7 +129,7 @@ async def test_get_user_by_email(client, admin_user, client_user, auth_headers):
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["id"] == client_user.id
+    assert body["id"] == str(client_user.id)
     assert body["email"] == client_user.email
 
 

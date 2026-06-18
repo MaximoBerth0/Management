@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from fastapi import APIRouter, Depends, status
 
@@ -74,7 +75,7 @@ async def list_users(
     dependencies=[Depends(require_permission("users:view"))],
 )
 async def get_user_by_id(
-    user_id: int,
+    user_id: uuid.UUID,
     service: UserService = Depends(provide_user_service),
 ):
     return await service.get_user_by_id(user_id=user_id)
@@ -98,7 +99,7 @@ async def get_user_by_email(
     dependencies=[Depends(require_permission("users:disable"))],
 )
 async def disable_user(
-    user_id: int,
+    user_id: uuid.UUID,
     data: DisableUserRequest,
     service: UserService = Depends(provide_user_service),
     current_user: User = Depends(get_current_user),
@@ -119,7 +120,7 @@ async def disable_user(
     dependencies=[Depends(require_permission("users:enable"))],
 )
 async def enable_user(
-    user_id: int,
+    user_id: uuid.UUID,
     service: UserService = Depends(provide_user_service),
 ):
     logger.info("enable_user endpoint called")

@@ -1,7 +1,8 @@
+import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -19,10 +20,14 @@ if TYPE_CHECKING:
 class Order(Base):
     __tablename__ = "orders"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid7,
+    )
 
-    user_id: Mapped[int] = mapped_column(
-        Integer,
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
         ForeignKey("users.id"),
         nullable=False,
         index=True,
@@ -52,7 +57,7 @@ class Order(Base):
     )
 
     @classmethod
-    def create(cls, user_id: int) -> "Order":
+    def create(cls, user_id: uuid.UUID) -> "Order":
         return cls(
             user_id=user_id,
             status=OrderStatus.CREATED,
@@ -79,7 +84,7 @@ class Order(Base):
 
         self.status = OrderStatus.COMPLETED
 
-    def add_item(self, product_id: int, quantity: int) -> "OrderItem":
+    def add_item(self, product_id: uuid.UUID, quantity: int) -> "OrderItem":
         if self.status != OrderStatus.CREATED:
             raise InvalidOrderStatus("Items can only be added to created orders")
         if quantity <= 0:
@@ -89,7 +94,7 @@ class Order(Base):
         item.order = self
         return item
 
-    def remove_item(self, product_id: int) -> None:
+    def remove_item(self, product_id: uuid.UUID) -> None:
         if self.status != OrderStatus.CREATED:
             raise InvalidOrderStatus("Items can only be removed from created orders")
 
@@ -104,15 +109,19 @@ class Order(Base):
 class OrderItem(Base):
     __tablename__ = "order_items"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    order_id: Mapped[int] = mapped_column(
-        Integer,
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid7,
+    )
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
         ForeignKey("orders.id"),
         nullable=False,
         index=True,
     )
-    product_id: Mapped[int] = mapped_column(
-        Integer,
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
         ForeignKey("inventory_products.id"),
         nullable=False,
         index=True,

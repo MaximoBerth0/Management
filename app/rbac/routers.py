@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends, status
 
 from app.rbac.dependencies import get_rbac_service, require_permission
@@ -55,7 +57,7 @@ async def create_role(
     dependencies=[Depends(require_permission("roles:update"))],
 )
 async def update_role(
-    role_id: int,
+    role_id: uuid.UUID,
     data: RoleUpdateRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
@@ -86,7 +88,7 @@ async def list_roles(
     dependencies=[Depends(require_permission("role:assign_permission"))],
 )
 async def assign_permission_to_role(
-    role_id: int,
+    role_id: uuid.UUID,
     data: AddPermissionToRoleRequest,
     service: RBACService = Depends(get_rbac_service),
 ):
@@ -102,7 +104,7 @@ async def assign_permission_to_role(
     dependencies=[Depends(require_permission("role:remove_permission"))],
 )
 async def remove_permission_from_role(
-    role_id: int,
+    role_id: uuid.UUID,
     data: RemovePermissionFromRoleRequest,
     service: RBACService = Depends(get_rbac_service),
 ) -> None:
@@ -121,8 +123,8 @@ async def remove_permission_from_role(
     dependencies=[Depends(require_permission("users:assign_role"))],
 )
 async def assign_role_to_user(
-    user_id: int,
-    role_id: int,
+    user_id: uuid.UUID,
+    role_id: uuid.UUID,
     service: RBACService = Depends(get_rbac_service),
 ):
     return await service.assign_role_to_user(
@@ -137,8 +139,8 @@ async def assign_role_to_user(
     dependencies=[Depends(require_permission("users:remove_role"))],
 )
 async def remove_role_from_user(
-    user_id: int,
-    role_id: int,
+    user_id: uuid.UUID,
+    role_id: uuid.UUID,
     service: RBACService = Depends(get_rbac_service),
 ) -> None:
     await service.remove_role_from_user(

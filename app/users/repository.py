@@ -1,3 +1,4 @@
+import uuid
 from typing import Sequence
 
 from sqlalchemy import select
@@ -10,7 +11,7 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, user_id: int) -> User | None:
+    async def get_by_id(self, user_id: uuid.UUID) -> User | None:
         return await self.session.get(User, user_id)
 
     async def get_by_email(self, email: str) -> User | None:

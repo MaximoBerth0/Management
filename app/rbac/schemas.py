@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -16,11 +17,11 @@ class RoleUpdateRequest(BaseModel):
 
 
 class AddPermissionToRoleRequest(BaseModel):
-    permission_id: int
+    permission_id: uuid.UUID
 
 
 class RemovePermissionFromRoleRequest(BaseModel):
-    permission_id: int
+    permission_id: uuid.UUID
 
 
 # response
@@ -28,14 +29,14 @@ class RemovePermissionFromRoleRequest(BaseModel):
 class PermissionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: uuid.UUID
     name: str
 
 
 class RoleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: uuid.UUID
     name: str
     description: Optional[str]
     permissions: List[PermissionResponse] = []
@@ -44,5 +45,5 @@ class RoleResponse(BaseModel):
 class UserRoleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    user_id: int
-    role_id: int
+    user_id: uuid.UUID
+    role_id: uuid.UUID

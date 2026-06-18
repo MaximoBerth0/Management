@@ -1,3 +1,5 @@
+import uuid
+
 from app.inventory.models.category import Category
 from app.inventory.models.product import Product
 from sqlalchemy import select
@@ -8,7 +10,7 @@ class ProductRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_product(self, product_id: int) -> Product | None:
+    async def get_product(self, product_id: uuid.UUID) -> Product | None:
         stmt = select(Product).where(Product.id == product_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -24,7 +26,7 @@ class ProductRepository:
         return list(result.scalars().all())
 
     async def create_product(
-        self, name: str, sku: str, category_id: int
+        self, name: str, sku: str, category_id: uuid.UUID
     ) -> Product:
         category = await self.db.get(Category, category_id)
         product = Product(
@@ -38,7 +40,7 @@ class ProductRepository:
         return product
 
     async def update_product(
-        self, product_id: int, name: str | None = None, sku: str | None = None
+        self, product_id: uuid.UUID, name: str | None = None, sku: str | None = None
     ) -> Product | None:
         stmt = select(Product).where(Product.id == product_id)
         result = await self.db.execute(stmt)
@@ -57,7 +59,7 @@ class ProductRepository:
 
         return product
 
-    async def activate_product(self, product_id: int) -> Product | None:
+    async def activate_product(self, product_id: uuid.UUID) -> Product | None:
         stmt = select(Product).where(Product.id == product_id)
         result = await self.db.execute(stmt)
         product = result.scalar_one_or_none()
@@ -72,7 +74,7 @@ class ProductRepository:
 
         return product
 
-    async def deactivate_product(self, product_id: int) -> Product | None:
+    async def deactivate_product(self, product_id: uuid.UUID) -> Product | None:
         stmt = select(Product).where(Product.id == product_id)
         result = await self.db.execute(stmt)
         product = result.scalar_one_or_none()
@@ -94,7 +96,7 @@ class ProductRepository:
 
     # Category operations
 
-    async def add_category(self, product_id: int, category: Category) -> Product | None:
+    async def add_category(self, product_id: uuid.UUID, category: Category) -> Product | None:
         product = await self.get_product(product_id)
         if not product:
             return None
@@ -107,7 +109,7 @@ class ProductRepository:
         return product
 
     async def remove_category(
-        self, product_id: int, category: Category
+        self, product_id: uuid.UUID, category: Category
     ) -> Product | None:
         product = await self.get_product(product_id)
         if not product:

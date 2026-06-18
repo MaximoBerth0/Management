@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import List, Optional
 
@@ -16,7 +17,7 @@ class ORMModel(BaseModel):
 class ProductCreate(ORMModel):
     name: str = Field(..., min_length=1, max_length=255)
     sku: str = Field(..., min_length=1, max_length=100)
-    category_id: int = Field(..., gt=0)
+    category_id: uuid.UUID
 
 
 class ProductUpdate(ORMModel):
@@ -30,11 +31,11 @@ class CategoryCreate(ORMModel):
 
 
 class AddProductToCategory(ORMModel):
-    product_id: int
+    product_id: uuid.UUID
 
 
 class RemoveProducFromCategory(ORMModel):
-    product_id: int
+    product_id: uuid.UUID
 
 
 class LocationCreate(ORMModel):
@@ -50,13 +51,13 @@ class LocationUpdate(ORMModel):
 
 
 class StockInitialize(ORMModel):
-    product_id: int = Field()
+    product_id: uuid.UUID = Field()
     quantity: int = Field()
     reorder_point: int = Field()
 
 
 class StockTransaction(ORMModel):
-    product_id: int = Field()
+    product_id: uuid.UUID = Field()
     quantity: int = Field()
     reason: Optional[str] = Field(None, max_length=500)
 
@@ -65,7 +66,7 @@ class StockTransaction(ORMModel):
 
 
 class ProductListItemResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     name: str
     sku: str
     is_active: bool
@@ -74,7 +75,7 @@ class ProductListItemResponse(ORMModel):
 
 
 class ProductResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     name: str
     sku: str
     is_active: bool
@@ -83,26 +84,26 @@ class ProductResponse(ORMModel):
 
 
 class CategoryResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     name: str
     description: str
 
 
 class StockMovementResponse(ORMModel):
-    id: int
-    stock_id: int
+    id: uuid.UUID
+    stock_id: uuid.UUID
     movement_type: StockMovementType
     quantity: int
     previous_quantity: int
     new_quantity: int
-    created_by: int
+    created_by: uuid.UUID
     created_at: datetime
 
 
 class StockResponse(ORMModel):
-    id: int
-    location_id: int
-    product_id: int
+    id: uuid.UUID
+    location_id: uuid.UUID
+    product_id: uuid.UUID
     quantity: int
     reorder_point: int
     created_at: datetime
@@ -115,7 +116,7 @@ class StockMovementListResponse(ORMModel):
 
 
 class LocationResponse(ORMModel):
-    id: int
+    id: uuid.UUID
     name: str
     city: str
     address: str

@@ -141,7 +141,7 @@ class AuthService:
             logger.warning("reset_password: reset token expired", extra={"user_id": str(reset.user_id)})
             raise TokenExpired("Reset token expired")
 
-        user = await self.user_repo.get_by_id(int(reset.user_id))
+        user = await self.user_repo.get_by_id(reset.user_id)
 
         if not user:
             logger.warning("reset_password: user not found", extra={"user_id": str(reset.user_id)})
@@ -151,7 +151,7 @@ class AuthService:
         await self.user_repo.save_user(user)
 
         await self.reset_repo.invalidate(token)
-        await self.refresh_repo.revoke_all_for_user(int(reset.user_id))
+        await self.refresh_repo.revoke_all_for_user(reset.user_id)
         logger.info("password reset", extra={"user_id": str(user.id)})
 
 
@@ -165,5 +165,5 @@ class AuthService:
         current_user.hashed_password = hash_password(new_password)
         await self.user_repo.save_user(current_user)
 
-        await self.refresh_repo.revoke_all_for_user(int(current_user.id))
+        await self.refresh_repo.revoke_all_for_user(current_user.id)
         logger.info("password changed", extra={"user_id": str(current_user.id)})

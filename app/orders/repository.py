@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -11,7 +13,7 @@ class OrderRepository:
 
     # Order
 
-    async def get_order(self, order_id: int) -> Order | None:
+    async def get_order(self, order_id: uuid.UUID) -> Order | None:
         stmt = (
             select(Order)
             .where(Order.id == order_id)
@@ -20,7 +22,7 @@ class OrderRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_order(self, user_id: int) -> Order:
+    async def create_order(self, user_id: uuid.UUID) -> Order:
         order = Order.create(user_id=user_id)
         self.db.add(order)
         await self.db.commit()
@@ -29,7 +31,7 @@ class OrderRepository:
     # OrderItem
 
     async def append_item(
-        self, order_id: int, product_id: int, quantity: int
+        self, order_id: uuid.UUID, product_id: uuid.UUID, quantity: int
     ) -> Order | None:
         order = await self.get_order(order_id)
         if order is None:
@@ -40,7 +42,7 @@ class OrderRepository:
         await self.db.commit()
         return await self.get_order(order_id)
 
-    async def remove_item(self, order_id: int, product_id: int) -> Order | None:
+    async def remove_item(self, order_id: uuid.UUID, product_id: uuid.UUID) -> Order | None:
         order = await self.get_order(order_id)
         if order is None:
             return None

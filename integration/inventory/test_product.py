@@ -12,6 +12,9 @@ Fixtures and helpers come from integration/conftest.py:
 - `auth_headers`: builds the Authorization header for a user
 """
 
+import uuid
+
+
 async def _create_category(client, admin_user, auth_headers, name, description="cat"):
     """helper: create a category and return its id"""
     response = await client.post(
@@ -63,7 +66,7 @@ async def test_get_product_forbidden(client, admin_user, client_user, auth_heade
 
 async def test_get_product_not_found(client, admin_user, auth_headers):
     response = await client.get(
-        "/inventory/products/999999",
+        f"/inventory/products/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404
@@ -138,7 +141,7 @@ async def test_create_product_category_not_found(client, admin_user, auth_header
     response = await client.post(
         "/inventory/products",
         headers=auth_headers(admin_user),
-        json={"name": "widget", "sku": "SKU-1", "category_id": 999999},
+        json={"name": "widget", "sku": "SKU-1", "category_id": str(uuid.uuid4())},
     )
     assert response.status_code == 404
 
@@ -178,7 +181,7 @@ async def test_update_product_forbidden(client, admin_user, client_user, auth_he
 
 async def test_update_product_not_found(client, admin_user, auth_headers):
     response = await client.patch(
-        "/inventory/products/999999",
+        f"/inventory/products/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
         json={"name": "gadget"},
     )
@@ -252,7 +255,7 @@ async def test_deactivate_product_forbidden(client, admin_user, client_user, aut
 
 async def test_deactivate_product_not_found(client, admin_user, auth_headers):
     response = await client.delete(
-        "/inventory/products/999999",
+        f"/inventory/products/{uuid.uuid4()}",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404
@@ -296,7 +299,7 @@ async def test_activate_product_forbidden(client, admin_user, client_user, auth_
 
 async def test_activate_product_not_found(client, admin_user, auth_headers):
     response = await client.post(
-        "/inventory/products/999999/activate",
+        f"/inventory/products/{uuid.uuid4()}/activate",
         headers=auth_headers(admin_user),
     )
     assert response.status_code == 404

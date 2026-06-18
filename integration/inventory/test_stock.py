@@ -20,6 +20,8 @@ Other fixtures from integration/conftest.py:
                     `location_id=` to also attach the X-Location-Id header
 """
 
+import uuid
+
 # POST /inventory/new  (initialize stock)
 
 
@@ -118,8 +120,8 @@ async def test_create_stock_invalid_location(client, admin_user, auth_headers):
 
     response = await client.post(
         "/inventory/new",
-        headers=auth_headers(admin_user, location_id=999999),
-        json={"product_id": 1, "quantity": 10, "reorder_point": 2},
+        headers=auth_headers(admin_user, location_id=uuid.uuid4()),
+        json={"product_id": str(uuid.uuid4()), "quantity": 10, "reorder_point": 2},
     )
     assert response.status_code == 404
 
@@ -425,7 +427,7 @@ async def test_list_movements_stock_not_found(
     response = await client.get(
         "/inventory/movements",
         headers=auth_headers(employee_user, location_id=location_id),
-        params={"stock_id": 999999},
+        params={"stock_id": str(uuid.uuid4())},
     )
 
     assert response.status_code == 404

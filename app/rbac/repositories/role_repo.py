@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,7 +19,7 @@ class RoleRepository:
         result = await self.db.scalars(stmt)
         return list(result.all())
 
-    async def get_by_id(self, role_id: int) -> Role | None:
+    async def get_by_id(self, role_id: uuid.UUID) -> Role | None:
         stmt = (
             select(Role)
             .where(Role.id == role_id)
@@ -56,7 +58,7 @@ class RoleRepository:
 
     # associations
 
-    async def user_has_role(self, user_id: int, role_id: int) -> bool:
+    async def user_has_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> bool:
         stmt = (
             select(user_roles.c.user_id)
             .where(
@@ -69,21 +71,21 @@ class RoleRepository:
         result = await self.db.scalar(stmt)
         return result is not None
 
-    async def add_role_to_user(self, user_id: int, role_id: int) -> None:
+    async def add_role_to_user(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         stmt = user_roles.insert().values(
             user_id=user_id,
             role_id=role_id,
         )
         await self.db.execute(stmt)
 
-    async def remove_role_from_user(self, user_id: int, role_id: int) -> None:
+    async def remove_role_from_user(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         stmt = delete(user_roles).where(
             user_roles.c.user_id == user_id,
             user_roles.c.role_id == role_id,
         )
         await self.db.execute(stmt)
 
-    async def role_has_permission(self, role_id: int, permission_id: int) -> bool:
+    async def role_has_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> bool:
         stmt = (
             select(role_permissions.c.role_id)
             .where(
@@ -96,7 +98,7 @@ class RoleRepository:
         result = await self.db.scalar(stmt)
         return result is not None
 
-    async def add_permission_to_role(self, role_id: int, permission_id: int) -> None:
+    async def add_permission_to_role(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         stmt = role_permissions.insert().values(
             role_id=role_id,
             permission_id=permission_id,
@@ -104,7 +106,7 @@ class RoleRepository:
         await self.db.execute(stmt)
 
     async def remove_permission_from_role(
-        self, role_id: int, permission_id: int
+        self, role_id: uuid.UUID, permission_id: uuid.UUID
     ) -> None:
         stmt = delete(role_permissions).where(
             role_permissions.c.role_id == role_id,
@@ -115,7 +117,7 @@ class RoleRepository:
     # used by ensure_permission() avoiding N+1 queries
     async def get_user_with_roles_and_permissions(
         self,
-        user_id: int,
+        user_id: uuid.UUID,
     ):
         stmt = (
             select(User)

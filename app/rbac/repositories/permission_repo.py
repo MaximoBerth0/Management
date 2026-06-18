@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +17,7 @@ class PermissionRepository:
         result = await self.db.scalars(stmt)
         return list(result.all())
 
-    async def get_by_id(self, permission_id: int) -> Permission | None:
+    async def get_by_id(self, permission_id: uuid.UUID) -> Permission | None:
         stmt = select(Permission).where(Permission.id == permission_id)
         result = await self.db.scalars(stmt)
         return result.first()
@@ -40,8 +42,8 @@ class PermissionRepository:
 
     async def user_has_permission(
         self,
-        user_id: int,
-        permission_id: int,
+        user_id: uuid.UUID,
+        permission_id: uuid.UUID,
     ) -> bool:
         stmt = (
             select(role_permissions.c.role_id)
