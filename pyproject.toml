@@ -24,6 +24,7 @@ pytest-asyncio = "^1.4.0"
 httpx = "^0.28.1"
 aiosqlite = "^0.22.1"
 pyjwt = {extras = ["crypto"], version = "^2.13.0"}
+makefile = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

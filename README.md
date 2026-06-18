@@ -14,7 +14,9 @@ Managing inventory, orders, and reservations across disconnected tools leads to 
 
 **Management API** provides a centralized back-office backend that handles the full lifecycle of inventory and orders in a single system, keeping stock levels, reservations, and order states consistent at all times. Access is governed by a role-based model with three distinct roles — administrators, employees, and customers — ensuring each actor can only do what their role allows.
 
-Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed for reliability and performance as your business grows.
+Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed for **reliability and performance** as your business grows.
+
+It also keeps users informed through **email notifications**, including low-stock **alerts** so inventory is replenished before it runs out, and password reset links for secure account recovery.
 
 ---
 
@@ -46,6 +48,11 @@ Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed 
 
 ### Deployment on Amazon Web Services
 
+The API runs as a container on **Amazon ECS** (Fargate), behind an Application Load Balancer. A few additional AWS services support it:
+
+- **AWS Secrets Manager** — stores sensitive configuration (database URL, secret key, AWS credentials) and injects it into the ECS tasks at runtime, so no secrets live in the image or repository.
+- **ECS Service Auto Scaling** — scales the number of running tasks up or down based on CPU/memory usage to handle changing load.
+- **Amazon SES** — sends transactional email (low-stock alerts and password reset links).
 
 ---
 
@@ -67,6 +74,13 @@ cd Management
 APP_NAME=Management
 ENV=local
 DEBUG=true
+APP_BASE_URL=http://localhost:8000
+
+# AWS (Secrets Manager / SES)
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+SENDER_EMAIL=no-reply@yourdomain.com
 
 # database
 DATABASE_URL=postgresql+asyncpg://postgres:yourpassword@localhost:5432/management_db
@@ -79,16 +93,24 @@ DB_POOL_RECYCLE=3600
 DB_POOL_PRE_PING=true
 DB_ECHO=false
 
+# Connection timeouts
+DB_CONNECT_TIMEOUT=10
+DB_COMMAND_TIMEOUT=60
+DB_STATEMENT_TIMEOUT=30000
+
 # security and authentication
 SECRET_KEY=your-secret-key-here-change-this-in-production-min-32-chars
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=15
 REFRESH_TOKEN_EXPIRE_DAYS=7
-PASSWORD_HASH_SCHEME=argon2
 
 # server
 UVICORN_WORKERS=1
 GUNICORN_WORKERS=2
+
+# CORS
+CORS_ALLOW_ORIGINS=["http://localhost:3000"]
+CORS_ALLOW_CREDENTIALS=true
 
 ```
 ### Run the application
@@ -116,4 +138,4 @@ source .venv/bin/activate
 pip install -e .
 uvicorn app.main:app --reload
 ```
-- Note: when running locally, you must provide your own PostgreSQL and Redis instances.
+- Note: when running locally, you must provide your own PostgreSQL instance and AWS services (or any other cloud provider)

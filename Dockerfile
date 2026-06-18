@@ -1,5 +1,8 @@
-# builder 
-FROM python:3.14.5-slim AS builder
+# single source of truth for the interpreter version across both stages
+ARG PYTHON_VERSION=3.14.5
+
+# builder
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -22,8 +25,8 @@ COPY pyproject.toml poetry.lock ./
 # install ONLY the locked runtime deps into ./.venv (no dev deps, no project root)
 RUN poetry install --only main --no-root
 
-# runtime 
-FROM python:3.11.9-slim AS runtime
+# runtime
+FROM python:${PYTHON_VERSION}-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -39,6 +42,8 @@ COPY --from=builder /app/.venv /app/.venv
 RUN useradd --create-home --uid 1000 appuser
 
 COPY app ./app
+COPY alembic.ini ./
+COPY alembic ./alembic
 
 USER appuser
 
