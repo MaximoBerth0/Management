@@ -181,7 +181,7 @@ async def _make_user(
     return user
 
 
-async def _assign_role(db_session, *, user_id: int, role_id: int) -> None:
+async def _assign_role(db_session, *, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
     await db_session.execute(
         user_roles.insert().values(user_id=user_id, role_id=role_id)
     )
@@ -244,7 +244,7 @@ def auth_headers():
 # entity builders: request the fixture, then call it inline with the acting user
 @pytest.fixture
 def make_category(client, auth_headers):
-    async def _make(user: User, name: str = "tools", description: str = "cat") -> int:
+    async def _make(user: User, name: str = "tools", description: str = "cat") -> uuid.UUID:
         response = await client.post(
             "/inventory/categories",
             headers=auth_headers(user),
@@ -262,8 +262,8 @@ def make_product(client, auth_headers, make_category):
         user: User,
         name: str = "widget",
         sku: str = "SKU-1",
-        category_id: int | None = None,
-    ) -> int:
+        category_id: uuid.UUID | None = None,
+    ) -> uuid.UUID:
         if category_id is None:
             category_id = await make_category(user)
         response = await client.post(
@@ -284,7 +284,7 @@ def make_location(client, auth_headers):
         name: str = "warehouse",
         city: str = "metropolis",
         address: str = "123 st",
-    ) -> int:
+    ) -> uuid.UUID:
         response = await client.post(
             "/inventory/locations",
             headers=auth_headers(user),
@@ -332,7 +332,7 @@ def make_stock(client, auth_headers, make_product, make_location):
 
 @pytest.fixture
 def make_order(client, auth_headers):
-    async def _make(user: User) -> int:
+    async def _make(user: User) -> uuid.UUID:
         response = await client.post(
             "/orders/",
             headers=auth_headers(user),
@@ -346,8 +346,8 @@ def make_order(client, auth_headers):
 def make_order_item(client, auth_headers, make_order, make_product):
     async def _make(
         user: User,
-        order_id: int | None = None,
-        product_id: int | None = None,
+        order_id: uuid.UUID | None = None,
+        product_id: uuid.UUID | None = None,
         quantity: int = 1,
     ) -> dict:
         if order_id is None:

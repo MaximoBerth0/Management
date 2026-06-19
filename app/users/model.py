@@ -1,14 +1,17 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.auth.model import RefreshToken
 from app.database.base import Base
 from app.rbac.models.role import Role
 from app.rbac.models.user_role import user_roles
+
+if TYPE_CHECKING:
+    from app.auth.model import RefreshToken
 
 
 class User(Base):

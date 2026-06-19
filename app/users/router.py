@@ -18,7 +18,7 @@ from app.users.service import UserService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["USERS"])
 
 
 @router.post(

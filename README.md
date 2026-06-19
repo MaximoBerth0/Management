@@ -4,7 +4,7 @@ Inventory management system for orders, reservations, authentication, and role-p
 
 ---
 
-### [future images]
+[future image]
 
 --- 
 
@@ -56,6 +56,54 @@ The API runs as a container on **Amazon ECS** (Fargate), behind an Application L
 
 ---
 
+## Architecture
+
+The codebase is organized into self-contained feature modules under `app/`, each
+following the same layered layout (router → service → repository → model). Shared
+concerns (config, security, constants) live in `core/`, and the SQLAlchemy `Base`
+plus session wiring live in `database/`.
+
+```text
+app/
+├── main.py             # FastAPI application entry point
+├── core/               # Shared application components
+│   ├── config.py       # Application settings (Pydantic Settings)
+│   ├── constants/      # Roles, permissions, and shared constants
+│   └── security/       # Password hashing, JWT handling, security utilities
+├── database/           # Database engine, session, Base, and ORM configuration
+├── auth/               # Authentication and account security
+│   └── repositories/
+├── users/              # User management
+├── rbac/               # Role-Based Access Control (roles and permissions)
+│   ├── models/
+│   └── repositories/
+├── inventory/          # Inventory management (products, stock, locations, reservations)
+│   ├── models/
+│   ├── repositories/
+│   ├── router.py
+│   ├── service.py
+│   └── schemas.py
+├── orders/             # Order management and lifecycle
+│   ├── models/
+│   ├── repository.py
+│   ├── router.py
+│   ├── service.py
+│   └── schemas.py
+├── mail/               # Email delivery (AWS SES)
+├── observability/      # Logging, monitoring, and application metrics
+└── bootstraps/         # Database seed scripts (roles, permissions, initial data)
+```
+
+Supporting top-level directories:
+
+```text
+alembic/        # database migrations
+docs/           # per-module documentation and screenshots
+integration/    # pytest integration suite (conftest fixtures + tests)
+```
+
+---
+
 ## Installation & setup (recommended: Docker)
 
 ### Prerequisites
@@ -64,7 +112,7 @@ The API runs as a container on **Amazon ECS** (Fargate), behind an Application L
 
 ### Clone the repository
 ```bash
-git clone https://github.com/your-username/Management.git
+git clone https://github.com/MaximoBerth0/Management.git
 cd Management
 ```
 ### Environment variables
