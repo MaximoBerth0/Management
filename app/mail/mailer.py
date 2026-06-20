@@ -17,11 +17,11 @@ class Mailer:
     def __init__(self):
         self.sender = settings.SENDER_EMAIL
         self.base_url = settings.APP_BASE_URL
+        # Credentials resolve through boto3's default chain, which on
+        # ECS/Fargate is the task's IAM role.
         self.ses_client = boto3.client(
             "ses",
             region_name=settings.AWS_REGION,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         )
 
     async def send_reset_email(self, email: str, token: str) -> None:

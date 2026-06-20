@@ -31,9 +31,12 @@ FROM python:${PYTHON_VERSION}-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/app/.venv/bin:$PATH" \
-    WEB_CONCURRENCY=4
+    GUNICORN_WORKERS=4
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
 
 # bring over only the virtualenv — no build tools, no poetry, no apt caches
 COPY --from=builder /app/.venv /app/.venv
@@ -44,14 +47,15 @@ RUN useradd --create-home --uid 1000 appuser
 COPY app ./app
 COPY alembic.ini ./
 COPY alembic ./alembic
+COPY docker/entrypoint.sh ./entrypoint.sh
 
 USER appuser
 
 EXPOSE 8000
 
-# gunicorn supervising Uvicorn workers. Worker count = WEB_CONCURRENCY.
-CMD ["gunicorn", "app.main:app", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+# Container-level health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status==200 else sys.exit(1)"]
+
+# tini as PID 1 → entrypoint runs migrations, then execs gunicorn.
+ENTRYPOINT ["tini", "--", "./entrypoint.sh"]

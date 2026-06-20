@@ -17,8 +17,6 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
 os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
 os.environ["CORS_ALLOW_ORIGINS"] = '["http://test"]'
 os.environ["AWS_REGION"] = "us-east-1"
-os.environ["AWS_ACCESS_KEY_ID"] = "test-access-key-id"
-os.environ["AWS_SECRET_ACCESS_KEY"] = "test-secret-access-key"
 os.environ["SENDER_EMAIL"] = "no-reply@test"
 os.environ["APP_BASE_URL"] = "http://test"
 

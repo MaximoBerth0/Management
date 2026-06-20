@@ -8,6 +8,7 @@ from app.auth.routers import router as auth_router
 from app.core.config import settings
 from app.core.global_errors import AppError
 from app.inventory.router import router as inventory_router
+from app.observability.health import router as health_router
 from app.observability.logging import setup_logging
 from app.observability.request_id import RequestIdMiddleware
 from app.orders.router import router as order_router
@@ -51,6 +52,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     )
 
 # Routers
+app.include_router(health_router)
 app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(rbac_router)

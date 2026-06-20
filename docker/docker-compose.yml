@@ -1,0 +1,51 @@
+# Local development only. Build context is the repo root; the Dockerfile lives
+# in this docker/ folder. Run from the repo root with:
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# There is no committed .env — values below are self-contained local defaults.
+# A personal docker/.env (gitignored) is loaded if present and overrides them.
+# Production gets its configuration from AWS Secrets Manager, not this file.
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: management_api
+    ports:
+      - "8000:8000"
+    environment:
+      ENV: local
+      DEBUG: "true"
+      APP_NAME: Management
+      APP_BASE_URL: http://localhost:8000
+      AWS_REGION: us-east-1
+      SENDER_EMAIL: no-reply@example.com
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/management
+      SECRET_KEY: local-dev-secret-key-not-for-production-use-only
+      CORS_ALLOW_ORIGINS: '["*"]'
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    container_name: management_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-management}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

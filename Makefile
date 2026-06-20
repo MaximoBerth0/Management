@@ -4,19 +4,22 @@ LOCAL_DATABASE_URL := postgresql+asyncpg://postgres:postgres@localhost:5432/mana
 # Run alembic with the local URL injected.
 ALEMBIC := DATABASE_URL=$(LOCAL_DATABASE_URL) alembic
 
+# Compose files now live in docker/.
+COMPOSE := docker compose -f docker/docker-compose.yml
+
 .PHONY: db-up db-stop db-down db-reset migrate revision current heads
 
 db-up:        ## Start the database in the background
-	docker compose up -d db
+	$(COMPOSE) up -d db
 
 db-stop:      ## Stop the database (keeps data)
-	docker compose stop db
+	$(COMPOSE) stop db
 
 db-down:      ## Remove containers (keeps data volume)
-	docker compose down
+	$(COMPOSE) down
 
 db-reset:     ## Remove containers AND wipe the data volume
-	docker compose down -v
+	$(COMPOSE) down -v
 
 ## Migrations (require the db to be running)
 migrate:      ## Apply all pending migrations

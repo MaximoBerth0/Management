@@ -1,7 +1,13 @@
 from functools import lru_cache
 
 from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
+
+from app.core.secrets import AWSSecretsManagerSettingsSource
 
 
 class Settings(BaseSettings):
@@ -10,8 +16,9 @@ class Settings(BaseSettings):
     ENV: str = "prod"
     DEBUG: bool = False
     AWS_REGION: str
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
+    # Name/ARN of the AWS Secrets Manager secret holding the config JSON.
+    # When set (prod/ECS), its values populate the settings below.
+    AWS_SECRETS_NAME: str | None = None
     SENDER_EMAIL: str
     APP_BASE_URL: str
 
@@ -52,6 +59,26 @@ class Settings(BaseSettings):
         env_file=".env",
         extra="ignore",
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # Precedence (highest first): explicit env vars, then AWS Secrets
+        # Manager, then a local .env, then file secrets. This lets ECS-injected
+        # env vars override the bundle, while the bundle covers everything else.
+        return (
+            init_settings,
+            env_settings,
+            AWSSecretsManagerSettingsSource(settings_cls),
+            dotenv_settings,
+            file_secret_settings,
+        )
 
     @model_validator(mode="after")
     def validate_prod_settings(self) -> "Settings":

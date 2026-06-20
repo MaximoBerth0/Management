@@ -50,7 +50,7 @@ It also keeps users informed through **email notifications**, including low-stoc
 
 The API runs as a container on **Amazon ECS** (Fargate), behind an Application Load Balancer. A few additional AWS services support it:
 
-- **AWS Secrets Manager** — stores sensitive configuration (database URL, secret key, AWS credentials) and injects it into the ECS tasks at runtime, so no secrets live in the image or repository.
+- **AWS Secrets Manager** — stores the application's configuration (database URL, secret key, mail/CORS settings) as a single JSON secret. The app loads this bundle at startup via the task's IAM role, so no `.env` and no secrets live in the image or repository.
 - **ECS Service Auto Scaling** — scales the number of running tasks up or down based on CPU/memory usage to handle changing load.
 - **Amazon SES** — sends transactional email (low-stock alerts and password reset links).
 
@@ -115,60 +115,29 @@ integration/    # pytest integration suite (conftest fixtures + tests)
 git clone https://github.com/MaximoBerth0/Management.git
 cd Management
 ```
-### Environment variables
-#### env example: 
-```bash
-# application
-APP_NAME=Management
-ENV=local
-DEBUG=true
-APP_BASE_URL=http://localhost:8000
+### Configuration
 
-# AWS (Secrets Manager / SES)
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
-SENDER_EMAIL=no-reply@yourdomain.com
+There is **no committed `.env`**. Configuration is resolved from environment
+variables, with this precedence (highest first):
 
-# database
-DATABASE_URL=postgresql+asyncpg://postgres:yourpassword@localhost:5432/management_db
+1. Explicit environment variables
+2. **AWS Secrets Manager** — when `AWS_SECRETS_NAME` is set, the app loads that
+   secret (a JSON object whose keys match the settings) at startup. This is how
+   production is configured; see [`deploy/`](deploy/README.md).
+3. An optional local `docker/.env` (gitignored)
 
-# Connection pool 
-DB_POOL_SIZE=20
-DB_MAX_OVERFLOW=10
-DB_POOL_TIMEOUT=30
-DB_POOL_RECYCLE=3600
-DB_POOL_PRE_PING=true
-DB_ECHO=false
+For local Docker the compose file ships self-contained defaults, so **no setup
+is required** — `docker compose ... up` just works. See
+[`env.example`](env.example) for the full list of available settings.
 
-# Connection timeouts
-DB_CONNECT_TIMEOUT=10
-DB_COMMAND_TIMEOUT=60
-DB_STATEMENT_TIMEOUT=30000
-
-# security and authentication
-SECRET_KEY=your-secret-key-here-change-this-in-production-min-32-chars
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=15
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# server
-UVICORN_WORKERS=1
-GUNICORN_WORKERS=2
-
-# CORS
-CORS_ALLOW_ORIGINS=["http://localhost:3000"]
-CORS_ALLOW_CREDENTIALS=true
-
-```
 ### Run the application
 ```bash
-docker compose up --build
+docker compose -f docker/docker-compose.yml up --build
 ```
 
 ### Run bootstrap (to initialize system data such as 'permissions' and 'roles')
 ```bash
-docker compose exec api python -m app.bootstraps.seed_all
+docker compose -f docker/docker-compose.yml exec api python -m app.bootstraps.seed_all
 ```
 #### The API will be available at:
 ```bash
