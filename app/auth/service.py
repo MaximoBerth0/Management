@@ -46,7 +46,10 @@ class AuthService:
             logger.warning("login: invalid credentials", extra={"email": email})
             raise InvalidCredentials()
 
-        access_token = create_access_token(user.id)
+        access_token = create_access_token(
+            user.id,
+            roles=[role.name for role in user.roles],
+        )
 
         refresh_token = generate_refresh_token()
         expires_at = datetime.now(timezone.utc) + timedelta(
@@ -99,7 +102,9 @@ class AuthService:
             expires_at=new_expires_at,
         )
 
-        access_token = create_access_token(token.user_id)
+        user = await self.user_repo.get_by_id(token.user_id)
+        roles = [role.name for role in user.roles] if user else []
+        access_token = create_access_token(token.user_id, roles=roles)
 
         logger.info("session refreshed", extra={"user_id": str(token.user_id)})
         return TokenResponse(

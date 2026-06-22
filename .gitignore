@@ -27,3 +27,6 @@ Thumbs.db
 # Tools 
 .ruff_cache
 .pytest_cache
+
+# Deployment
+*.resolved.json

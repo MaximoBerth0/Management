@@ -19,6 +19,7 @@ def create_token(
     subject: str,
     token_type: str,
     expires_delta: timedelta,
+    extra_claims: dict | None = None,
 ) -> str:
     now = datetime.now(timezone.utc)
 
@@ -30,6 +31,9 @@ def create_token(
         "jti": str(uuid.uuid4()),
     }
 
+    if extra_claims:
+        payload.update(extra_claims)
+
     return jwt.encode(
         payload,
         settings.SECRET_KEY,
@@ -37,11 +41,12 @@ def create_token(
     )
 
 
-def create_access_token(user_id: uuid.UUID) -> str:
+def create_access_token(user_id: uuid.UUID, roles: list[str] | None = None) -> str:
     return create_token(
         subject=str(user_id),
         token_type="access",
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        extra_claims={"roles": roles or []},
     )
 
 
