@@ -24,7 +24,7 @@ User → has roles → roles have permissions → permission check passes/fails
 ### Role
 | Field | Notes |
 |---|---|
-| `name` | Unique, indexed (e.g., `admin`, `employee`, `driver`, `client`) |
+| `name` | Unique, indexed — the seeded roles are `admin`, `employee`, `client` |
 | `description` | Human-readable role purpose |
 | `permissions` | Many-to-many via `role_permissions` association table |
 | `users` | Backref from `user_roles` — all users assigned this role |
@@ -48,43 +48,53 @@ Both use composite primary keys `(left_id, right_id)` with foreign key constrain
 
 [app/bootstraps/](../app/bootstraps/)
 
-**Runs once at application startup** to populate roles and permissions.
+`seed_all()` orchestrates both steps and is **run once at application startup** to populate permissions then roles.
 
 ### seed_permissions()
-Creates all permission records from a constants file. Example:
+Creates all permission records from the constants under [app/core/constants/](../app/core/constants/) — `SYSTEM_PERMISSIONS`, `INVENTORY_PERMISSIONS`, `USER_PERMISSIONS`, `ORDER_PERMISSIONS`. The codes follow a `resource:action` convention, e.g.:
 ```python
 SYSTEM_PERMISSIONS = [
-    "users:view", "users:create", "users:update",
-    "role:create", "role:update", "role:assign"
+    "roles:view", "roles:create", "roles:update",
+    "role:assign_permission", "role:remove_permission",
+    "users:assign_role", "users:remove_role",
 ]
 ```
 
 ### seed_roles()
-Creates role records and assigns permissions based on `SYSTEM_ROLES` constant:
+Creates role records and assigns permissions based on the `SYSTEM_ROLES` constant:
 
 ```python
 SYSTEM_ROLES = {
-    "admin": SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS + USER_PERMISSIONS,
-    "employee": ["products:view", "stock:in", "stock:out"],
-    "client": ["products:view", "reservations:view"]
+    "admin": SYSTEM_PERMISSIONS + INVENTORY_PERMISSIONS
+             + USER_PERMISSIONS + ORDER_PERMISSIONS,   # everything
+    "employee": ["product:view", "product:create", ..., "order:complete"],
+    "client": [],   # no permissions — relies on self-scoped/public routes
 }
 ```
 
-**Key insight:** Permission matrices are defined in code as constants, not in the database. Roles are seeded with their permissions at startup. Changes to the permission model require a re-seed (or migration).
+**Key insight:** Permission matrices are defined in code as constants, not in the database. Roles are seeded with their permissions at startup. Changes to the permission model require a re-seed (or migration). Note `client` is intentionally permission-less — client-facing access comes from self-scoped routes (`GET /orders/me`) and public ones (`GET /orders/code/{code}`), not RBAC grants.
 
 ---
 
 ## Schemas
 
-[app/rbac/schemas/](../app/rbac/schemas/)
+[app/rbac/schemas.py](../app/rbac/schemas.py)
 
-**`dto.py` — Internal transfer objects:**
-- `RoleCreateDTO`, `RoleUpdateDTO`, `RoleResponseDTO`
-- `AssignRoleToUserDTO`, `RemoveRoleFromUserDTO`
-- `AddPermissionToRoleDTO`, `RemovePermissionFromRoleDTO`
+Single-file Pydantic models — no separate DTO layer. Role/permission *assignment* carries no request body; the IDs travel as path params (`/users/{user_id}/roles/{role_id}`), so only the create/update/permission-payload requests exist.
 
-**`api.py` — HTTP boundary:**
-Pydantic request/response models that validate incoming payloads. The router translates API schemas → DTOs before calling the service.
+| Request | Fields |
+|---|---|
+| `RoleCreateRequest` | `name` (2–100), `description` (≤255, optional) |
+| `RoleUpdateRequest` | `name`, `description` — both optional |
+| `AddPermissionToRoleRequest` / `RemovePermissionFromRoleRequest` | `permission_id` (UUID) |
+
+| Response | Fields |
+|---|---|
+| `RoleResponse` | `id`, `name`, `description`, nested `permissions: List[PermissionResponse]` |
+| `PermissionResponse` | `id`, `name` |
+| `UserRoleResponse` | `user_id`, `role_id` |
+
+All response models use `from_attributes=True` to read straight off ORM objects.
 
 ---
 
@@ -174,32 +184,33 @@ async def create_role(...):
 
 The permission check happens **before** the endpoint function executes. If it fails, the route handler never runs.
 
+**On the token `roles` claim:** access tokens embed the user's role names (see the `auth` module), but `require_permission` does **not** trust that claim — `ensure_permission` re-loads `user.roles → permissions` from the DB on every call. So a revoked role or permission takes effect immediately, not only after the next token refresh. The claim is currently informational (e.g. for the client), not an authorization shortcut.
+
 ---
 
 ## Routers
 
-[app/rbac/router.py](../app/rbac/router.py)
+[app/rbac/routers.py](../app/rbac/routers.py)
 
-HTTP layer for role and permission management.
+HTTP layer for role and permission management, under the `/rbac` prefix. Every route is permission-gated.
 
 | Endpoint | Permission Required |
 |---|---|
-| `POST /rbac/roles` | `role:create` |
-| `PATCH /rbac/roles/{role_id}` | `role:update` |
-| `POST /rbac/roles/{role_id}/permissions` | (check missing in code) |
+| `POST /rbac/roles` | `roles:create` |
+| `PATCH /rbac/roles/{role_id}` | `roles:update` |
+| `GET /rbac/roles` | `roles:view` |
+| `POST /rbac/roles/{role_id}/permissions` | `role:assign_permission` |
 | `DELETE /rbac/roles/{role_id}/permissions` | `role:remove_permission` |
 | `POST /rbac/users/{user_id}/roles/{role_id}` | `users:assign_role` |
 | `DELETE /rbac/users/{user_id}/roles/{role_id}` | `users:remove_role` |
-
-**Note:** Some endpoints are missing permission checks in the current implementation (e.g., `assign_permission_to_role`). These should be protected.
 
 ---
 
 ## Errors
 
-[app/rbac/errors.py](../app/rbac/errors.py)
+[app/rbac/exceptions.py](../app/rbac/exceptions.py)
 
-Domain-specific exceptions extending `AppError`.
+Domain-specific exceptions extending `AppError` (via the module's `RbacError` base — 400 / `RBAC_ERROR`).
 
 | Exception | HTTP | Code |
 |---|---|---|

@@ -41,7 +41,7 @@ It also keeps users informed through **email notifications**, including low-stoc
 - JWT authentication with token rotation
 - Email-based password reset flow
 - Role-based access control with configurable roles and permissions via constants
-- Integration testing (pytest) with SQLite in-memory
+- Integration testing (pytest) against a disposable PostgreSQL container
 - Modular structure for incremental growth
 - Docker-based development environment
 - PostgreSQL as primary datastore
