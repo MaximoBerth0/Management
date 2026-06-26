@@ -1,8 +1,9 @@
+import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Uuid
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -16,6 +17,16 @@ from app.orders.models.enums import OrderStatus
 if TYPE_CHECKING:
     from app.inventory.models.reservation import StockReservation
 
+# code generation helper
+
+_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+_CODE_LENGTH = 8
+
+def generate_order_code() -> str:
+    raw = "".join(secrets.choice(_ALPHABET) for _ in range(_CODE_LENGTH))
+    return f"{raw[:4]}-{raw[4:]}"
+
+# Models 
 
 class Order(Base):
     __tablename__ = "orders"
@@ -25,6 +36,14 @@ class Order(Base):
         primary_key=True,
         default=uuid.uuid7,
     )
+
+    code: Mapped[str] = mapped_column(
+        String(9),       # 8 chars + -
+        unique=True,    
+        nullable=False,
+        index=True,      
+    )
+
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         Uuid,
@@ -61,6 +80,7 @@ class Order(Base):
         return cls(
             user_id=user_id,
             status=OrderStatus.CREATED,
+            code=generate_order_code(),
         )
 
     def confirm(self):

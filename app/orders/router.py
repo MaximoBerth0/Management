@@ -1,5 +1,6 @@
 import logging
 import uuid
+from collections.abc import Sequence
 
 from fastapi import APIRouter, Depends, status
 
@@ -13,6 +14,7 @@ from app.rbac.dependencies import require_permission
 from app.users.model import User
 
 """
+GET  /orders/me                          - list current user's own orders
 POST /orders                             - create order
 POST /orders/{id}/items                  - add item to order
 DELETE /orders/{id}/items/{item_id}      - remove item from order
@@ -28,6 +30,38 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/orders", tags=["ORDERS"])
 
 # orders
+
+@router.get(
+    "/code/{code}",
+    response_model=OrderResponse,
+)
+async def get_order_by_code(
+    code: str,
+    service: OrderService = Depends(get_order_service),
+) -> OrderResponse:
+    logger.info("get_order_by_code endpoint called")
+    order = await service.get_order_by_code(code)
+    logger.info("get_order_by_code endpoint succeeded", extra={"order_id": order.id})
+    return order
+
+
+@router.get(
+    "/me",
+    response_model=list[OrderResponse],
+)
+async def list_my_orders(
+    current_user: User = Depends(get_current_user),
+    service: OrderService = Depends(get_order_service),
+) -> Sequence[OrderResponse]:
+
+    logger.info("list_my_orders endpoint called", extra={"user_id": current_user.id})
+    orders = await service.list_user_orders(user_id=current_user.id)
+    logger.info(
+        "list_my_orders endpoint succeeded",
+        extra={"user_id": current_user.id, "count": len(orders)},
+    )
+    return orders
+
 
 @router.post(
     "/",

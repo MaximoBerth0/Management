@@ -1,5 +1,6 @@
 import logging
 import uuid
+from collections.abc import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +21,19 @@ complete_order()
 
 logger = logging.getLogger(__name__)
 
+_CODE_LENGTH = 8
+
+def _normalize_code(value: str) -> str | None:
+    """
+    Returns ``None`` when the input can't be a valid code so the caller can
+    reject it without hitting the database.
+    """
+    cleaned = value.strip().upper().replace("-", "").replace(" ", "")
+    if len(cleaned) != _CODE_LENGTH:
+        return None
+    return f"{cleaned[:4]}-{cleaned[4:]}"
+
+
 class OrderService:
     def __init__(
         self,
@@ -37,6 +51,30 @@ class OrderService:
 
         logger.info("create_order: order created", extra={"order_id": result.id})
         return result
+    
+    # public endpoint 
+
+    async def list_user_orders(self, user_id: uuid.UUID) -> Sequence[Order]:
+        orders = await self.order_repo.list_orders_by_user(user_id)
+        logger.info(
+            "list_user_orders: orders fetched",
+            extra={"user_id": user_id, "count": len(orders)},
+        )
+        return orders
+
+    async def get_order_by_code(self, code: str) -> Order:
+        normalized = _normalize_code(code)
+        if normalized is None:
+            logger.warning("get_order_by_code: malformed code")
+            raise OrderNotFound()
+
+        order = await self.order_repo.get_order_by_code(normalized)
+        if order is None:
+            logger.warning("get_order_by_code: order not found")
+            raise OrderNotFound()
+
+        logger.info("get_order_by_code: order fetched", extra={"order_id": order.id})
+        return order
 
     async def add_item_to_order(
         self, order_id: uuid.UUID, product_id: uuid.UUID, quantity: int

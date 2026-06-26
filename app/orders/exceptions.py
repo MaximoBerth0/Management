@@ -45,4 +45,11 @@ class InvalidQuantity(OrderError):
             error_code="INVALID_QUANTITY",
         )
 
-        
+
+class OrderCodeGenerationError(OrderError):
+    def __init__(self, message:str = "A unique code could not be generated after several attempts."):
+        super().__init__(
+            message=message,
+            status_code=500,
+            error_code="ORDER_GENERATION_CODE_FAILED",
+        )
