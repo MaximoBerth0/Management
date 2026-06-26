@@ -18,7 +18,7 @@ class RefreshTokensRequest(BaseModel):
 
 class ChangePasswordRequest(BaseModel):
     old_password: str
-    new_password: str
+    new_password: str = Field(min_length=8, max_length=50)
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -27,7 +27,7 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str
-    new_password: str
+    new_password: str = Field(min_length=8, max_length=50)
 
 
 class TokenResponse(BaseModel):
