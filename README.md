@@ -4,7 +4,22 @@ Inventory management system for orders, reservations, authentication, and role-p
 
 ---
 
-[future image]
+## Table of Contents
+
+- [Overview](#overview)
+- [Technical Features](#technical-features)
+  - [Deployment on Amazon Web Services](#deployment-on-amazon-web-services)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Installation & setup (recommended: Docker)](#installation--setup-recommended-docker)
+  - [Prerequisites](#prerequisites)
+  - [Clone the repository](#clone-the-repository)
+  - [Configuration](#configuration)
+  - [Run the application](#run-the-application)
+  - [Run bootstrap](#run-bootstrap-to-initialize-system-data-such-as-permissions-and-roles)
+  - [Local development (optional, without Docker)](#local-development-optional-without-docker)
+- [Migrations](#migrations)
+- [Testing](#testing)
 
 --- 
 
@@ -14,23 +29,13 @@ Managing inventory, orders, and reservations across disconnected tools leads to 
 
 **Management API** provides a centralized back-office backend that handles the full lifecycle of inventory and orders in a single system, keeping stock levels, reservations, and order states consistent at all times. Access is governed by a role-based model with three distinct roles — administrators, employees, and customers — ensuring each actor can only do what their role allows.
 
+![Flow](docs/images/order_inventory_flow_rbac.png)
+---
+![Flow](docs/images/customer_order_lookup_flow_rbac.png)
+
 Built on FastAPI with a fully async stack (asyncpg + SQLAlchemy), it's designed for **reliability and performance** as your business grows.
 
 It also keeps users informed through **email notifications**, including low-stock **alerts** so inventory is replenished before it runs out, and password reset links for secure account recovery.
-
----
-
-## Tech stack
-
-- FastAPI
-- SQLAlchemy 2.0 (async)
-- PostgreSQL
-- Alembic
-- Pydantic v2
-- PyJWT
-- Argon2-CFFI
-- Pytest
-- Docker & Docker Compose
 
 ---
 
@@ -53,6 +58,20 @@ The API runs as a container on **Amazon ECS** (Fargate), behind an Application L
 - **AWS Secrets Manager** — stores the application's configuration (database URL, secret key, mail/CORS settings) as a single JSON secret. The app loads this bundle at startup via the task's IAM role, so no `.env` and no secrets live in the image or repository.
 - **ECS Service Auto Scaling** — scales the number of running tasks up or down based on CPU/memory usage to handle changing load.
 - **Amazon SES** — sends transactional email (low-stock alerts and password reset links).
+
+---
+
+## Tech stack
+
+- FastAPI
+- SQLAlchemy 2.0 (async)
+- PostgreSQL
+- Alembic
+- Pydantic v2
+- PyJWT
+- Argon2-CFFI
+- Pytest
+- Docker & Docker Compose
 
 ---
 
@@ -156,3 +175,62 @@ pip install -e .
 uvicorn app.main:app --reload
 ```
 - Note: when running locally, you must provide your own PostgreSQL instance and AWS services (or any other cloud provider)
+
+---
+
+## Migrations
+
+Database schema is managed with **Alembic**.
+
+Migrations are applied **automatically** at container startup by
+[`docker/entrypoint.sh`](docker/entrypoint.sh) (`alembic upgrade head`), so a
+standard `docker compose ... up` always boots the API against an up-to-date
+schema. Set `RUN_MIGRATIONS=false` on tasks that must not migrate.
+
+To run migrations manually inside the running `api` container:
+
+```bash
+# apply all pending migrations
+docker compose -f docker/docker-compose.yml exec api alembic upgrade head
+```
+
+To create a new migration after changing the ORM models:
+
+```bash
+# autogenerate a revision from the current models
+docker compose -f docker/docker-compose.yml exec api alembic revision --autogenerate -m "describe your change"
+
+# review the generated file under alembic/versions/, then apply it
+docker compose -f docker/docker-compose.yml exec api alembic upgrade head
+```
+
+Common commands (`downgrade -1`, `history`, `current`) work the same way through
+`alembic`.
+
+---
+
+## Testing
+
+Integration tests (pytest) run against a **disposable PostgreSQL container**, so
+you must start the test database with Docker before running them.
+
+### Prerequisites
+- Docker & Docker Compose
+
+### Run the test suite
+```bash
+# 1. start the test database
+docker compose -f docker/docker-compose-test.yml up -d test-db
+
+# 2. run the integration suite
+pytest integration/ -v
+
+# 3. tear the test database down
+docker compose -f docker/docker-compose-test.yml down
+```
+
+The suite in [`integration/`](integration/) sets its own test environment
+variables and builds the schema from the ORM metadata (see
+[`integration/conftest.py`](integration/conftest.py)), pointing at the
+`test-db` container on `localhost:5432`. Make sure that port is free before
+starting it.

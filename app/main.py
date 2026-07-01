@@ -21,9 +21,10 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.APP_NAME,
-    docs_url=None if settings.ENV == "prod" else "/docs",
-    redoc_url=None if settings.ENV == "prod" else "/redoc",
-    openapi_url=None if settings.ENV == "prod" else "/openapi.json",
+# The documentation is shown in production intentionally
+#   docs_url=None if settings.ENV == "prod" else "/docs",
+#   redoc_url=None if settings.ENV == "prod" else "/redoc",
+#   openapi_url=None if settings.ENV == "prod" else "/openapi.json",
 )
 
 # middleware
